@@ -21,6 +21,7 @@ Work by Speech Features:
 - Available for the English language only
 - Free updates
 <br/><br/>
+
 Who is it for?
 - People with some permanent disabilities (e.g. someone paralyzed in both hands). 
 - People with some temporary disabilities (e.g. a person who broke both hands in an accident). 
