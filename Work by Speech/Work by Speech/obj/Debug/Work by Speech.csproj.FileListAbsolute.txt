@@ -1,0 +1,56 @@
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\Work by Speech.exe.config
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\Work by Speech.exe
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\Work by Speech.pdb
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\Microsoft.WindowsAPICodePack.dll
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\Microsoft.WindowsAPICodePack.Shell.dll
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Work by Speech.csproj.AssemblyReference.cache
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Interop.Shell32.dll
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Work by Speech.csproj.ResolveComReference.cache
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditActionWait.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditActionTypeText.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditActionScrollMouse.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditActionMoveMouse.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditActionMouse.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditActionKeyboard.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditCommand.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditActionReadText.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditActionOpenURL.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditGroup.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowRecordActions.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowManageGroups.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowChooseProgram.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowChangelog.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowEULA.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditProfile.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\MainWindow.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Mousegrid.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\SpeechWindow.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\App.g.cs
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Work by Speech_MarkupCompile.cache
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Work by Speech_MarkupCompile.lref
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditActionWait.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditActionTypeText.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditActionScrollMouse.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditActionMoveMouse.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditActionMouse.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditActionKeyboard.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditCommand.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditActionReadText.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditActionOpenURL.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditGroup.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowRecordActions.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowManageGroups.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowChooseProgram.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowChangelog.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowEULA.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditProfile.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\MainWindow.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Mousegrid.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\SpeechWindow.baml
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Work by Speech.g.resources
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Speech.Properties.Resources.resources
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Work by Speech.csproj.GenerateResource.cache
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Work by Speech.csproj.CoreCompileInputs.cache
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Work by Speech.csproj.CopyComplete
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Work by Speech.exe
+C:\Users\m\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Work by Speech.pdb

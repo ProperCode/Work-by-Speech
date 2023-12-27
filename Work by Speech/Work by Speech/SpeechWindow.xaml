@@ -1,0 +1,33 @@
+﻿<Window x:Class="Speech.SpeechWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Speech"
+        mc:Ignorable="d"
+        Title="Speech Recognition" Height="138" Width="435" FontSize="14" ResizeMode="NoResize"
+        Background="White" Icon="images/off2.ico" LocationChanged="Window_LocationChanged">
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                <GradientStop Color="White"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+        <TextBlock x:Name="TBrecognized_speech" HorizontalAlignment="Left" Height="79" Width="300" 
+                   Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Background="White"
+                   Text="Recognized speech appears here."/>
+        <TextBlock x:Name="TBconfidence" HorizontalAlignment="Left" Height="24" Margin="315,10,0,0" 
+                   TextWrapping="Wrap" Text="Confidence" VerticalAlignment="Top" Width="94" 
+                   Background="White"/>
+        <Button x:Name="Bmode" Content="OFF" HorizontalAlignment="Left" Height="50" Margin="315,39,0,0" 
+                VerticalAlignment="Top" Width="94" Foreground="#FFE80404" FontSize="18" Click="Bmode_Click">
+            <Button.Background>
+                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                    <GradientStop Color="White"/>
+                    <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                </LinearGradientBrush>
+            </Button.Background>
+        </Button>
+    </Grid>
+</Window>

@@ -1,0 +1,62 @@
+﻿<Window x:Class="Speech.WindowAddEditActionMoveMouse"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Speech"
+        mc:Ignorable="d"
+        Title="Add Action: Move Mouse" Height="290" Width="554" FontSize="14" WindowStartupLocation="CenterScreen" 
+        ResizeMode="NoResize" Loaded="Window_Loaded" PreviewKeyUp="Window_PreviewKeyUp">
+    <Grid>
+        <GroupBox Header="Cursor Position" Width="254" Height="180" Margin="10,10,0,0"
+                  HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Canvas>
+                <RadioButton x:Name="RBabsolute" Margin="10,10,0,0">Absolute</RadioButton>
+                <RadioButton x:Name="RBrelative" Margin="10,40,0,0">Relative</RadioButton>
+                <Label Content="X:" Margin="6,70,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                <TextBox x:Name="TBx" Height="23" Margin="27,74,0,0"
+                 HorizontalAlignment="Left" VerticalAlignment="Top" Width="154"/>
+                <Image Source="images/help.png" Width="48" Margin="187,81,0,0" x:Name="Iquestion" 
+                       PreviewMouseUp="Iquestion_PreviewMouseUp"/>
+                <Label Content="Y:" Margin="6,108,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                <TextBox x:Name="TBy" Height="23" Margin="27,114,0,0"
+                 HorizontalAlignment="Left" VerticalAlignment="Top" Width="154"/>
+            </Canvas>
+        </GroupBox>
+        <GroupBox Header="Additionally Pressed Keys" Width="254" Height="180" Margin="274,10,0,0"
+                  HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Canvas>
+                <CheckBox x:Name="CHBalt" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0">
+                    Alt
+                </CheckBox>
+                <CheckBox x:Name="CHBcontrol" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,40,0,0">
+                    Control
+                </CheckBox>
+                <CheckBox x:Name="CHBshift" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,70,0,0">
+                    Shift
+                </CheckBox>
+                <CheckBox x:Name="CHBwindows" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,100,0,0">
+                    Windows
+                </CheckBox>
+            </Canvas>
+        </GroupBox>
+        <Button Foreground="Black" BorderBrush="Black" x:Name="Bok" Content="OK" HorizontalAlignment="Left" Margin="11,208,0,0" VerticalAlignment="Top"
+                Width="100" Height="30" Click="Bok_Click">
+            <Button.Background>
+                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                    <GradientStop Color="White"/>
+                    <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                </LinearGradientBrush>
+            </Button.Background>
+        </Button>
+        <Button Foreground="Black" BorderBrush="Black" x:Name="Bcancel" Content="Cancel" HorizontalAlignment="Left" Margin="427,208,0,0"
+                VerticalAlignment="Top" Width="100" Height="30" Click="Bcancel_Click">
+            <Button.Background>
+                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                    <GradientStop Color="White"/>
+                    <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                </LinearGradientBrush>
+            </Button.Background>
+        </Button>
+    </Grid>
+</Window>

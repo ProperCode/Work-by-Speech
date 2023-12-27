@@ -1,0 +1,1207 @@
+﻿<Window x:Class="Speech.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Speech"
+        mc:Ignorable="d" x:Name="W"
+        Title="Speech" Height="680" Width="1366" FontSize="14"
+        WindowStartupLocation="CenterScreen" Closing="Window_Closing" 
+        ResizeMode="CanMinimize" Loaded="Window_Loaded" Icon="Work by Speech multi.ico" 
+        StateChanged="W_StateChanged">
+    <Grid Margin="0,0,-6,0">
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                <GradientStop Color="#FFD1D1D1" Offset="1"/>
+                <GradientStop Color="White"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+        <TabControl HorizontalAlignment="Left" Height="620" Margin="10,10,0,0" VerticalAlignment="Top"
+                    Width="1330" TabStripPlacement="Left" FontSize="18" BorderBrush="#FFACACAC" 
+                    Background="White">
+            <TabItem Foreground="Black" Height="50" Width="230" Background="{x:Null}" BorderBrush="{x:Null}" 
+                     Margin="-1,0,1,0">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="images/page_edit.png" Width="32" Height="32" />
+                        <TextBlock Text="Custom Commands" Foreground="Black" Margin="5,3,222,0"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <Canvas>
+                    <Label Content="Profiles:" Canvas.Left="5" Canvas.Top="0" FontSize="20"
+                           Foreground="Black"/>
+                    <Label Content="Commands:" Canvas.Left="331" Canvas.Top="0" FontSize="20"
+                           Foreground="Black"/>
+                    <Label Content="Actions:" Canvas.Left="854" Canvas.Top="0" FontSize="20"
+                           Foreground="Black"/>
+                    <ListView Margin="10,38,10,10" Name="LVprofiles" FontSize="14" Height="450" Width="315"
+                              SelectionChanged="LVprofiles_SelectionChanged" 
+                              PreviewKeyUp="LVprofiles_PreviewKeyUp" 
+                              PreviewMouseDoubleClick="LVprofiles_PreviewMouseDoubleClick"
+                              ScrollViewer.VerticalScrollBarVisibility="Visible"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListView.ContextMenu>
+                            <ContextMenu FontFamily="Consolas" FontSize="14">
+                                <MenuItem x:Name="MIenable_profiles"
+                                          Header="Enable         Ctrl + +" 
+                                          Click="MIenable_profiles_Click"/>
+                                <MenuItem x:Name="MIdisable_profiles" 
+                                          Header="Disable        Ctrl + -" 
+                                          Click="MIdisable_profiles_Click"/>
+                                <Separator/>
+                                <MenuItem x:Name="MIedit_profiles" Header="Edit" 
+                                          Click="MIedit_profiles_Click"/>
+                                <MenuItem x:Name="MIduplicate_profiles"
+                                          Header="Duplicate      Ctrl + D"
+                                          Click="MIduplicate_profiles_Click"/>
+                                <MenuItem x:Name="MIdelete_profiles" 
+                                          Header="Delete         Del"
+                                          Click="MIdelete_profiles_Click"/>
+                            </ContextMenu>
+                        </ListView.ContextMenu>
+                        <ListView.Resources>
+                            <Style TargetType="{x:Type GridViewColumnHeader}">
+                                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                            </Style>
+                            <Style TargetType="{x:Type ListViewItem}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding enabled}" Value="True">
+                                        <Setter Property="Foreground" Value="Navy" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding enabled}" Value="False">
+                                        <Setter Property="Foreground" Value="#E80404" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListView.Resources>
+                        <ListView.View>
+                            <GridView AllowsColumnReorder="True">
+                                <GridViewColumn Header="Name" Width="182" DisplayMemberBinding="{Binding name}" />
+                                <GridViewColumn Header="Program" Width="106" DisplayMemberBinding="{Binding program}" />
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <Button Foreground="Black" BorderBrush="Black" x:Name="Badd_profile" Content="Add" 
+                            Canvas.Left="10" Canvas.Top="495" Width="66"
+                            FontSize="16" Height="40" Click="Badd_profile_Click">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                <GradientStop Color="White"/>
+                                <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                    <Button Foreground="Black" BorderBrush="Black" x:Name="Bedit_profile" Content="Edit" 
+                            Canvas.Left="82" Canvas.Top="495" Width="66"
+                            FontSize="16" Height="40" Click="Bedit_profile_Click">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                <GradientStop Color="White"/>
+                                <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                    <Button Foreground="Black" BorderBrush="Black" 
+                            x:Name="Bdelete_profile" Content="Delete" Canvas.Left="154" Canvas.Top="495" 
+                            Width="66" FontSize="16" Height="40" Click="Bdelete_profile_Click">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                <GradientStop Color="White"/>
+                                <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                    <ListView Margin="335,38,10,10" Name="LVcommands" FontSize="14" Height="450" Width="509"
+                              SelectionChanged="LVcommands_SelectionChanged"
+                              PreviewKeyUp="LVcommands_PreviewKeyUp" 
+                              PreviewMouseDoubleClick="LVcommands_PreviewMouseDoubleClick"
+                              ScrollViewer.VerticalScrollBarVisibility="Visible"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListView.ContextMenu>
+                            <ContextMenu FontFamily="Consolas" FontSize="14">
+                                <MenuItem x:Name="MIenable_commands" 
+                                          Header="Enable       Ctrl + +"
+                                          Click="MIenable_commands_Click"/>
+                                <MenuItem x:Name="MIdisable_commands" 
+                                          Header="Disable      Ctrl + -"
+                                          Click="MIdisable_commands_Click"/>
+                                <Separator/>
+                                <MenuItem x:Name="MIedit_commands" 
+                                          Header="Edit         "
+                                          Click="MIedit_commands_Click"/>
+                                <MenuItem x:Name="MIcopy_commands" 
+                                          Header="Copy         Ctrl + C"
+                                          Click="MIcopy_commands_Click"/>
+                                <MenuItem x:Name="MIpaste_commands" 
+                                          Header="Paste        Ctrl + V"
+                                          Click="MIpaste_commands_Click"/>
+                                <MenuItem x:Name="MIdelete_commands" 
+                                          Header="Delete       Del"
+                                          Click="MIdelete_commands_Click"/>
+                            </ContextMenu>
+                        </ListView.ContextMenu>
+                        <ListView.Resources>
+                            <Style TargetType="{x:Type GridViewColumnHeader}">
+                                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                            </Style>
+                            <Style TargetType="{x:Type ListViewItem}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding enabled}" Value="True">
+                                        <Setter Property="Foreground" Value="Navy" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding enabled}" Value="False">
+                                        <Setter Property="Foreground" Value="#E80404" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListView.Resources>
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Name" Width="200" 
+                                                DisplayMemberBinding="{Binding name}" />
+                                <GridViewColumn Header="Description" Width="182" 
+                                                DisplayMemberBinding="{Binding description}" />
+                                <GridViewColumn Header="Max Executions" Width="100" 
+                                                DisplayMemberBinding="{Binding max_executions}" />
+                            </GridView>
+                        </ListView.View>
+
+                        <ListView.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock FontWeight="Bold" FontSize="14" Margin="5,5,0,0"
+                                                   Text="{Binding Name}" Foreground="Navy"/>
+                                    </DataTemplate>
+                                </GroupStyle.HeaderTemplate>
+                            </GroupStyle>
+                        </ListView.GroupStyle>
+                    </ListView>
+                    <Button Foreground="Black" BorderBrush="Black" x:Name="Badd_command" Content="Add" 
+                            Canvas.Left="335" Canvas.Top="495" Width="66"
+                            FontSize="16" Height="40" Click="Badd_command_Click">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                <GradientStop Color="White"/>
+                                <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                    <Button Foreground="Black" BorderBrush="Black" x:Name="Bedit_command" 
+                            Content="Edit" Canvas.Left="407" Canvas.Top="495" Width="66" 
+                            FontSize="16" Height="40" Click="Bedit_command_Click" HorizontalAlignment="Left" 
+                            VerticalAlignment="Center">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                <GradientStop Color="White"/>
+                                <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                    <Button Foreground="Black" BorderBrush="Black" x:Name="Bdelete_command" 
+                            Content="Delete" Canvas.Left="479" Canvas.Top="495" 
+                            Width="66" FontSize="16" Height="40" Click="Bdelete_command_Click">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox"
+                                                 StartPoint="0.5,0">
+                                <GradientStop Color="White"/>
+                                <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                    <ListView Foreground="Navy" Margin="854,38,10,10" Name="LVactions" FontSize="14"
+                              PreviewMouseDoubleClick="LVactions_PreviewMouseDoubleClick"
+                              ScrollViewer.VerticalScrollBarVisibility="Visible" Height="450" Width="229"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="LVactions_SelectionChanged">
+                        <ListView.ContextMenu>
+                            <ContextMenu FontFamily="Consolas" FontSize="14">
+                                <MenuItem x:Name="MIedit_actions" 
+                                          Header="Edit" 
+                                          Click="MIedit_actions_Click"/>
+                            </ContextMenu>
+                        </ListView.ContextMenu>
+                        <ListView.Resources>
+                            <Style TargetType="{x:Type GridViewColumnHeader}">
+                                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                            </Style>
+                        </ListView.Resources>
+                        <ListView.View>
+                            <GridView AllowsColumnReorder="True">
+                                <GridViewColumn Header="Action" Width="202" DisplayMemberBinding="{Binding action}" />
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <Button Foreground="Black" BorderBrush="Black" x:Name="Bedit_action" Content="Edit" 
+                            Canvas.Left="854" Canvas.Top="495" Width="66" 
+                            FontSize="16" Height="40" HorizontalAlignment="Center" VerticalAlignment="Top" 
+                            Click="Bedit_action_Click">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                <GradientStop Color="White"/>
+                                <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                    <Button Foreground="Black" BorderBrush="Black" x:Name="Bexport_profiles" 
+                            Content="Export Profiles" Canvas.Left="775" 
+                            Canvas.Top="563" Width="150" FontSize="16" Height="40" 
+                            Click="Bexport_profiles_Click">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                <GradientStop Color="White"/>
+                                <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                    <Button Foreground="Black" BorderBrush="Black" x:Name="Bimport_profiles" 
+                            Content="Import Profiles" Canvas.Left="931"
+                            Canvas.Top="563" Width="150" FontSize="16" Height="40" 
+                            Click="Bimport_profiles_Click">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                <GradientStop Color="White"/>
+                                <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                </Canvas>
+            </TabItem>
+            <TabItem Foreground="Black" Height="50" Width="230" Background="{x:Null}" BorderBrush="{x:Null}" 
+                     Margin="-1,0,1,0">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="images/page_process.png" Width="32" Height="32" />
+                        <TextBlock Text="Built-in Commands" Foreground="Black" Margin="5,3,222,0"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <Canvas>
+                    <TabControl Width="1081" Height="604" Margin="5,5,0,0">
+                        <TabItem Header="OFF Mode" FontSize="16">
+                            <Canvas>
+                                <ListView Margin="10,10,10,10" Name="LVbic_off" FontSize="14" 
+                                          Height="502" Width="708"
+                                          SelectionChanged="LVbic_off_SelectionChanged"
+                                          PreviewKeyUp="LVbic_off_PreviewKeyUp"
+                                          PreviewMouseDoubleClick="LVbic_off_PreviewMouseDoubleClick"
+                                          ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                    <ListView.ContextMenu>
+                                        <ContextMenu FontFamily="Consolas" FontSize="14">
+                                            <MenuItem x:Name="MIenable_bic_off"
+                                                      Header="Enable          Ctrl + +"
+                                                      Click="MIenable_bic_off_Click"/>
+                                            <MenuItem x:Name="MIdisable_bic_off"
+                                                      Header="Disable         Ctrl + -"
+                                                      Click="MIdisable_bic_off_Click"/>
+                                            <Separator/>
+                                            <MenuItem x:Name="MIselect_all_bic_off" 
+                                                      Header="Select All      Ctrl + A" 
+                                                      Click="MIselect_all_bic_off_Click"/>
+                                        </ContextMenu>
+                                    </ListView.ContextMenu>
+                                    <ListView.Resources>
+                                        <Style TargetType="{x:Type GridViewColumnHeader}">
+                                            <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                        </Style>
+                                        <Style TargetType="{x:Type ListViewItem}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding enabled}" Value="True">
+                                                    <Setter Property="Foreground" Value="Navy" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding enabled}" Value="False">
+                                                    <Setter Property="Foreground" Value="#E80404" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ListView.Resources>
+                                    <ListView.View>
+                                        <GridView AllowsColumnReorder="True">
+                                            <GridViewColumn Header="Say this" Width="180" 
+                                                            DisplayMemberBinding="{Binding name_firstupper}" />
+                                            <GridViewColumn Header="To do this" Width="280" 
+                                                            DisplayMemberBinding="{Binding description}" />
+                                            <GridViewColumn Header="Key combination" Width="115"
+                                                            DisplayMemberBinding="{Binding key_combination}" />
+                                            <GridViewColumn Header="Max executions" Width="106"
+                                                            DisplayMemberBinding="{Binding max_executions}" />
+                                        </GridView>
+                                    </ListView.View>
+                                </ListView>
+                                <Button Foreground="Black" BorderBrush="Black" x:Name="Benable_bic_off"
+                                        Content="Enable" Canvas.Left="10" Canvas.Top="520" Width="80"
+                                        FontSize="16" Height="40" Click="Benable_bic_off_Click">
+                                    <Button.Background>
+                                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                            <GradientStop Color="White"/>
+                                            <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Button.Background>
+                                </Button>
+                                <Button Foreground="Black" BorderBrush="Black" x:Name="Bdisable_bic_off"
+                                        Content="Disable" Canvas.Left="96" Canvas.Top="520" Width="80"
+                                        FontSize="16" Height="40" Click="Bdisable_bic_off_Click">
+                                    <Button.Background>
+                                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                            <GradientStop Color="White"/>
+                                            <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Button.Background>
+                                </Button>
+                                <Button Foreground="Black" BorderBrush="Black" x:Name="Bselect_all_bic_off" 
+                                        Content="Select All" Canvas.Left="182" Canvas.Top="520" 
+                                        Width="80" FontSize="16" Height="40" Click="Bselect_all_bic_off_Click">
+                                    <Button.Background>
+                                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                            <GradientStop Color="White"/>
+                                            <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Button.Background>
+                                </Button>
+                            </Canvas>
+                        </TabItem>
+                        <TabItem Header="Command Mode" FontSize="16" Margin="-2,-2,-2,0">
+                            <Canvas>
+                                <TabControl Width="1065" Height="566" Margin="5,5,0,0">
+                                    <TabItem Header="General" FontSize="16">
+                                        <Canvas>
+                                            <ListView Margin="10,10,10,10" Name="LVbic_general" FontSize="14"
+                                                      Height="464" Width="708"
+                                                      SelectionChanged="LVbic_general_SelectionChanged"
+                                                      PreviewKeyUp="LVbic_general_PreviewKeyUp" 
+                                                      PreviewMouseDoubleClick="LVbic_general_PreviewMouseDoubleClick"
+                                                      ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                                <ListView.ContextMenu>
+                                                    <ContextMenu FontFamily="Consolas" FontSize="14">
+                                                        <MenuItem x:Name="MIenable_bic_general"
+                                                      Header="Enable          Ctrl + +"
+                                                      Click="MIenable_bic_general_Click"/>
+                                                        <MenuItem x:Name="MIdisable_bic_general"
+                                                      Header="Disable         Ctrl + -"
+                                                      Click="MIdisable_bic_general_Click"/>
+                                                        <Separator/>
+                                                        <MenuItem x:Name="MIselect_all_bic_general"
+                                                      Header="Select All      Ctrl + A" 
+                                                      Click="MIselect_all_bic_general_Click"/>
+                                                    </ContextMenu>
+                                                </ListView.ContextMenu>
+                                                <ListView.Resources>
+                                                    <Style TargetType="{x:Type GridViewColumnHeader}">
+                                                        <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                                    </Style>
+                                                    <Style TargetType="{x:Type ListViewItem}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding enabled}" Value="True">
+                                                                <Setter Property="Foreground" Value="Navy" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding enabled}" Value="False">
+                                                                <Setter Property="Foreground" Value="#E80404" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ListView.Resources>
+                                                <ListView.View>
+                                                    <GridView AllowsColumnReorder="True">
+                                                        <GridViewColumn Header="Say this" Width="180" 
+                                                                        DisplayMemberBinding="{Binding name_firstupper}" />
+                                                        <GridViewColumn Header="To do this" Width="280"
+                                                                        DisplayMemberBinding="{Binding description}" />
+                                                        <GridViewColumn Header="Key combination" Width="115" 
+                                                                        DisplayMemberBinding="{Binding key_combination}" />
+                                                        <GridViewColumn Header="Max executions" Width="106"
+                                                                        DisplayMemberBinding="{Binding max_executions}" />
+                                                    </GridView>
+                                                </ListView.View>
+                                            </ListView>
+                                            <Button Foreground="Black" BorderBrush="Black" 
+                                                    x:Name="Benable_bic_general" 
+                                                    Content="Enable" Canvas.Left="10" Canvas.Top="480" Width="80"
+                                                    FontSize="16" Height="40" Click="Benable_bic_general_Click">
+                                                <Button.Background>
+                                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                                        <GradientStop Color="White"/>
+                                                        <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Button.Background>
+                                            </Button>
+                                            <Button Foreground="Black" BorderBrush="Black" 
+                                                    x:Name="Bdisable_bic_general" Content="Disable" 
+                                                    Canvas.Left="96" Canvas.Top="480" Width="80"
+                                                    FontSize="16" Height="40" Click="Bdisable_bic_general_Click">
+                                                <Button.Background>
+                                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                                        <GradientStop Color="White"/>
+                                                        <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Button.Background>
+                                            </Button>
+                                            <Button Foreground="Black" BorderBrush="Black" 
+                                                    x:Name="Bselect_all_bic_general" Content="Select All" 
+                                                    Canvas.Left="182" Canvas.Top="480" 
+                                                    Width="80" FontSize="16" Height="40"
+                                                    Click="Bselect_all_bic_general_Click">
+                                                <Button.Background>
+                                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                                        <GradientStop Color="White"/>
+                                                        <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Button.Background>
+                                            </Button>
+                                        </Canvas>
+                                    </TabItem>
+                                    <TabItem Header="Mouse Control" FontSize="16">
+                                        <Canvas>
+                                            <ListView Margin="10,10,10,10" Name="LVbic_mouse" FontSize="14"
+                                                      Height="464" Width="708"
+                                                      SelectionChanged="LVbic_mouse_SelectionChanged"
+                                                      PreviewKeyUp="LVbic_mouse_PreviewKeyUp"
+                                                      PreviewMouseDoubleClick="LVbic_mouse_PreviewMouseDoubleClick"
+                                                      ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                                <ListView.ContextMenu>
+                                                    <ContextMenu FontFamily="Consolas" FontSize="14">
+                                                        <MenuItem x:Name="MIenable_bic_mouse"
+                                                      Header="Enable          Ctrl + +"
+                                                      Click="MIenable_bic_mouse_Click"/>
+                                                        <MenuItem x:Name="MIdisable_bic_mouse"
+                                                      Header="Disable         Ctrl + -"
+                                                      Click="MIdisable_bic_mouse_Click"/>
+                                                        <Separator/>
+                                                        <MenuItem x:Name="MIselect_all_bic_mouse"
+                                                      Header="Select All      Ctrl + A" 
+                                                      Click="MIselect_all_bic_mouse_Click"/>
+                                                    </ContextMenu>
+                                                </ListView.ContextMenu>
+                                                <ListView.Resources>
+                                                    <Style TargetType="{x:Type GridViewColumnHeader}">
+                                                        <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                                    </Style>
+                                                    <Style TargetType="{x:Type ListViewItem}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding enabled}" Value="True">
+                                                                <Setter Property="Foreground" Value="Navy" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding enabled}" Value="False">
+                                                                <Setter Property="Foreground" Value="#E80404" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ListView.Resources>
+                                                <ListView.View>
+                                                    <GridView AllowsColumnReorder="True">
+                                                        <GridViewColumn Header="Say this" Width="110" 
+                                                                        DisplayMemberBinding="{Binding name_firstupper}" />
+                                                        <GridViewColumn Header="To do this" Width="350"
+                                                                        DisplayMemberBinding="{Binding description}" />
+                                                        <GridViewColumn Header="Key combination" Width="115" 
+                                                                        DisplayMemberBinding="{Binding key_combination}" />
+                                                        <GridViewColumn Header="Max executions" Width="106"
+                                                                        DisplayMemberBinding="{Binding max_executions}" />
+                                                    </GridView>
+                                                </ListView.View>
+                                            </ListView>
+                                            <Button Foreground="Black" BorderBrush="Black" 
+                                                    x:Name="Benable_bic_mouse" 
+                                                    Content="Enable" Canvas.Left="10" Canvas.Top="480" Width="80"
+                                                    FontSize="16" Height="40" Click="Benable_bic_mouse_Click">
+                                                <Button.Background>
+                                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                                        <GradientStop Color="White"/>
+                                                        <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Button.Background>
+                                            </Button>
+                                            <Button Foreground="Black" BorderBrush="Black" 
+                                                    x:Name="Bdisable_bic_mouse" Content="Disable" 
+                                                    Canvas.Left="96" Canvas.Top="480" Width="80"
+                                                    FontSize="16" Height="40" Click="Bdisable_bic_mouse_Click">
+                                                <Button.Background>
+                                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                                        <GradientStop Color="White"/>
+                                                        <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Button.Background>
+                                            </Button>
+                                            <Button Foreground="Black" BorderBrush="Black" 
+                                                    x:Name="Bselect_all_bic_mouse" Content="Select All" 
+                                                    Canvas.Left="182" Canvas.Top="480" 
+                                                    Width="80" FontSize="16" Height="40"
+                                                    Click="Bselect_all_bic_mouse_Click">
+                                                <Button.Background>
+                                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                                        <GradientStop Color="White"/>
+                                                        <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Button.Background>
+                                            </Button>
+                                        </Canvas>
+                                    </TabItem>
+                                    <TabItem Header="Keys Pressing" FontSize="16">
+                                        <Canvas>
+                                            <ListView Margin="10,10,10,10" Name="LVbic_keys_pressing" FontSize="14"
+                                                      Height="464" Width="708"
+                                                      SelectionChanged="LVbic_keys_pressing_SelectionChanged"
+                                                      PreviewKeyUp="LVbic_keys_pressing_PreviewKeyUp"
+                                                      PreviewMouseDoubleClick="LVbic_keys_pressing_PreviewMouseDoubleClick"
+                                                      ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                                <ListView.ContextMenu>
+                                                    <ContextMenu FontFamily="Consolas" FontSize="14">
+                                                        <MenuItem x:Name="MIenable_bic_pressing"
+                                                      Header="Enable          Ctrl + +"
+                                                      Click="MIenable_bic_pressing_Click"/>
+                                                        <MenuItem x:Name="MIdisable_bic_pressing"
+                                                      Header="Disable         Ctrl + -"
+                                                      Click="MIdisable_bic_pressing_Click"/>
+                                                        <Separator/>
+                                                        <MenuItem x:Name="MIselect_all_bic_pressing"
+                                                      Header="Select All      Ctrl + A" 
+                                                      Click="MIselect_all_bic_pressing_Click"/>
+                                                    </ContextMenu>
+                                                </ListView.ContextMenu>
+                                                <ListView.Resources>
+                                                    <Style TargetType="{x:Type GridViewColumnHeader}">
+                                                        <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                                    </Style>
+                                                    <Style TargetType="{x:Type ListViewItem}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding enabled}" Value="True">
+                                                                <Setter Property="Foreground" Value="Navy" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding enabled}" Value="False">
+                                                                <Setter Property="Foreground" Value="#E80404" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ListView.Resources>
+                                                <ListView.View>
+                                                    <GridView AllowsColumnReorder="True">
+                                                        <GridViewColumn Header="Say this" Width="140" 
+                                                                        DisplayMemberBinding="{Binding name_firstupper}" />
+                                                        <GridViewColumn Header="To press key(s)" Width="320"
+                                                                        DisplayMemberBinding="{Binding description}" />
+                                                        <GridViewColumn Header="Key combination" Width="115" 
+                                                                        DisplayMemberBinding="{Binding key_combination}" />
+                                                        <GridViewColumn Header="Max executions" Width="106"
+                                                                        DisplayMemberBinding="{Binding max_executions}" />
+                                                    </GridView>
+                                                </ListView.View>
+                                            </ListView>
+                                            <Button Foreground="Black" BorderBrush="Black" 
+                                                    x:Name="Benable_bic_pressing" 
+                                                    Content="Enable" Canvas.Left="10" Canvas.Top="480" Width="80"
+                                                    FontSize="16" Height="40" Click="Benable_bic_pressing_Click">
+                                                <Button.Background>
+                                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                                        <GradientStop Color="White"/>
+                                                        <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Button.Background>
+                                            </Button>
+                                            <Button Foreground="Black" BorderBrush="Black" 
+                                                    x:Name="Bdisable_bic_pressing" Content="Disable" 
+                                                    Canvas.Left="96" Canvas.Top="480" Width="80"
+                                                    FontSize="16" Height="40" Click="Bdisable_bic_pressing_Click">
+                                                <Button.Background>
+                                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                                        <GradientStop Color="White"/>
+                                                        <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Button.Background>
+                                            </Button>
+                                            <Button Foreground="Black" BorderBrush="Black" 
+                                                    x:Name="Bselect_all_bic_pressing" Content="Select All" 
+                                                    Canvas.Left="182" Canvas.Top="480" 
+                                                    Width="80" FontSize="16" Height="40"
+                                                    Click="Bselect_all_bic_pressing_Click">
+                                                <Button.Background>
+                                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                                        <GradientStop Color="White"/>
+                                                        <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Button.Background>
+                                            </Button>
+                                        </Canvas>
+                                    </TabItem>
+                                    <TabItem Header="Character Inserting" FontSize="16">
+                                        <Canvas>
+                                            <ListView Margin="10,10,10,10" Name="LVbic_char_inserting" 
+                                                      FontSize="14" Height="464" Width="708"
+                                                      SelectionChanged="LVbic_char_inserting_SelectionChanged"
+                                                      PreviewKeyUp="LVbic_char_inserting_PreviewKeyUp"
+                                                      PreviewMouseDoubleClick="LVbic_char_inserting_PreviewMouseDoubleClick"
+                                                      ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                                <ListView.ContextMenu>
+                                                    <ContextMenu FontFamily="Consolas" FontSize="14">
+                                                        <MenuItem x:Name="MIenable_bic_inserting"
+                                                      Header="Enable          Ctrl + +"
+                                                      Click="MIenable_bic_inserting_Click"/>
+                                                        <MenuItem x:Name="MIdisable_bic_inserting"
+                                                      Header="Disable         Ctrl + -"
+                                                      Click="MIdisable_bic_inserting_Click"/>
+                                                        <Separator/>
+                                                        <MenuItem x:Name="MIselect_all_bic_inserting"
+                                                      Header="Select All      Ctrl + A" 
+                                                      Click="MIselect_all_bic_inserting_Click"/>
+                                                    </ContextMenu>
+                                                </ListView.ContextMenu>
+                                                <ListView.Resources>
+                                                    <Style TargetType="{x:Type GridViewColumnHeader}">
+                                                        <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                                    </Style>
+                                                    <Style TargetType="{x:Type ListViewItem}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding enabled}" Value="True">
+                                                                <Setter Property="Foreground" Value="Navy" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding enabled}" Value="False">
+                                                                <Setter Property="Foreground" Value="#E80404" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ListView.Resources>
+                                                <ListView.View>
+                                                    <GridView AllowsColumnReorder="True">
+                                                        <GridViewColumn Header="Say this" Width="180" 
+                                                                        DisplayMemberBinding="{Binding name_firstupper}" />
+                                                        <GridViewColumn Header="To insert" Width="280"
+                                                                        DisplayMemberBinding="{Binding description}" />
+                                                        <GridViewColumn Header="Key combination" Width="115" 
+                                                                        DisplayMemberBinding="{Binding key_combination}" />
+                                                        <GridViewColumn Header="Max executions" Width="106"
+                                                                        DisplayMemberBinding="{Binding max_executions}" />
+                                                    </GridView>
+                                                </ListView.View>
+                                            </ListView>
+                                            <Button Foreground="Black" BorderBrush="Black" 
+                                                    x:Name="Benable_bic_inserting" 
+                                                    Content="Enable" Canvas.Left="10" Canvas.Top="480" Width="80"
+                                                    FontSize="16" Height="40" Click="Benable_bic_inserting_Click">
+                                                <Button.Background>
+                                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                                        <GradientStop Color="White"/>
+                                                        <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Button.Background>
+                                            </Button>
+                                            <Button Foreground="Black" BorderBrush="Black" 
+                                                    x:Name="Bdisable_bic_inserting" Content="Disable" 
+                                                    Canvas.Left="96" Canvas.Top="480" Width="80"
+                                                    FontSize="16" Height="40" 
+                                                    Click="Bdisable_bic_inserting_Click">
+                                                <Button.Background>
+                                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                                        <GradientStop Color="White"/>
+                                                        <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Button.Background>
+                                            </Button>
+                                            <Button Foreground="Black" BorderBrush="Black" 
+                                                    x:Name="Bselect_all_bic_inserting" Content="Select All" 
+                                                    Canvas.Left="182" Canvas.Top="480" 
+                                                    Width="80" FontSize="16" Height="40"
+                                                    Click="Bselect_all_bic_inserting_Click">
+                                                <Button.Background>
+                                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                                        <GradientStop Color="White"/>
+                                                        <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Button.Background>
+                                            </Button>
+                                        </Canvas>
+                                    </TabItem>
+                                </TabControl>
+                            </Canvas>
+                        </TabItem>
+                        <TabItem Header="Dictation Mode" FontSize="16">
+                            <Canvas>
+                                <TabControl Width="1065" Height="566" Margin="5,5,0,0">
+                                    <TabItem Header="Always available" FontSize="16">
+                                        <Canvas>
+                                            <ListView Margin="10,10,10,10" Name="LVbic_dict_always" FontSize="14"
+                                                      Height="464" Width="708"
+                                                      SelectionChanged="LVbic_dict_always_SelectionChanged"
+                                                      PreviewKeyUp="LVbic_dict_always_PreviewKeyUp"
+                                                      PreviewMouseDoubleClick="LVbic_dict_always_PreviewMouseDoubleClick"
+                                                      ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                                <ListView.ContextMenu>
+                                                    <ContextMenu FontFamily="Consolas" FontSize="14">
+                                                        <MenuItem x:Name="MIenable_bic_always"
+                                                      Header="Enable          Ctrl + +"
+                                                      Click="MIenable_bic_always_Click"/>
+                                                        <MenuItem x:Name="MIdisable_bic_always"
+                                                      Header="Disable         Ctrl + -"
+                                                      Click="MIdisable_bic_always_Click"/>
+                                                        <Separator/>
+                                                        <MenuItem x:Name="MIselect_all_bic_always"
+                                                      Header="Select All      Ctrl + A" 
+                                                      Click="MIselect_all_bic_always_Click"/>
+                                                    </ContextMenu>
+                                                </ListView.ContextMenu>
+                                                <ListView.Resources>
+                                                    <Style TargetType="{x:Type GridViewColumnHeader}">
+                                                        <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                                    </Style>
+                                                    <Style TargetType="{x:Type ListViewItem}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding enabled}" Value="True">
+                                                                <Setter Property="Foreground" Value="Navy" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding enabled}" Value="False">
+                                                                <Setter Property="Foreground" Value="#E80404" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ListView.Resources>
+                                                <ListView.View>
+                                                    <GridView AllowsColumnReorder="True">
+                                                        <GridViewColumn Header="Say this" Width="130" 
+                                                                        DisplayMemberBinding="{Binding name_firstupper}" />
+                                                        <GridViewColumn Header="To do this" Width="330"
+                                                                        DisplayMemberBinding="{Binding description}" />
+                                                        <GridViewColumn Header="Key combination" Width="115" 
+                                                                        DisplayMemberBinding="{Binding key_combination}" />
+                                                        <GridViewColumn Header="Max executions" Width="106"
+                                                                        DisplayMemberBinding="{Binding max_executions}" />
+                                                    </GridView>
+                                                </ListView.View>
+                                            </ListView>
+                                            <Button Foreground="Black" BorderBrush="Black" 
+                                                    x:Name="Benable_bic_always" 
+                                                    Content="Enable" Canvas.Left="10" Canvas.Top="480" Width="80"
+                                                    FontSize="16" Height="40" Click="Benable_bic_always_Click">
+                                                <Button.Background>
+                                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                                        <GradientStop Color="White"/>
+                                                        <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Button.Background>
+                                            </Button>
+                                            <Button Foreground="Black" BorderBrush="Black" 
+                                                    x:Name="Bdisable_bic_always" Content="Disable" 
+                                                    Canvas.Left="96" Canvas.Top="480" Width="80"
+                                                    FontSize="16" Height="40" Click="Bdisable_bic_always_Click">
+                                                <Button.Background>
+                                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                                        <GradientStop Color="White"/>
+                                                        <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Button.Background>
+                                            </Button>
+                                            <Button Foreground="Black" BorderBrush="Black" 
+                                                    x:Name="Bselect_all_bic_always" Content="Select All" 
+                                                    Canvas.Left="182" Canvas.Top="480" 
+                                                    Width="80" FontSize="16" Height="40"
+                                                    Click="Bselect_all_bic_always_Click">
+                                                <Button.Background>
+                                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                                        <GradientStop Color="White"/>
+                                                        <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Button.Background>
+                                            </Button>
+                                        </Canvas>
+                                    </TabItem>
+                                    <TabItem Header='Available when "Use better dictation" is selected' 
+                                             FontSize="16">
+                                        <Canvas>
+                                            <ListView Margin="10,10,10,10" Name="LVbic_dict_better" FontSize="14"
+                                                      Height="464" Width="708"
+                                                      SelectionChanged="LVbic_dict_better_SelectionChanged"
+                                                      PreviewKeyUp="LVbic_dict_better_PreviewKeyUp"
+                                                      PreviewMouseDoubleClick="LVbic_dict_better_PreviewMouseDoubleClick"
+                                                      ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                                <ListView.ContextMenu>
+                                                    <ContextMenu FontFamily="Consolas" FontSize="14">
+                                                        <MenuItem x:Name="MIenable_bic_better"
+                                                      Header="Enable          Ctrl + +"
+                                                      Click="MIenable_bic_better_Click"/>
+                                                        <MenuItem x:Name="MIdisable_bic_better"
+                                                      Header="Disable         Ctrl + -"
+                                                      Click="MIdisable_bic_better_Click"/>
+                                                        <Separator/>
+                                                        <MenuItem x:Name="MIselect_all_bic_better"
+                                                      Header="Select All      Ctrl + A" 
+                                                      Click="MIselect_all_bic_better_Click"/>
+                                                    </ContextMenu>
+                                                </ListView.ContextMenu>
+                                                <ListView.Resources>
+                                                    <Style TargetType="{x:Type GridViewColumnHeader}">
+                                                        <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                                    </Style>
+                                                    <Style TargetType="{x:Type ListViewItem}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding enabled}" Value="True">
+                                                                <Setter Property="Foreground" Value="Navy" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding enabled}" Value="False">
+                                                                <Setter Property="Foreground" Value="#E80404" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ListView.Resources>
+                                                <ListView.View>
+                                                    <GridView AllowsColumnReorder="True">
+                                                        <GridViewColumn Header="Say this" Width="130" 
+                                                                        DisplayMemberBinding="{Binding name_firstupper}" />
+                                                        <GridViewColumn Header="To do this" Width="330"
+                                                                        DisplayMemberBinding="{Binding description}" />
+                                                        <GridViewColumn Header="Key combination" Width="115" 
+                                                                        DisplayMemberBinding="{Binding key_combination}" />
+                                                        <GridViewColumn Header="Max executions" Width="106"
+                                                                        DisplayMemberBinding="{Binding max_executions}" />
+                                                    </GridView>
+                                                </ListView.View>
+                                            </ListView>
+                                            <Button Foreground="Black" BorderBrush="Black" 
+                                                    x:Name="Benable_bic_better" 
+                                                    Content="Enable" Canvas.Left="10" Canvas.Top="480" Width="80"
+                                                    FontSize="16" Height="40" Click="Benable_bic_better_Click">
+                                                <Button.Background>
+                                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                                        <GradientStop Color="White"/>
+                                                        <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Button.Background>
+                                            </Button>
+                                            <Button Foreground="Black" BorderBrush="Black" 
+                                                    x:Name="Bdisable_bic_better" Content="Disable" 
+                                                    Canvas.Left="96" Canvas.Top="480" Width="80"
+                                                    FontSize="16" Height="40" Click="Bdisable_bic_better_Click">
+                                                <Button.Background>
+                                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                                        <GradientStop Color="White"/>
+                                                        <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Button.Background>
+                                            </Button>
+                                            <Button Foreground="Black" BorderBrush="Black" 
+                                                    x:Name="Bselect_all_bic_better" Content="Select All" 
+                                                    Canvas.Left="182" Canvas.Top="480" 
+                                                    Width="80" FontSize="16" Height="40"
+                                                    Click="Bselect_all_bic_better_Click">
+                                                <Button.Background>
+                                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                                        <GradientStop Color="White"/>
+                                                        <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Button.Background>
+                                            </Button>
+                                        </Canvas>
+                                    </TabItem>
+                                </TabControl>
+                            </Canvas>
+                        </TabItem>
+                    </TabControl>
+                </Canvas>
+            </TabItem>
+            <TabItem Foreground="Black" Height="50" Width="230" Background="{x:Null}" BorderBrush="{x:Null}">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="images/1process.png" Width="32" Height="32" />
+                        <TextBlock Text="Settings" Foreground="Black" Margin="5,3,222,0" />
+                    </StackPanel>
+                </TabItem.Header>
+                <Canvas Margin="0,0,0,0">
+                    <GroupBox Header="Speech Recognition Settings" HorizontalAlignment="Left" Height="169" 
+                              VerticalAlignment="Top" Width="362" RenderTransformOrigin="0.6,0.17" FontSize="14"
+                              Canvas.Left="10" Canvas.Top="10">
+                        <WrapPanel HorizontalAlignment="Left" Height="129" Margin="10,10,0,0" 
+                                   VerticalAlignment="Top" Width="332">
+                            <TextBlock TextWrapping="Wrap" 
+                                       Text="Confidence required for &quot;Start speech recognition&quot; command:"
+                                       Height="40" Width="257" FontSize="14" Margin="5,0,0,0"/>
+                            <TextBox x:Name="TBconfidence_start" HorizontalAlignment="Left" Height="23"
+                                     TextWrapping="Wrap" Text="88" VerticalAlignment="Top" Width="48" 
+                                     FontSize="14" Canvas.Left="270" Canvas.Top="10" Margin="21,7,0,0" 
+                                     Panel.ZIndex="1" TextChanged="TBconfidence_start_TextChanged"/>
+                            <Label Content="Confidence required for other commands:" HorizontalAlignment="Left"
+                                   VerticalAlignment="Top" FontSize="14" Canvas.Top="46"/>
+                            <TextBox x:Name="TBconfidence_commands" HorizontalAlignment="Left" Height="23" 
+                                     TextWrapping="Wrap" Text="55" VerticalAlignment="Top" Width="48" 
+                                     FontSize="14" Margin="14,4,0,0" Panel.ZIndex="2" 
+                                     TextChanged="TBconfidence_commands_TextChanged"/>
+                            <Label Content="Confidence required for dictation:" HorizontalAlignment="Left" 
+                                   VerticalAlignment="Top" FontSize="14" Canvas.Top="75" Width="261"/>
+                            <TextBox x:Name="TBconfidence_dictation" HorizontalAlignment="Left" Height="23" 
+                                     TextWrapping="Wrap" Text="22" VerticalAlignment="Top" Width="48" 
+                                     FontSize="14" Margin="22,4,0,0" Panel.ZIndex="3" 
+                                     TextChanged="TBconfidence_dictation_TextChanged"/>
+                            <CheckBox x:Name="CHBuse_better_dictation" 
+                                      Content="Use better dictation" 
+                                      HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" 
+                                      Width="146" Margin="5,7,0,0" Panel.ZIndex="4" 
+                                      Checked="CHBuse_better_dictation_Checked" 
+                                      Unchecked="CHBuse_better_dictation_Unchecked"/>
+                            <Image Source="images/help 30x30.png" Width="30" Margin="0,1,0,0" x:Name="Iquestion1" 
+                                   PreviewMouseUp="Iquestion1_PreviewMouseUp" 
+                                   ToolTip="Better dictation requires internet access."/>
+                        </WrapPanel>
+                    </GroupBox>
+                    <GroupBox Header="Speech Synthesis Settings" HorizontalAlignment="Left" Height="135" 
+                              VerticalAlignment="Top" Width="362" FontSize="14" Canvas.Left="10" Canvas.Top="182">
+                        <WrapPanel HorizontalAlignment="Left" Height="100" Margin="10,10,-2,0" 
+                                   VerticalAlignment="Top" Width="334">
+                            <Label Content="Voice:" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                   FontSize="14" Margin="0,1,0,0"/>
+                            <ComboBox x:Name="CBss_voices" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                      Width="200" FontSize="14" Margin="40,4,40,0" Panel.ZIndex="5" 
+                                      SelectionChanged="CBss_voices_SelectionChanged"/>
+                            <Label Content="Volume [%]:" HorizontalAlignment="Left" 
+                                   VerticalAlignment="Top" FontSize="14" Canvas.Top="75" Width="85"
+                                   Margin="0,1,0,0"/>
+                            <TextBox x:Name="TBss_volume" HorizontalAlignment="Left" Height="23" 
+                                     TextWrapping="Wrap" Text="44" VerticalAlignment="Top" Width="200" 
+                                     FontSize="14" Margin="1,5,0,0" Panel.ZIndex="6" 
+                                     TextChanged="TBss_volume_TextChanged"/>
+                            <CheckBox x:Name="CHBread_recognized_speech" 
+                                      Content="Read aloud recognized speech" 
+                                      HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" 
+                                      Width="212" Margin="5,10,0,0" Panel.ZIndex="7" 
+                                      Checked="CHBread_recognized_speech_Checked" 
+                                      Unchecked="CHBread_recognized_speech_Unchecked"/>
+                            <Image Source="images/help 30x30.png" Width="30" Margin="0,4,0,0" x:Name="Iquestion2" 
+                                   PreviewMouseUp="Iquestion2_PreviewMouseUp" 
+                                   ToolTip="Don't select this option if you use speakers."/>
+                        </WrapPanel>
+                    </GroupBox>
+                    <GroupBox Header="Other Settings" Height="183" Canvas.Left="10" Canvas.Top="319" Width="362"
+                              FontSize="14">
+                        <WrapPanel Margin="10,10,0,0" HorizontalAlignment="Left" Width="306" Height="136" 
+                                   VerticalAlignment="Top">
+                            <CheckBox x:Name="CHBstart_with_hidden" 
+                                      Content="Start with speech recognition window hidden" 
+                                      HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" 
+                                      Margin="0,4,0,0" Panel.ZIndex="20" Checked="CHBstart_with_hidden_Checked"
+                                      Unchecked="CHBstart_with_hidden_Unchecked"/>
+                            <CheckBox x:Name="CHBrun_at_startup" Content="Run when computer starts"
+                                      HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" 
+                                      Margin="0,10,11,0" Panel.ZIndex="21" Checked="CHBrun_at_startup_Checked"
+                                      Unchecked="CHBrun_at_startup_Unchecked"/>
+                            <CheckBox x:Name="CHBstart_minimized" Content="Start minimized" 
+                                      HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" 
+                                      Margin="0,10,33,0" Panel.ZIndex="22" Checked="CHBstart_minimized_Checked"
+                                      Unchecked="CHBstart_minimized_Unchecked"/>
+                            <CheckBox x:Name="CHBminimize_to_tray" Content="Minimize to system tray" 
+                                      HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" 
+                                      Margin="0,10,22,0" Panel.ZIndex="23" Checked="CHBminimize_to_tray_Checked"
+                                      Unchecked="CHBminimize_to_tray_Unchecked"/>
+                            <CheckBox x:Name="CHBauto_updates" Content="Check for updates automatically"
+                                      HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" 
+                                      Margin="0,10,0,0" Panel.ZIndex="23" Checked="CHBauto_updates_Checked" 
+                                      Unchecked="CHBauto_updates_Unchecked"/>
+                        </WrapPanel>
+                    </GroupBox>
+                    <GroupBox Header="Mousegrid Settings" HorizontalAlignment="Left" Height="245" 
+                              VerticalAlignment="Top" Width="354" FontSize="14" Canvas.Left="377" Canvas.Top="10">
+                        <WrapPanel HorizontalAlignment="Left" Height="205" Margin="10,10,-2,0" 
+                                   VerticalAlignment="Top" Width="334">
+                            <Label Content="Type:" HorizontalAlignment="Left" VerticalAlignment="Top" 
+                                   FontSize="14" Margin="0,0,80,0"/>
+                            <ComboBox x:Name="CBtype" HorizontalAlignment="Left" VerticalAlignment="Top" 
+                                      Width="196" FontSize="14" Margin="3,4,11,0" Panel.ZIndex="31" 
+                                      SelectionChanged="CBtype_SelectionChanged"/>
+                            <Label Content="Lines:" HorizontalAlignment="Left" VerticalAlignment="Top" 
+                                   FontSize="14"/>
+                            <ComboBox x:Name="CBlines" HorizontalAlignment="Left" VerticalAlignment="Top" 
+                                      Width="196" FontSize="14" Margin="81,4,11,0" Panel.ZIndex="32" 
+                                      SelectionChanged="CBlines_SelectionChanged"/>
+                            <Label Content="Desired figures nr:" HorizontalAlignment="Left" 
+                                   VerticalAlignment="Top" FontSize="14"/>
+                            <TextBox x:Name="TBdesired_figures_nr" HorizontalAlignment="Left" Height="23" 
+                                     TextWrapping="Wrap" Text="33" VerticalAlignment="Top" Width="196" 
+                                     FontSize="14" Margin="3,4,0,0" Panel.ZIndex="33" 
+                                     TextChanged="TBdesired_figures_nr_TextChanged"/>
+                            <Label Content="Background color:" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                   FontSize="14"/>
+                            <TextBox x:Name="TBbackground_color" HorizontalAlignment="Left" Height="23" 
+                                     TextWrapping="Wrap" VerticalAlignment="Top" Width="196" FontSize="14" 
+                                     Margin="3,4,0,0" Panel.ZIndex="34" 
+                                     PreviewMouseUp="TBbackground_color_PreviewMouseUp"/>
+                            <Label Content="Font color:" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                   FontSize="14"/>
+                            <TextBox x:Name="TBfont_color" HorizontalAlignment="Left" Height="23" 
+                                     TextWrapping="Wrap" VerticalAlignment="Top" Width="196" FontSize="14" 
+                                     Margin="49,4,0,0" Panel.ZIndex="35" 
+                                     PreviewMouseUp="TBfont_color_PreviewMouseUp"/>
+                            <Label Content="Font size:" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                   FontSize="14"/>
+                            <TextBox x:Name="TBfont_size" HorizontalAlignment="Left" Height="23" 
+                                     TextWrapping="Wrap" Text="11" VerticalAlignment="Top" Width="196"
+                                     FontSize="14" Margin="57,4,0,0" Panel.ZIndex="36"
+                                     TextChanged="TBfont_size_TextChanged"/>
+                            <CheckBox x:Name="CHBsmart_mousegrid" Content="Smart mousegrid"
+                                      HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14"
+                                      Margin="5,8,0,0" Panel.ZIndex="37" Checked="CHBsmart_mousegrid_Checked"
+                                      Unchecked="CHBsmart_mousegrid_Unchecked"/>
+                        </WrapPanel>
+                    </GroupBox>
+                    <GroupBox Header="Mousegrid Content Preview" HorizontalAlignment="Left" Height="243"
+                              VerticalAlignment="Top" Width="354" FontSize="14" Canvas.Left="377"
+                              Canvas.Top="259">
+                        <StackPanel HorizontalAlignment="Left" Height="90" Margin="10,10,-2,0"
+                                    VerticalAlignment="Top" Width="325">
+                            <TextBlock x:Name="TBmousegrid_preview" HorizontalAlignment="Left" Height="23"
+                                       TextWrapping="Wrap" VerticalAlignment="Top" Width="196" FontSize="14"
+                                       Margin="0,0,0,0" Panel.ZIndex="59"/>
+                        </StackPanel>
+                    </GroupBox>
+                    <Button Foreground="Black" BorderBrush="Black" 
+                            x:Name="Bsave_settings" Content="Save Settings" Canvas.Left="10" Canvas.Top="515"
+                            Width="130" FontSize="16" Height="40" Panel.ZIndex="31" Click="Bsave_settings_Click">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox"
+                                                 StartPoint="0.5,0">
+                                <GradientStop Color="White"/>
+                                <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                    <Button Foreground="Black" BorderBrush="Black" x:Name="Brestore_default_settings" 
+                            Content="Restore Default" Canvas.Left="601"
+                            Canvas.Top="515" Width="130" FontSize="16" Height="40" 
+                            Click="Brestore_default_settings_Click" Panel.ZIndex="32">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                <GradientStop Color="White"/>
+                                <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                </Canvas>
+            </TabItem>
+            <TabItem Foreground="Black" Height="50" Width="230" Background="{x:Null}" BorderBrush="{x:Null}"
+                     Margin="-1,0,1,0">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="images/help.png" Width="32" Height="32" />
+                        <TextBlock Text="Help" Foreground="Black" Margin="5,3,222,0" />
+                    </StackPanel>
+                </TabItem.Header>
+                <Canvas>
+                    <Button Foreground="Black" BorderBrush="Black" Content="User Guide" 
+                            Canvas.Left="16" Canvas.Top="16" Width="194" Height="48" 
+                            FontSize="16" Click="Button_Click">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                <GradientStop Color="White"/>
+                                <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                    <Button Foreground="Black" BorderBrush="Black" Content="Built-in Commands"
+                            Canvas.Left="16" Canvas.Top="72" Width="194" Height="48"
+                            FontSize="16" Click="Button_Click_1">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox"
+                                                 StartPoint="0.5,0">
+                                <GradientStop Color="White"/>
+                                <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                    <Button Foreground="Black" BorderBrush="Black" Content="Mousegrid Alphabet"
+                            Canvas.Left="16" Canvas.Top="129" Width="194"
+                            Height="48" FontSize="16" Click="Button_Click_2">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox"
+                                                 StartPoint="0.5,0">
+                                <GradientStop Color="White"/>
+                                <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                    <Button Foreground="Black" BorderBrush="Black" Content="Useful Key Combinations"
+                            Canvas.Left="16" Canvas.Top="186" Width="194"
+                            Height="48" FontSize="16" Click="Button_Click_3">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox"
+                                                 StartPoint="0.5,0">
+                                <GradientStop Color="White"/>
+                                <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                </Canvas>
+            </TabItem>
+            <TabItem Foreground="Black" Height="50" Width="230" Background="{x:Null}" BorderBrush="{x:Null}"
+                     Margin="-1,0,1,0">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="images/info.png" Width="32" Height="32" />
+                        <TextBlock Text="About" Foreground="Black" Margin="5,3,222,0" />
+                    </StackPanel>
+                </TabItem.Header>
+                <Canvas>
+                    <Label x:Name="Lprogram_name" Content="Program name" Canvas.Left="10" Canvas.Top="10"
+                           FontSize="16" FontWeight="Bold"/>
+                    <Label x:Name="Llatest_version" Content="Latest version:" Canvas.Left="10" Canvas.Top="41"
+                           FontSize="16"/>
+                    <Label x:Name="Lcopyright" Content="..." Canvas.Left="10" Canvas.Top="138" FontSize="16"/>
+                    <Label x:Name="Lhomepage2" Content="Homepage:" Canvas.Left="10" Canvas.Top="102" FontSize="16"/>
+                    <Label x:Name="Linstalled_version" Content="Installed version:" Canvas.Left="10" 
+                           Canvas.Top="72" FontSize="16"/>
+                    <Button Foreground="Black" BorderBrush="Black" x:Name="Bchangelog" Content="Changelog"
+                            Canvas.Left="16" Canvas.Top="184" 
+                            Width="197" Height="46" FontSize="16" Click="Bchangelog_Click">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                <GradientStop Color="White"/>
+                                <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                    <Button Foreground="Black" BorderBrush="Black" x:Name="Beula" Content="EULA"
+                            Canvas.Left="16" Canvas.Top="239" Width="197" 
+                            Height="46" FontSize="16" Click="Beula_Click">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
+                                                 StartPoint="0.5,0">
+                                <GradientStop Color="White"/>
+                                <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>                    
+                    <Label x:Name="Lhomepage" Content="link" Canvas.Left="97" Canvas.Top="102" FontSize="16" 
+                           Foreground="Blue" PreviewMouseUp="Lhomepage_PreviewMouseUp"
+                           MouseEnter="Lhomepage_MouseEnter" MouseLeave="Lhomepage_MouseLeave"/>
+                </Canvas>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

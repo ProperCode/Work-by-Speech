@@ -1,0 +1,133 @@
+﻿<Window x:Class="Speech.WindowAddEditActionKeyboard"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Speech"
+        mc:Ignorable="d"
+        Title="Add Keyboard Action" Height="680" Width="634" FontSize="14" WindowStartupLocation="CenterScreen" 
+        ResizeMode="NoResize" Loaded="Window_Loaded" PreviewKeyUp="Window_PreviewKeyUp">
+    <Grid>
+        <GroupBox Header="Action" Width="345" Height="195" Margin="10,10,0,0"
+                  HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Canvas>
+                <RadioButton x:Name="RBpress" Margin="10,10,0,0" Checked="RBpress_Checked">Press key(s)</RadioButton>
+                <RadioButton x:Name="RBtoggle" Margin="10,40,0,0" Checked="RBtoggle_Checked">Toggle key(s)</RadioButton>
+                <RadioButton x:Name="RBhold_down" Margin="10,70,0,0" Checked="RBhold_down_Checked">Hold down key(s)</RadioButton>
+                <RadioButton x:Name="RBrelease" Margin="10,100,0,0" Checked="RBrelease_Checked">Release key(s)</RadioButton>
+                <Label x:Name="Lpress_time" Content="Press time [ms]:" Margin="7,130,0,0"
+               HorizontalAlignment="Left"  VerticalAlignment="Top"/>
+                <TextBox x:Name="TBpress_time" Height="23" Margin="114,135,0,0"
+                 HorizontalAlignment="Left" VerticalAlignment="Top" Width="205"/>
+            </Canvas>
+        </GroupBox>        
+        <GroupBox Header="Keys" Width="345" Height="376" Margin="10,210,0,0"
+                  HorizontalAlignment="Left" VerticalAlignment="Top" x:Name="GBkeys">
+            <Canvas>
+                <ListView Foreground="Navy" Margin="10,8,10,10" Name="LVkeys" FontSize="14" Height="330"
+                          VerticalAlignment="Top" SelectionChanged="LVkeys_SelectionChanged" Width="209"
+                          ScrollViewer.VerticalScrollBarVisibility="Visible"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListView.ContextMenu>
+                        <ContextMenu FontFamily="Consolas" FontSize="14">
+                            <MenuItem x:Name="MIdelete_keys" 
+                                      Header="Delete         Del"
+                                      Click="MIdelete_keys_Click"/>
+                            <Separator/>
+                            <MenuItem x:Name="MImove_up_keys" 
+                                      Header="Move up        Ctrl + Up"
+                                      Click="MImove_up_keys_Click"/>
+                            <MenuItem x:Name="MImove_down_keys" 
+                                      Header="Move down      Ctrl + Down"
+                                      Click="MImove_down_keys_Click"/>
+                        </ContextMenu>
+                    </ListView.ContextMenu>
+                    <ListView.Resources>
+                        <Style TargetType="{x:Type GridViewColumnHeader}">
+                            <Setter Property="HorizontalContentAlignment" Value="Left" />
+                        </Style>
+                    </ListView.Resources>
+                    <ListView.View>
+                        <GridView AllowsColumnReorder="True">
+                            <GridViewColumn Header="Key" Width="182" DisplayMemberBinding="{Binding name}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+                <Button Foreground="Black" BorderBrush="Black" x:Name="Bdelete" Content="Delete" Width="99" Height="30" Margin="226,8,0,0"
+                        HorizontalAlignment="Left" VerticalAlignment="Top" Click="Bdelete_Click">
+                    <Button.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                            <GradientStop Color="White"/>
+                            <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                </Button>
+                <Button Foreground="Black" BorderBrush="Black" x:Name="Bmove_up" Content="Move up" Width="99" Height="30" Margin="226,78,0,0"
+                        HorizontalAlignment="Left" VerticalAlignment="Top" Click="Bmove_up_Click">
+                    <Button.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                            <GradientStop Color="White"/>
+                            <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                </Button>
+                <Button Foreground="Black" BorderBrush="Black" x:Name="Bmove_down" Content="Move down" Width="99" Height="30" Margin="226,118,0,0"
+                        HorizontalAlignment="Left" VerticalAlignment="Top" Click="Bmove_down_Click">
+                    <Button.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                            <GradientStop Color="White"/>
+                            <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                </Button>
+            </Canvas>
+        </GroupBox>
+        <GroupBox Header="Add New Key" Width="240" Height="577" Margin="368,10,0,0"
+                  HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Canvas>
+                <ListView Foreground="Navy" Margin="10,10,10,10" Name="LVnew_keys" FontSize="14" Height="493"
+                          VerticalAlignment="Top" SelectionChanged="LVnew_keys_SelectionChanged" Width="209"
+                          ScrollViewer.VerticalScrollBarVisibility="Visible"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled" PreviewMouseDoubleClick="LVnew_keys_PreviewMouseDoubleClick">
+                    <ListView.Resources>
+                        <Style TargetType="{x:Type GridViewColumnHeader}">
+                            <Setter Property="HorizontalContentAlignment" Value="Left" />
+                        </Style>
+                    </ListView.Resources>
+                    <ListView.View>
+                        <GridView AllowsColumnReorder="True">
+                            <GridViewColumn Header="New Key" Width="182" DisplayMemberBinding="{Binding name}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+                <Button Foreground="Black" BorderBrush="Black" x:Name="Badd" Content="Add" HorizontalAlignment="Left" Margin="10,510,0,0"
+                VerticalAlignment="Top" Width="210" Height="30" Click="Badd_Click">
+                    <Button.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                            <GradientStop Color="White"/>
+                            <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                </Button>
+            </Canvas>
+        </GroupBox>
+        <Button Foreground="Black" BorderBrush="Black" x:Name="Bok" Content="OK" HorizontalAlignment="Left" Margin="11,598,0,0" VerticalAlignment="Top"
+                Width="100" Height="30" Click="Bok_Click">
+            <Button.Background>
+                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                    <GradientStop Color="White"/>
+                    <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                </LinearGradientBrush>
+            </Button.Background>
+        </Button>
+        <Button Foreground="Black" BorderBrush="Black" x:Name="Bcancel" Content="Cancel" HorizontalAlignment="Left" Margin="506,598,0,0"
+                VerticalAlignment="Top" Width="100" Height="30" Click="Bcancel_Click">
+            <Button.Background>
+                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                    <GradientStop Color="White"/>
+                    <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                </LinearGradientBrush>
+            </Button.Background>
+        </Button>
+    </Grid>
+</Window>

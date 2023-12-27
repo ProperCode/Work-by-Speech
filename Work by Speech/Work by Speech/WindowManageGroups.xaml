@@ -1,0 +1,84 @@
+﻿<Window x:Class="Speech.WindowManageGroups"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Speech"
+        mc:Ignorable="d"
+        Title="Manage Groups" Height="680" Width="573" FontSize="14" WindowStartupLocation="CenterScreen" 
+        ResizeMode="NoResize" Loaded="Window_Loaded" PreviewKeyUp="Window_PreviewKeyUp">
+    <Grid>
+        <GroupBox Header="Groups" Width="540" Height="570" Margin="10,10,0,0"
+                  HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Canvas>
+                <ListView Foreground="Navy" Margin="10,10,10,10" Name="LVgroups" FontSize="14" Height="486" 
+                          VerticalAlignment="Top" Width="508"
+                          SelectionChanged="LVgroups_SelectionChanged" PreviewKeyUp="LVgroups_PreviewKeyUp"
+                          ScrollViewer.VerticalScrollBarVisibility="Visible"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          PreviewMouseDoubleClick="LVgroups_PreviewMouseDoubleClick">
+                    <ListView.ContextMenu>
+                        <ContextMenu FontFamily="Consolas" FontSize="14">
+                            <MenuItem x:Name="MIedit" 
+                                      Header="Edit"
+                                      Click="MIedit_Click"/>
+                            <MenuItem x:Name="MIdelete" 
+                                      Header="Delete      Del"
+                                      Click="MIdelete_Click"/>
+                        </ContextMenu>
+                    </ListView.ContextMenu>
+                    <ListView.Resources>
+                        <Style TargetType="{x:Type GridViewColumnHeader}">
+                            <Setter Property="HorizontalContentAlignment" Value="Left" />
+                        </Style>
+                    </ListView.Resources>
+                    <ListView.View>
+                        <GridView AllowsColumnReorder="True">
+                            <GridViewColumn Header="Name" Width="481" DisplayMemberBinding="{Binding name}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+                <Button Foreground="Black" BorderBrush="Black" x:Name="Badd" Content="Add" 
+                        HorizontalAlignment="Left" Margin="10,504,0,0" 
+                VerticalAlignment="Top" Width="100" Height="30" Click="Badd_Click">
+                    <Button.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                            <GradientStop Color="White"/>
+                            <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                </Button>
+                <Button Foreground="Black" BorderBrush="Black" x:Name="Bedit" Content="Edit"
+                        HorizontalAlignment="Left" Margin="115,504,0,0" 
+                VerticalAlignment="Top" Width="100" Height="30" Click="Bedit_Click">
+                    <Button.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                            <GradientStop Color="White"/>
+                            <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                </Button>
+                <Button Foreground="Black" BorderBrush="Black" x:Name="Bdelete" Content="Delete" 
+                        HorizontalAlignment="Left" Margin="220,504,0,0" 
+                VerticalAlignment="Top" Width="100" Height="30" Click="Bdelete_Click">
+                    <Button.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                            <GradientStop Color="White"/>
+                            <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                </Button>
+            </Canvas>
+        </GroupBox>
+        <Button Foreground="Black" BorderBrush="Black" x:Name="Bok" Content="OK"
+                HorizontalAlignment="Left" Margin="10,599,0,0" VerticalAlignment="Top"
+                Width="100" Height="30" Click="Bok_Click">
+            <Button.Background>
+                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                    <GradientStop Color="White"/>
+                    <GradientStop Color="#FFCDCDCD" Offset="1"/>
+                </LinearGradientBrush>
+            </Button.Background>
+        </Button>
+    </Grid>
+</Window>
