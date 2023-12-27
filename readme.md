@@ -1,11 +1,11 @@
-# Clickless Mouse
+# Work by Speech
 
 ## Download
 [Download latest version](https://github.com/ProperCode/Work-by-Speech/releases)<br/>
 
 ## Description
 
-Work by Speech is the first program in the world that allows efficient work on a computer by speech without needing a keyboard and mouse.
+Work by Speech allows efficient work on a computer by speech without needing a keyboard and mouse.
 <br/><br/>
 Work by Speech Features:
 - Efficient work on a computer by speech alone
