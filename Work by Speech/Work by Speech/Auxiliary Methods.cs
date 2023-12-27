@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
@@ -18,7 +17,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using System.Xml;
-using System.Xml.Linq;
 
 namespace Speech
 {
@@ -1668,7 +1666,7 @@ namespace Speech
                     CreateSubKey(Middle_Man.registry_path_easy, true);
                 first_run = true;
             }
-            reg_key_easy.SetValue(Middle_Man.registry_key_first_run, new DateTime().ToString());
+            reg_key_easy.SetValue(Middle_Man.registry_key_first_run, "yes");
         }
 
         string get_grid_folder_name_by_type(GridType gt)

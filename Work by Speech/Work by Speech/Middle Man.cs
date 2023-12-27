@@ -29,8 +29,7 @@ namespace Speech
 
         public static string registry_path_easy = "SOFTWARE\\Microsoft\\Work by Speech"; //easy to find
         
-        //Encrypted datetime used in version 1.4 and higher:
-        public static string registry_key_first_run = "first run";
+        public static string registry_key_first_run = "already run";
         public static string registry_key_last_import_path = "last import profiles path";
         public static string registry_key_last_export_path = "last export profiles path";
         public static string registry_key_last_open_program_path = "last open file/program path";
@@ -38,7 +37,7 @@ namespace Speech
 
         public static string url_homepage = "github.com/ProperCode/Work-by-Speech";
         public static string url_homepage_full = "https://github.com/ProperCode/Work-by-Speech";
-        public static string url_latest_version = "https://github.com/ProperCode/Work-by-Speech/tree/master/Work by Speech/latest_version.txt";
+        public static string url_latest_version = "https://raw.githubusercontent.com/ProperCode/Work-by-Speech/main/other/latest_version.txt";
         public static string url_download = "https://github.com/ProperCode/Work-by-Speech";
 
         public static List<Profile> profiles = new List<Profile>();
