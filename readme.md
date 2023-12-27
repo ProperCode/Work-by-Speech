@@ -20,15 +20,13 @@ Work by Speech Features:
 - Works with any microphone under Windows 10 and 11
 - Available for the English language only
 - Free updates
-
-<br/>
-Who is it for?:
+<br/><br/>
+Who is it for?
 - People with some permanent disabilities (e.g. someone paralyzed in both hands). 
 - People with some temporary disabilities (e.g. a person who broke both hands in an accident). 
 - Those who would like to decrease the chance of developing repetitive stress injury, such as carpal tunnel syndrome (eg. by working one day a week by speech or by performing some tasks by speech). 
 - Users who want to increase their productivity by using voice commands like switch to Chrome, open Photoshop, close that, show desktop, paste x times, undo/redo x times, scroll left/right x times, custom voice commands and macro recording.
 - Anyone who just wants to control a computer by speech.
-
 <br/><br/>
 This program can recognize your speech with high accuracy only if you complete at least two voice trainings. One voice training takes about 7 minutes. You can find more information about voice training in point 4 of the user guide, which is located in the help section.
 
