@@ -14,7 +14,7 @@ Work by Speech Features:
 - Macro recording
 - Separate dictation mode
 - Fast and repeatable mouse control by speech with support for all mouse actions
-- Customizable mousegrid that can be moved by speech
+- Customizable and movable mousegrid divides the screen into up to 2550 figures and is automatically optimized for each application
 - Automatic mousegrid optimization for every used application
 - Very low processor and memory usage
 - Works with any microphone under Windows 10 and 11
@@ -22,7 +22,14 @@ Work by Speech Features:
 - Free updates
 <br/><br/>
 
-Who is it for?
+Macro Recorder Features:
+- Smart Recording - combines hold and release actions into press or click whenever appropriate. Simultaneous multiple key presses and releases are combined into a single hold, release or press action.
+- High Accuracy - the Macro Recorder accurately records mouse movements when Record Mouse Movements option is selected. Mouse clicks are always recorded with cursor coordinates, so selecting this option is not recommended for recording simple mouse actions.
+Mouse click time and keys press time are recorded with high accuracy.
+- Editable Macros - recorded macros can be added to a custom voice command and edited later. Other types of actions can be added to it. You can also share your macros with friends by using Export Profiles feature.
+<br/><br/>
+
+Who is Work by Speech for?
 - People with some permanent disabilities (e.g. someone paralyzed in both hands). 
 - People with some temporary disabilities (e.g. a person who broke both hands in an accident). 
 - Those who would like to decrease the chance of developing repetitive stress injury, such as carpal tunnel syndrome (eg. by working one day a week by speech or by performing some tasks by speech). 
