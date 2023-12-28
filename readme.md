@@ -46,9 +46,29 @@ If you wish to report a bug or send feedback, you can do so by sending me an e-m
 Please provide as much information as possible and provide screenshot(s) if applicable. I usually do not reply.
 
 ## Awards
-[![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/softpedia_100_clean.png)](https://www.softpedia.com/get/Desktop-Enhancements/Other-Desktop-Enhancements/Work-by-Speech.shtml#status)
-[![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/updatestar.com.jpg)](https://www.updatestar.com/virus-report/work-by-speech/2619667)
-[![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/filetransit_5of5.gif)](http://www.filetransit.com/view.php?id=453437)
+<a href="https://www.softpedia.com/get/Office-tools/Other-Office-Tools/Work-by-Speech.shtml#status" target="_blank">
+	<img src="https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/softpedia_100_clean.png" alt="Softpedia Clean Award" border="0"/>
+</a>
+
+<a href="https://www.updatestar.com/virus-report/work-by-speech/2619667" target="_blank">
+	<img src="https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/updatestar.com.jpg" alt="Updatestar Clean Award" border="0"/>
+</a>
+
+<a href='https://work-by-speech.en.uptodown.com/windows' title='Download Work by Speech' target="_blank">
+	<img src="https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/certified-free.jpg" alt="Uptodown Clean Award" border="0"/>
+</a>
+
+<a href="http://www.filetransit.com/view.php?id=453437" target="_blank">
+	<img src="https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/filetransit_5of5.gif" alt="File Transit Award" border="0"/>
+</a>
+
+<a href="https://www.softlay.com/downloads/work-by-speech" target="_blank">
+	<img src="https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/softlay-300x110.png" alt="Softlay Clean Award" border="0"/>
+</a>
+
+<a href="https://en.downloadastro.com/apps/work-by-speech/" target="_blank">
+	<img src="https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/Best-App-Award-2-min.jpg" alt="Download Astro Best App Award" border="0"/>
+</a>
 
 ## Other Open Source Projects
 [Clickless Mouse](https://github.com/ProperCode/clickless-mouse)<br/>
