@@ -55,7 +55,7 @@ Please provide as much information as possible and provide screenshot(s) if appl
 </a>
 
 <a href="https://work-by-speech.en.uptodown.com/windows" title="Download Work by Speech" target="_blank">
-	<img src="https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/certified-free.jpg" alt="Uptodown Clean Award"/>
+	<img src="https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/certified-free.png" alt="Uptodown Clean Award"/>
 </a>
 
 <a href="http://www.filetransit.com/view.php?id=453437" target="_blank">
