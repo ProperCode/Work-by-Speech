@@ -14,7 +14,7 @@ Work by Speech Features:
 - Macro recording
 - Separate dictation mode
 - Fast and repeatable mouse control by speech with support for all mouse actions
-- Customizable and movable mousegrid divides the screen into up to 2550 figures and is automatically optimized for each application
+- Customizable and movable mousegrid which divides the screen into up to 2550 figures
 - Automatic mousegrid optimization for every used application
 - Very low processor and memory usage
 - Works with any microphone under Windows 10 and 11
@@ -46,29 +46,12 @@ If you wish to report a bug or send feedback, you can do so by sending me an e-m
 Please provide as much information as possible and provide screenshot(s) if applicable. I usually do not reply.
 
 ## Awards
-<a href="https://www.softpedia.com/get/Office-tools/Other-Office-Tools/Work-by-Speech.shtml#status" target="_blank">
-	<img src="https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/softpedia_100_clean.png" alt="Softpedia Clean Award"/>
-</a>
-
-<a href="https://www.updatestar.com/virus-report/work-by-speech/2619667" target="_blank">
-	<img src="https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/updatestar.com.jpg" alt="Updatestar Clean Award"/>
-</a>
-
-<a href="https://work-by-speech.en.uptodown.com/windows" title="Download Work by Speech" target="_blank">
-	<img src="https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/certified-free.png" alt="Uptodown Clean Award"/>
-</a>
-
-<a href="http://www.filetransit.com/view.php?id=453437" target="_blank">
-	<img src="https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/filetransit_5of5.gif" alt="File Transit Award"/>
-</a>
-
-<a href="https://www.softlay.com/downloads/work-by-speech" target="_blank">
-	<img src="https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/softlay-300x110.png" alt="Softlay Clean Award"/>
-</a>
-
-<a href="https://en.downloadastro.com/apps/work-by-speech/" target="_blank">
-	<img src="https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/Best-App-Award-2-min.jpg" alt="Download Astro Best App Award"/>
-</a>
+[![Softpedia Clean Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/softpedia_100_clean.png)](https://www.softpedia.com/get/Office-tools/Other-Office-Tools/Work-by-Speech.shtml#status)
+[![Uptodown Clean Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/certified-free.png)](https://work-by-speech.en.uptodown.com/windows)
+[![Updatestar Clean Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/updatestar.com.jpg)](https://www.updatestar.com/virus-report/work-by-speech/2619667)
+[![File Transit 5/5 Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/filetransit_5of5.gif)](http://www.filetransit.com/view.php?id=453437)
+[![Softlay Clean Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/softlay-300x110.png)](https://www.softlay.com/downloads/work-by-speech)
+[![Download Astro Best App Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/Best-App-Award-2-min.jpg)](https://en.downloadastro.com/apps/work-by-speech/)
 
 ## Other Open Source Projects
 [Clickless Mouse](https://github.com/ProperCode/clickless-mouse)<br/>
