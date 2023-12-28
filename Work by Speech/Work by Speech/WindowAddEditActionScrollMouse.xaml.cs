@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Net;
-using System.Security.Cryptography;
 using System.Windows;
-using System.Windows.Data;
 using System.Windows.Input;
 
 namespace Speech

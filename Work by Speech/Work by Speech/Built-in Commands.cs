@@ -1,16 +1,10 @@
 ﻿//highest error nr: BIC059
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Speech.Recognition;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Xml;
 using WindowsInput.Native;

@@ -6,7 +6,6 @@ using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Security.Cryptography;
 using System.Speech.Recognition;
 using System.Speech.Synthesis;
 using System.Text;
@@ -1666,7 +1665,7 @@ namespace Speech
                     CreateSubKey(Middle_Man.registry_path_easy, true);
                 first_run = true;
             }
-            reg_key_easy.SetValue(Middle_Man.registry_key_first_run, "yes");
+            reg_key_easy.SetValue(Middle_Man.registry_key_first_run, "ye[s");
         }
 
         string get_grid_folder_name_by_type(GridType gt)
@@ -1743,57 +1742,6 @@ namespace Speech
                 1);
 
             return new Size(formattedText.Width, formattedText.Height);
-        }
-
-        string GetKeyString(RSAParameters publicKey)
-        {
-            var stringWriter = new System.IO.StringWriter();
-            var xmlSerializer = new System.Xml.Serialization.XmlSerializer(typeof(RSAParameters));
-            xmlSerializer.Serialize(stringWriter, publicKey);
-            return stringWriter.ToString();
-        }
-
-        string Encrypt(string textToEncrypt, string publicKeyString)
-        {
-            var bytesToEncrypt = Encoding.UTF8.GetBytes(textToEncrypt);
-
-            using (var rsa = new RSACryptoServiceProvider(2048))
-            {
-                try
-                {
-                    rsa.FromXmlString(publicKeyString.ToString());
-                    var encryptedData = rsa.Encrypt(bytesToEncrypt, true);
-                    var base64Encrypted = Convert.ToBase64String(encryptedData);
-                    return base64Encrypted;
-                }
-                finally
-                {
-                    rsa.PersistKeyInCsp = false;
-                }
-            }
-        }
-
-        string Decrypt(string textToDecrypt, string privateKeyString)
-        {
-            var bytesToDescrypt = Encoding.UTF8.GetBytes(textToDecrypt);
-
-            using (var rsa = new RSACryptoServiceProvider(2048))
-            {
-                try
-                {
-                    // server decrypting data with private key
-                    rsa.FromXmlString(privateKeyString);
-
-                    var resultBytes = Convert.FromBase64String(textToDecrypt);
-                    var decryptedBytes = rsa.Decrypt(resultBytes, true);
-                    var decryptedData = Encoding.UTF8.GetString(decryptedBytes);
-                    return decryptedData.ToString();
-                }
-                finally
-                {
-                    rsa.PersistKeyInCsp = false;
-                }
-            }
         }
         
         public T DeepCopy<T>(T item)

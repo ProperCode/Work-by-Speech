@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Windows;
-using WindowsInput.Native;
 
 namespace Speech
 {
-	public class Grid_element
+    public class Grid_element
 	{
 		public string symbol;
 		public string word;
