@@ -1665,7 +1665,7 @@ namespace Speech
                     CreateSubKey(Middle_Man.registry_path_easy, true);
                 first_run = true;
             }
-            reg_key_easy.SetValue(Middle_Man.registry_key_first_run, "ye[s");
+            reg_key_easy.SetValue(Middle_Man.registry_key_first_run, "yes");
         }
 
         string get_grid_folder_name_by_type(GridType gt)
