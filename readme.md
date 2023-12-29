@@ -42,10 +42,6 @@ This program can recognize your speech with high accuracy only if you complete a
 
 <a href="https://imgbox.com/AaW04LE5" target="_blank"><img src="https://thumbs2.imgbox.com/d8/e9/AaW04LE5_t.jpg" alt="image host"/></a> <a href="https://imgbox.com/EIhKcPbS" target="_blank"><img src="https://thumbs2.imgbox.com/d6/30/EIhKcPbS_t.jpg" alt="image host"/></a> <a href="https://imgbox.com/Iw5inkrz" target="_blank"><img src="https://thumbs2.imgbox.com/fc/26/Iw5inkrz_t.jpg" alt="image host"/></a> <a href="https://imgbox.com/iDFyT9uM" target="_blank"><img src="https://thumbs2.imgbox.com/42/a4/iDFyT9uM_t.jpg" alt="image host"/></a> <a href="https://imgbox.com/G3cTzsul" target="_blank"><img src="https://thumbs2.imgbox.com/99/83/G3cTzsul_t.jpg" alt="image host"/></a> <a href="https://imgbox.com/mmTFMov7" target="_blank"><img src="https://thumbs2.imgbox.com/6d/59/mmTFMov7_t.png" alt="image host"/></a> <a href="https://imgbox.com/KRYOa4mE" target="_blank"><img src="https://thumbs2.imgbox.com/8b/6a/KRYOa4mE_t.png" alt="image host"/></a> <a href="https://imgbox.com/STOZKlJx" target="_blank"><img src="https://thumbs2.imgbox.com/df/2e/STOZKlJx_t.png" alt="image host"/></a> <a href="https://imgbox.com/G3hkAB7h" target="_blank"><img src="https://thumbs2.imgbox.com/10/24/G3hkAB7h_t.png" alt="image host"/></a> <a href="https://imgbox.com/PFbuvWVM" target="_blank"><img src="https://thumbs2.imgbox.com/61/31/PFbuvWVM_t.png" alt="image host"/></a>
 
-## Bug Report and Feedback
-If you wish to report a bug or send feedback, you can do so by sending me an e-mail: ![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/images/email.jpg) .
-Please provide as much information as possible and provide screenshot(s) if applicable. I usually do not reply.
-
 ## Awards
 [![Softpedia Clean Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/softpedia_100_clean.png)](https://www.softpedia.com/get/Office-tools/Other-Office-Tools/Work-by-Speech.shtml#status)
 [![Uptodown Clean Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/certified-free.png)](https://work-by-speech.en.uptodown.com/windows)
@@ -53,6 +49,10 @@ Please provide as much information as possible and provide screenshot(s) if appl
 [![File Transit 5/5 Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/filetransit_5of5.gif)](http://www.filetransit.com/view.php?id=453437)
 [![Softlay Clean Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/softlay-300x110.png)](https://www.softlay.com/downloads/work-by-speech)
 [![Download Astro Best App Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/Best-App-Award-2-min.jpg)](https://en.downloadastro.com/apps/work-by-speech/)
+
+## Bug Report and Feedback
+If you wish to report a bug or send feedback, you can do so by sending me an e-mail: ![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/images/email.jpg) .
+Please provide as much information as possible and provide screenshot(s) if applicable. I usually do not reply.
 
 ## Other Open Source Projects
 [Clickless Mouse](https://github.com/ProperCode/clickless-mouse)<br/>
