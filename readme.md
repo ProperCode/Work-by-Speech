@@ -38,6 +38,8 @@ Who is Work by Speech for?
 
 This program can recognize your speech with high accuracy only if you complete at least two voice trainings. One voice training takes about 7 minutes. You can find more information about voice training in point 4 of the user guide, which is located in the help section.
 
+## Screenshots
+
 <a href="https://imgbox.com/AaW04LE5" target="_blank"><img src="https://thumbs2.imgbox.com/d8/e9/AaW04LE5_t.jpg" alt="image host"/></a> <a href="https://imgbox.com/EIhKcPbS" target="_blank"><img src="https://thumbs2.imgbox.com/d6/30/EIhKcPbS_t.jpg" alt="image host"/></a> <a href="https://imgbox.com/Iw5inkrz" target="_blank"><img src="https://thumbs2.imgbox.com/fc/26/Iw5inkrz_t.jpg" alt="image host"/></a> <a href="https://imgbox.com/iDFyT9uM" target="_blank"><img src="https://thumbs2.imgbox.com/42/a4/iDFyT9uM_t.jpg" alt="image host"/></a> <a href="https://imgbox.com/G3cTzsul" target="_blank"><img src="https://thumbs2.imgbox.com/99/83/G3cTzsul_t.jpg" alt="image host"/></a> <a href="https://imgbox.com/mmTFMov7" target="_blank"><img src="https://thumbs2.imgbox.com/6d/59/mmTFMov7_t.png" alt="image host"/></a> <a href="https://imgbox.com/KRYOa4mE" target="_blank"><img src="https://thumbs2.imgbox.com/8b/6a/KRYOa4mE_t.png" alt="image host"/></a> <a href="https://imgbox.com/STOZKlJx" target="_blank"><img src="https://thumbs2.imgbox.com/df/2e/STOZKlJx_t.png" alt="image host"/></a> <a href="https://imgbox.com/G3hkAB7h" target="_blank"><img src="https://thumbs2.imgbox.com/10/24/G3hkAB7h_t.png" alt="image host"/></a> <a href="https://imgbox.com/PFbuvWVM" target="_blank"><img src="https://thumbs2.imgbox.com/61/31/PFbuvWVM_t.png" alt="image host"/></a>
 
 ## Bug Report and Feedback
