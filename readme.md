@@ -19,7 +19,6 @@ Work by Speech Features:
 - Very low processor and memory usage
 - Works with any microphone under Windows 10 and 11
 - Available for the English language only
-- Free updates
 <br/><br/>
 
 Macro Recorder Features:
