@@ -52,7 +52,7 @@ This program can recognize your speech with high accuracy only if you complete a
 
 ## Bug Report and Feedback
 If you wish to report a bug or send feedback, you can do so by sending me an e-mail: ![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/images/email.jpg) .
-Please provide as much information as possible and provide screenshot(s) if applicable. I usually do not reply.
+Please provide as much information as possible and provide screenshot(s) if applicable.
 
 ## Other Open Source Projects
 [Clickless Mouse](https://github.com/ProperCode/clickless-mouse)<br/>
