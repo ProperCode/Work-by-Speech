@@ -52,7 +52,8 @@ This program can recognize your speech with high accuracy only if you complete a
 
 ## Bug Report and Feedback
 If you wish to report a bug or send feedback, you can do so by sending me an e-mail: ![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/images/email.jpg) .
-Please provide as much information as possible and provide screenshot(s) if applicable.
+Please include as much information as possible and provide screenshot(s) if applicable.
 
-## Other Open Source Projects
+## My Other Open Source Projects
+[Aspiring Keyboard](https://github.com/ProperCode/Aspiring-Keyboard)<br/><br/>
 [Clickless Mouse](https://github.com/ProperCode/clickless-mouse)<br/>
