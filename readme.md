@@ -5,6 +5,8 @@
 
 ## Description
 
+Work by Speech is a Windows app which allows efficient work on a computer by speech alone. 
+
 Work by Speech Features:
 - Efficient work on a computer by speech alone
 - Quiet speaking support
