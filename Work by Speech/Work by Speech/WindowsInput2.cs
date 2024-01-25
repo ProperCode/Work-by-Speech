@@ -1,227 +1,165 @@
 using System;
-using System.Runtime.InteropServices;
+using System.Threading;
+using WindowsInput.Native;
 using System.Collections;
 using System.Collections.Generic;
-using WindowsInput.Native;
-using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace WindowsInput
 {
     /// <summary>
-    /// Implements the <see cref="IInputMessageDispatcher"/> by calling <see cref="NativeMethods.SendInput"/>.
+    /// An implementation of <see cref="IInputDeviceStateAdaptor"/> for Windows by calling the native <see cref="NativeMethods.GetKeyState"/> and <see cref="NativeMethods.GetAsyncKeyState"/> methods.
     /// </summary>
-    internal class WindowsInputMessageDispatcher : IInputMessageDispatcher
+    public class WindowsInputDeviceStateAdaptor : IInputDeviceStateAdaptor
     {
+
         /// <summary>
-        /// Dispatches the specified list of <see cref="INPUT"/> messages in their specified order by issuing a single called to <see cref="NativeMethods.SendInput"/>.
+        /// Determines whether the specified key is up or down by calling the GetKeyState function. (See: http://msdn.microsoft.com/en-us/library/ms646301(VS.85).aspx)
         /// </summary>
-        /// <param name="inputs">The list of <see cref="INPUT"/> messages to be dispatched.</param>
-        /// <exception cref="ArgumentException">If the <paramref name="inputs"/> array is empty.</exception>
-        /// <exception cref="ArgumentNullException">If the <paramref name="inputs"/> array is null.</exception>
-        /// <exception cref="Exception">If the any of the commands in the <paramref name="inputs"/> array could not be sent successfully.</exception>
-        public void DispatchInput(INPUT[] inputs)
+        /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
+        /// <returns>
+        /// 	<c>true</c> if the key is down; otherwise, <c>false</c>.
+        /// </returns>
+        /// <remarks>
+        /// The key status returned from this function changes as a thread reads key messages from its message queue. The status does not reflect the interrupt-level state associated with the hardware. Use the GetAsyncKeyState function to retrieve that information. 
+        /// An application calls GetKeyState in response to a keyboard-input message. This function retrieves the state of the key when the input message was generated. 
+        /// To retrieve state information for all the virtual keys, use the GetKeyboardState function. 
+        /// An application can use the virtual-key code constants VK_SHIFT, VK_CONTROL, and VK_MENU as values for Bthe nVirtKey parameter. This gives the status of the SHIFT, CTRL, or ALT keys without distinguishing between left and right. An application can also use the following virtual-key code constants as values for nVirtKey to distinguish between the left and right instances of those keys. 
+        /// VK_LSHIFT
+        /// VK_RSHIFT
+        /// VK_LCONTROL
+        /// VK_RCONTROL
+        /// VK_LMENU
+        /// VK_RMENU
+        /// 
+        /// These left- and right-distinguishing constants are available to an application only through the GetKeyboardState, SetKeyboardState, GetAsyncKeyState, GetKeyState, and MapVirtualKey functions. 
+        /// </remarks>
+        public bool IsKeyDown(VirtualKeyCode keyCode)
         {
-            if (inputs == null) throw new ArgumentNullException("inputs");
-            if (inputs.Length == 0) throw new ArgumentException("The input array was empty", "inputs");
-            var successful = NativeMethods.SendInput((UInt32)inputs.Length, inputs, Marshal.SizeOf(typeof (INPUT)));
-            if (successful != inputs.Length)
-                throw new Exception("Some simulated input commands were not sent successfully. The most common reason for this happening are the security features of Windows including User Interface Privacy Isolation (UIPI). Your application can only send commands to applications of the same or lower elevation. Similarly certain commands are restricted to Accessibility/UIAutomation applications. Refer to the project home page and the code samples for more information.");
+            Int16 result = NativeMethods.GetKeyState((UInt16)keyCode);
+            return (result < 0);
         }
-    }
-}
-
-namespace WindowsInput
-{
-    /// <summary>
-    /// The contract for a service that interprets the state of input devices.
-    /// </summary>
-    public interface IInputDeviceStateAdaptor
-    {
-        /// <summary>
-        /// Determines whether the specified key is up or down.
-        /// </summary>
-        /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
-        /// <returns>
-        /// 	<c>true</c> if the key is down; otherwise, <c>false</c>.
-        /// </returns>
-        bool IsKeyDown(VirtualKeyCode keyCode);
 
         /// <summary>
-        /// Determines whether the specified key is up or down.
+        /// Determines whether the specified key is up or downby calling the <see cref="NativeMethods.GetKeyState"/> function. (See: http://msdn.microsoft.com/en-us/library/ms646301(VS.85).aspx)
         /// </summary>
         /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
         /// <returns>
         /// 	<c>true</c> if the key is up; otherwise, <c>false</c>.
         /// </returns>
-        bool IsKeyUp(VirtualKeyCode keyCode);
+        /// <remarks>
+        /// The key status returned from this function changes as a thread reads key messages from its message queue. The status does not reflect the interrupt-level state associated with the hardware. Use the GetAsyncKeyState function to retrieve that information. 
+        /// An application calls GetKeyState in response to a keyboard-input message. This function retrieves the state of the key when the input message was generated. 
+        /// To retrieve state information for all the virtual keys, use the GetKeyboardState function. 
+        /// An application can use the virtual-key code constants VK_SHIFT, VK_CONTROL, and VK_MENU as values for Bthe nVirtKey parameter. This gives the status of the SHIFT, CTRL, or ALT keys without distinguishing between left and right. An application can also use the following virtual-key code constants as values for nVirtKey to distinguish between the left and right instances of those keys. 
+        /// VK_LSHIFT
+        /// VK_RSHIFT
+        /// VK_LCONTROL
+        /// VK_RCONTROL
+        /// VK_LMENU
+        /// VK_RMENU
+        /// 
+        /// These left- and right-distinguishing constants are available to an application only through the GetKeyboardState, SetKeyboardState, GetAsyncKeyState, GetKeyState, and MapVirtualKey functions. 
+        /// </remarks>
+        public bool IsKeyUp(VirtualKeyCode keyCode)
+        {
+            return !IsKeyDown(keyCode);
+        }
 
         /// <summary>
-        /// Determines whether the physical key is up or down at the time the function is called regardless of whether the application thread has read the keyboard event from the message pump.
+        /// Determines whether the physical key is up or down at the time the function is called regardless of whether the application thread has read the keyboard event from the message pump by calling the <see cref="NativeMethods.GetAsyncKeyState"/> function. (See: http://msdn.microsoft.com/en-us/library/ms646293(VS.85).aspx)
         /// </summary>
         /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
         /// <returns>
         /// 	<c>true</c> if the key is down; otherwise, <c>false</c>.
         /// </returns>
-        bool IsHardwareKeyDown(VirtualKeyCode keyCode);
+        /// <remarks>
+        /// The GetAsyncKeyState function works with mouse buttons. However, it checks on the state of the physical mouse buttons, not on the logical mouse buttons that the physical buttons are mapped to. For example, the call GetAsyncKeyState(VK_LBUTTON) always returns the state of the left physical mouse button, regardless of whether it is mapped to the left or right logical mouse button. You can determine the system's current mapping of physical mouse buttons to logical mouse buttons by calling 
+        /// Copy CodeGetSystemMetrics(SM_SWAPBUTTON) which returns TRUE if the mouse buttons have been swapped.
+        /// 
+        /// Although the least significant bit of the return value indicates whether the key has been pressed since the last query, due to the pre-emptive multitasking nature of Windows, another application can call GetAsyncKeyState and receive the "recently pressed" bit instead of your application. The behavior of the least significant bit of the return value is retained strictly for compatibility with 16-bit Windows applications (which are non-preemptive) and should not be relied upon.
+        /// 
+        /// You can use the virtual-key code constants VK_SHIFT, VK_CONTROL, and VK_MENU as values for the vKey parameter. This gives the state of the SHIFT, CTRL, or ALT keys without distinguishing between left and right. 
+        /// 
+        /// Windows NT/2000/XP: You can use the following virtual-key code constants as values for vKey to distinguish between the left and right instances of those keys. 
+        /// 
+        /// Code Meaning 
+        /// VK_LSHIFT Left-shift key. 
+        /// VK_RSHIFT Right-shift key. 
+        /// VK_LCONTROL Left-control key. 
+        /// VK_RCONTROL Right-control key. 
+        /// VK_LMENU Left-menu key. 
+        /// VK_RMENU Right-menu key. 
+        /// 
+        /// These left- and right-distinguishing constants are only available when you call the GetKeyboardState, SetKeyboardState, GetAsyncKeyState, GetKeyState, and MapVirtualKey functions. 
+        /// </remarks>
+        public bool IsHardwareKeyDown(VirtualKeyCode keyCode)
+        {
+            var result = NativeMethods.GetAsyncKeyState((UInt16)keyCode);
+            return (result < 0);
+        }
 
         /// <summary>
-        /// Determines whether the physical key is up or down at the time the function is called regardless of whether the application thread has read the keyboard event from the message pump.
+        /// Determines whether the physical key is up or down at the time the function is called regardless of whether the application thread has read the keyboard event from the message pump by calling the <see cref="NativeMethods.GetAsyncKeyState"/> function. (See: http://msdn.microsoft.com/en-us/library/ms646293(VS.85).aspx)
         /// </summary>
         /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
         /// <returns>
         /// 	<c>true</c> if the key is up; otherwise, <c>false</c>.
         /// </returns>
-        bool IsHardwareKeyUp(VirtualKeyCode keyCode);
+        /// <remarks>
+        /// The GetAsyncKeyState function works with mouse buttons. However, it checks on the state of the physical mouse buttons, not on the logical mouse buttons that the physical buttons are mapped to. For example, the call GetAsyncKeyState(VK_LBUTTON) always returns the state of the left physical mouse button, regardless of whether it is mapped to the left or right logical mouse button. You can determine the system's current mapping of physical mouse buttons to logical mouse buttons by calling 
+        /// Copy CodeGetSystemMetrics(SM_SWAPBUTTON) which returns TRUE if the mouse buttons have been swapped.
+        /// 
+        /// Although the least significant bit of the return value indicates whether the key has been pressed since the last query, due to the pre-emptive multitasking nature of Windows, another application can call GetAsyncKeyState and receive the "recently pressed" bit instead of your application. The behavior of the least significant bit of the return value is retained strictly for compatibility with 16-bit Windows applications (which are non-preemptive) and should not be relied upon.
+        /// 
+        /// You can use the virtual-key code constants VK_SHIFT, VK_CONTROL, and VK_MENU as values for the vKey parameter. This gives the state of the SHIFT, CTRL, or ALT keys without distinguishing between left and right. 
+        /// 
+        /// Windows NT/2000/XP: You can use the following virtual-key code constants as values for vKey to distinguish between the left and right instances of those keys. 
+        /// 
+        /// Code Meaning 
+        /// VK_LSHIFT Left-shift key. 
+        /// VK_RSHIFT Right-shift key. 
+        /// VK_LCONTROL Left-control key. 
+        /// VK_RCONTROL Right-control key. 
+        /// VK_LMENU Left-menu key. 
+        /// VK_RMENU Right-menu key. 
+        /// 
+        /// These left- and right-distinguishing constants are only available when you call the GetKeyboardState, SetKeyboardState, GetAsyncKeyState, GetKeyState, and MapVirtualKey functions. 
+        /// </remarks>
+        public bool IsHardwareKeyUp(VirtualKeyCode keyCode)
+        {
+            return !IsHardwareKeyDown(keyCode);
+        }
 
         /// <summary>
-        /// Determines whether the toggling key is toggled on (in-effect) or not.
+        /// Determines whether the toggling key is toggled on (in-effect) or not by calling the <see cref="NativeMethods.GetKeyState"/> function.  (See: http://msdn.microsoft.com/en-us/library/ms646301(VS.85).aspx)
         /// </summary>
         /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
         /// <returns>
         /// 	<c>true</c> if the toggling key is toggled on (in-effect); otherwise, <c>false</c>.
         /// </returns>
-        bool IsTogglingKeyInEffect(VirtualKeyCode keyCode);
+        /// <remarks>
+        /// The key status returned from this function changes as a thread reads key messages from its message queue. The status does not reflect the interrupt-level state associated with the hardware. Use the GetAsyncKeyState function to retrieve that information. 
+        /// An application calls GetKeyState in response to a keyboard-input message. This function retrieves the state of the key when the input message was generated. 
+        /// To retrieve state information for all the virtual keys, use the GetKeyboardState function. 
+        /// An application can use the virtual-key code constants VK_SHIFT, VK_CONTROL, and VK_MENU as values for the nVirtKey parameter. This gives the status of the SHIFT, CTRL, or ALT keys without distinguishing between left and right. An application can also use the following virtual-key code constants as values for nVirtKey to distinguish between the left and right instances of those keys. 
+        /// VK_LSHIFT
+        /// VK_RSHIFT
+        /// VK_LCONTROL
+        /// VK_RCONTROL
+        /// VK_LMENU
+        /// VK_RMENU
+        /// 
+        /// These left- and right-distinguishing constants are available to an application only through the GetKeyboardState, SetKeyboardState, GetAsyncKeyState, GetKeyState, and MapVirtualKey functions. 
+        /// </remarks>
+        public bool IsTogglingKeyInEffect(VirtualKeyCode keyCode)
+        {
+            Int16 result = NativeMethods.GetKeyState((UInt16)keyCode);
+            return (result & 0x01) == 0x01;
+        }
     }
 }
 
-namespace WindowsInput
-{
-    /// <summary>
-    /// The contract for a service that dispatches <see cref="INPUT"/> messages to the appropriate destination.
-    /// </summary>
-    internal interface IInputMessageDispatcher
-    {
-        /// <summary>
-        /// Dispatches the specified list of <see cref="INPUT"/> messages in their specified order.
-        /// </summary>
-        /// <param name="inputs">The list of <see cref="INPUT"/> messages to be dispatched.</param>
-        /// <exception cref="ArgumentException">If the <paramref name="inputs"/> array is empty.</exception>
-        /// <exception cref="ArgumentNullException">If the <paramref name="inputs"/> array is null.</exception>
-        /// <exception cref="Exception">If the any of the commands in the <paramref name="inputs"/> array could not be sent successfully.</exception>
-        void DispatchInput(INPUT[] inputs);
-    }
-}
-namespace WindowsInput
-{
-    /// <summary>
-    /// The contract for a service that simulates Keyboard and Mouse input and Hardware Input Device state detection for the Windows Platform.
-    /// </summary>
-    public interface IInputSimulator
-    {
-        /// <summary>
-        /// Gets the <see cref="IKeyboardSimulator"/> instance for simulating Keyboard input.
-        /// </summary>
-        /// <value>The <see cref="IKeyboardSimulator"/> instance.</value>
-        IKeyboardSimulator Keyboard { get; }
-
-        /// <summary>
-        /// Gets the <see cref="IMouseSimulator"/> instance for simulating Mouse input.
-        /// </summary>
-        /// <value>The <see cref="IMouseSimulator"/> instance.</value>
-        IMouseSimulator Mouse { get; }
-
-        /// <summary>
-        /// Gets the <see cref="IInputDeviceStateAdaptor"/> instance for determining the state of the various input devices.
-        /// </summary>
-        /// <value>The <see cref="IInputDeviceStateAdaptor"/> instance.</value>
-        IInputDeviceStateAdaptor InputDeviceState { get; }
-    }
-}
-
-namespace WindowsInput
-{
-    /// <summary>
-    /// The service contract for a keyboard simulator for the Windows platform.
-    /// </summary>
-    public interface IKeyboardSimulator
-    {
-        /// <summary>
-        /// Gets the <see cref="IMouseSimulator"/> instance for simulating Mouse input.
-        /// </summary>
-        /// <value>The <see cref="IMouseSimulator"/> instance.</value>
-        IMouseSimulator Mouse { get; }
-
-        /// <summary>
-        /// Simulates the key down gesture for the specified key.
-        /// </summary>
-        /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
-        IKeyboardSimulator KeyDown(VirtualKeyCode keyCode);
-
-        /// <summary>
-        /// Simulates the key press gesture for the specified key.
-        /// </summary>
-        /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
-        IKeyboardSimulator KeyPress(VirtualKeyCode keyCode);
-
-        /// <summary>
-        /// Simulates a key press for each of the specified key codes in the order they are specified.
-        /// </summary>
-        /// <param name="keyCodes"></param>
-        IKeyboardSimulator KeyPress(params VirtualKeyCode[] keyCodes);
-
-        /// <summary>
-        /// Simulates the key up gesture for the specified key.
-        /// </summary>
-        /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
-        IKeyboardSimulator KeyUp(VirtualKeyCode keyCode);
-
-        /// <summary>
-        /// Simulates a modified keystroke where there are multiple modifiers and multiple keys like CTRL-ALT-K-C where CTRL and ALT are the modifierKeys and K and C are the keys.
-        /// The flow is Modifiers KeyDown in order, Keys Press in order, Modifiers KeyUp in reverse order.
-        /// </summary>
-        /// <param name="modifierKeyCodes">The list of <see cref="VirtualKeyCode"/>s for the modifier keys.</param>
-        /// <param name="keyCodes">The list of <see cref="VirtualKeyCode"/>s for the keys to simulate.</param>
-        IKeyboardSimulator ModifiedKeyStroke(IEnumerable<VirtualKeyCode> modifierKeyCodes, IEnumerable<VirtualKeyCode> keyCodes);
-
-        /// <summary>
-        /// Simulates a modified keystroke where there are multiple modifiers and one key like CTRL-ALT-C where CTRL and ALT are the modifierKeys and C is the key.
-        /// The flow is Modifiers KeyDown in order, Key Press, Modifiers KeyUp in reverse order.
-        /// </summary>
-        /// <param name="modifierKeyCodes">The list of <see cref="VirtualKeyCode"/>s for the modifier keys.</param>
-        /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
-        IKeyboardSimulator ModifiedKeyStroke(IEnumerable<VirtualKeyCode> modifierKeyCodes, VirtualKeyCode keyCode);
-
-        /// <summary>
-        /// Simulates a modified keystroke where there is one modifier and multiple keys like CTRL-K-C where CTRL is the modifierKey and K and C are the keys.
-        /// The flow is Modifier KeyDown, Keys Press in order, Modifier KeyUp.
-        /// </summary>
-        /// <param name="modifierKey">The <see cref="VirtualKeyCode"/> for the modifier key.</param>
-        /// <param name="keyCodes">The list of <see cref="VirtualKeyCode"/>s for the keys to simulate.</param>
-        IKeyboardSimulator ModifiedKeyStroke(VirtualKeyCode modifierKey, IEnumerable<VirtualKeyCode> keyCodes);
-
-        /// <summary>
-        /// Simulates a simple modified keystroke like CTRL-C where CTRL is the modifierKey and C is the key.
-        /// The flow is Modifier KeyDown, Key Press, Modifier KeyUp.
-        /// </summary>
-        /// <param name="modifierKeyCode">The <see cref="VirtualKeyCode"/> for the  modifier key.</param>
-        /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
-        IKeyboardSimulator ModifiedKeyStroke(VirtualKeyCode modifierKeyCode, VirtualKeyCode keyCode);
-
-        /// <summary>
-        /// Simulates uninterrupted text entry via the keyboard.
-        /// </summary>
-        /// <param name="text">The text to be simulated.</param>
-        IKeyboardSimulator TextEntry(string text);
-
-        /// <summary>
-        /// Simulates a single character text entry via the keyboard.
-        /// </summary>
-        /// <param name="character">The unicode character to be simulated.</param>
-        IKeyboardSimulator TextEntry(char character);
-
-        /// <summary>
-        /// Sleeps the executing thread to create a pause between simulated inputs.
-        /// </summary>
-        /// <param name="millsecondsTimeout">The number of milliseconds to wait.</param>
-        IKeyboardSimulator Sleep(int millsecondsTimeout);
-
-        /// <summary>
-        /// Sleeps the executing thread to create a pause between simulated inputs.
-        /// </summary>
-        /// <param name="timeout">The time to wait.</param>
-        IKeyboardSimulator Sleep(TimeSpan timeout);
-    }
-}
 namespace WindowsInput
 {
     /// <summary>
@@ -277,6 +215,26 @@ namespace WindowsInput
         IMouseSimulator LeftButtonDoubleClick();
 
         /// <summary>
+        /// Simulates a mouse middle button down gesture.
+        /// </summary>
+        IMouseSimulator MiddleButtonDown();
+
+        /// <summary>
+        /// Simulates a mouse middle button up gesture.
+        /// </summary>
+        IMouseSimulator MiddleButtonUp();
+
+        /// <summary>
+        /// Simulates a mouse middle button click gesture.
+        /// </summary>
+        IMouseSimulator MiddleButtonClick();
+
+        /// <summary>
+        /// Simulates a mouse middle button double-click gesture.
+        /// </summary>
+        IMouseSimulator MiddleButtonDoubleClick();
+
+        /// <summary>
         /// Simulates a mouse right button down gesture.
         /// </summary>
         IMouseSimulator RightButtonDown();
@@ -327,10 +285,22 @@ namespace WindowsInput
         IMouseSimulator VerticalScroll(int scrollAmountInClicks);
 
         /// <summary>
+        /// Simulates mouse vertical wheel scroll gesture.
+        /// </summary>
+        /// <param name="scrollAmount">The absolute amount to scroll. A positive value indicates that the wheel was rotated forward, away from the user; a negative value indicates that the wheel was rotated backward, toward the user.</param>
+        IMouseSimulator VerticalScrollAbsolute(int scrollAmount);
+
+        /// <summary>
         /// Simulates a mouse horizontal wheel scroll gesture. Supported by Windows Vista and later.
         /// </summary>
         /// <param name="scrollAmountInClicks">The amount to scroll in clicks. A positive value indicates that the wheel was rotated to the right; a negative value indicates that the wheel was rotated to the left.</param>
         IMouseSimulator HorizontalScroll(int scrollAmountInClicks);
+
+        /// <summary>
+        /// Simulates a mouse horizontal wheel scroll gesture. Supported by Windows Vista and later.
+        /// </summary>
+        /// <param name="scrollAmount">The absolute amount to scroll. A positive value indicates that the wheel was rotated to the right; a negative value indicates that the wheel was rotated to the left.</param>
+        IMouseSimulator HorizontalScrollAbsolute(int scrollAmount);
 
         /// <summary>
         /// Sleeps the executing thread to create a pause between simulated inputs.
@@ -345,6 +315,7 @@ namespace WindowsInput
         IMouseSimulator Sleep(TimeSpan timeout);
     }
 }
+
 namespace WindowsInput
 {
     /// <summary>
@@ -467,7 +438,7 @@ namespace WindowsInput
                                     new KEYBDINPUT
                                         {
                                             KeyCode = (UInt16) keyCode,
-                                            Scan = (UInt16)(NativeMethods.MapVirtualKey((UInt32)keyCode, 0) & 0xFFU),
+                                            Scan = 0,
                                             Flags = IsExtendedKey(keyCode) ? (UInt32) KeyboardFlag.ExtendedKey : 0,
                                             Time = 0,
                                             ExtraInfo = IntPtr.Zero
@@ -496,7 +467,7 @@ namespace WindowsInput
                                     new KEYBDINPUT
                                         {
                                             KeyCode = (UInt16) keyCode,
-                                            Scan = (UInt16)(NativeMethods.MapVirtualKey((UInt32)keyCode, 0) & 0xFFU),
+                                            Scan = 0,
                                             Flags = (UInt32) (IsExtendedKey(keyCode)
                                                                   ? KeyboardFlag.KeyUp | KeyboardFlag.ExtendedKey
                                                                   : KeyboardFlag.KeyUp),
@@ -826,6 +797,7 @@ namespace WindowsInput
         }
     }
 }
+
 namespace WindowsInput
 {
     /// <summary>
@@ -899,6 +871,7 @@ namespace WindowsInput
         }
     }
 }
+
 namespace WindowsInput
 {
     /// <summary>
@@ -1122,6 +1095,7 @@ namespace WindowsInput
         }
     }
 }
+
 namespace WindowsInput
 {
     /// <summary>
@@ -1145,6 +1119,7 @@ namespace WindowsInput
         RightButton,
     }
 }
+
 namespace WindowsInput
 {
     /// <summary>
@@ -1285,6 +1260,46 @@ namespace WindowsInput
         }
 
         /// <summary>
+        /// Simulates a mouse middle button down gesture.
+        /// </summary>
+        public IMouseSimulator MiddleButtonDown()
+        {
+            var inputList = new InputBuilder().AddMouseButtonDown(MouseButton.MiddleButton).ToArray();
+            SendSimulatedInput(inputList);
+            return this;
+        }
+
+        /// <summary>
+        /// Simulates a mouse middle button up gesture.
+        /// </summary>
+        public IMouseSimulator MiddleButtonUp()
+        {
+            var inputList = new InputBuilder().AddMouseButtonUp(MouseButton.MiddleButton).ToArray();
+            SendSimulatedInput(inputList);
+            return this;
+        }
+
+        /// <summary>
+        /// Simulates a mouse middle-click gesture.
+        /// </summary>
+        public IMouseSimulator MiddleButtonClick()
+        {
+            var inputList = new InputBuilder().AddMouseButtonClick(MouseButton.MiddleButton).ToArray();
+            SendSimulatedInput(inputList);
+            return this;
+        }
+
+        /// <summary>
+        /// Simulates a mouse middle button double-click gesture.
+        /// </summary>
+        public IMouseSimulator MiddleButtonDoubleClick()
+        {
+            var inputList = new InputBuilder().AddMouseButtonDoubleClick(MouseButton.MiddleButton).ToArray();
+            SendSimulatedInput(inputList);
+            return this;
+        }
+
+        /// <summary>
         /// Simulates a mouse right button down gesture.
         /// </summary>
         public IMouseSimulator RightButtonDown()
@@ -1374,7 +1389,16 @@ namespace WindowsInput
         /// <param name="scrollAmountInClicks">The amount to scroll in clicks. A positive value indicates that the wheel was rotated forward, away from the user; a negative value indicates that the wheel was rotated backward, toward the user.</param>
         public IMouseSimulator VerticalScroll(int scrollAmountInClicks)
         {
-            var inputList = new InputBuilder().AddMouseVerticalWheelScroll(scrollAmountInClicks * MouseWheelClickSize).ToArray();
+            return VerticalScrollAbsolute(scrollAmountInClicks * MouseWheelClickSize);
+        }
+
+        /// <summary>
+        /// Simulates mouse vertical wheel scroll gesture.
+        /// </summary>
+        /// <param name="scrollAmount">The absolute amount to scroll. A positive value indicates that the wheel was rotated forward, away from the user; a negative value indicates that the wheel was rotated backward, toward the user.</param>
+        public IMouseSimulator VerticalScrollAbsolute(int scrollAmount)
+        {
+            var inputList = new InputBuilder().AddMouseVerticalWheelScroll(scrollAmount).ToArray();
             SendSimulatedInput(inputList);
             return this;
         }
@@ -1385,7 +1409,16 @@ namespace WindowsInput
         /// <param name="scrollAmountInClicks">The amount to scroll in clicks. A positive value indicates that the wheel was rotated to the right; a negative value indicates that the wheel was rotated to the left.</param>
         public IMouseSimulator HorizontalScroll(int scrollAmountInClicks)
         {
-            var inputList = new InputBuilder().AddMouseHorizontalWheelScroll(scrollAmountInClicks * MouseWheelClickSize).ToArray();
+            return HorizontalScrollAbsolute(scrollAmountInClicks * MouseWheelClickSize);
+        }
+
+        /// <summary>
+        /// Simulates a mouse horizontal wheel scroll gesture. Supported by Windows Vista and later.
+        /// </summary>
+        /// <param name="scrollAmount">The absolute amount to scroll. A positive value indicates that the wheel was rotated to the right; a negative value indicates that the wheel was rotated to the left.</param>
+        public IMouseSimulator HorizontalScrollAbsolute(int scrollAmount)
+        {
+            var inputList = new InputBuilder().AddMouseHorizontalWheelScroll(scrollAmount).ToArray();
             SendSimulatedInput(inputList);
             return this;
         }
@@ -1411,157 +1444,222 @@ namespace WindowsInput
         }
     }
 }
+
 namespace WindowsInput
 {
     /// <summary>
-    /// An implementation of <see cref="IInputDeviceStateAdaptor"/> for Windows by calling the native <see cref="NativeMethods.GetKeyState"/> and <see cref="NativeMethods.GetAsyncKeyState"/> methods.
+    /// Implements the <see cref="IInputMessageDispatcher"/> by calling <see cref="NativeMethods.SendInput"/>.
     /// </summary>
-    public class WindowsInputDeviceStateAdaptor : IInputDeviceStateAdaptor
+    internal class WindowsInputMessageDispatcher : IInputMessageDispatcher
     {
-
         /// <summary>
-        /// Determines whether the specified key is up or down by calling the GetKeyState function. (See: http://msdn.microsoft.com/en-us/library/ms646301(VS.85).aspx)
+        /// Dispatches the specified list of <see cref="INPUT"/> messages in their specified order by issuing a single called to <see cref="NativeMethods.SendInput"/>.
+        /// </summary>
+        /// <param name="inputs">The list of <see cref="INPUT"/> messages to be dispatched.</param>
+        /// <exception cref="ArgumentException">If the <paramref name="inputs"/> array is empty.</exception>
+        /// <exception cref="ArgumentNullException">If the <paramref name="inputs"/> array is null.</exception>
+        /// <exception cref="Exception">If the any of the commands in the <paramref name="inputs"/> array could not be sent successfully.</exception>
+        public void DispatchInput(INPUT[] inputs)
+        {
+            if (inputs == null) throw new ArgumentNullException("inputs");
+            if (inputs.Length == 0) throw new ArgumentException("The input array was empty", "inputs");
+            var successful = NativeMethods.SendInput((UInt32)inputs.Length, inputs, Marshal.SizeOf(typeof (INPUT)));
+            if (successful != inputs.Length)
+                throw new Exception("Some simulated input commands were not sent successfully. The most common reason for this happening are the security features of Windows including User Interface Privacy Isolation (UIPI). Your application can only send commands to applications of the same or lower elevation. Similarly certain commands are restricted to Accessibility/UIAutomation applications. Refer to the project home page and the code samples for more information.");
+        }
+    }
+}
+
+namespace WindowsInput
+{
+    /// <summary>
+    /// The contract for a service that interprets the state of input devices.
+    /// </summary>
+    public interface IInputDeviceStateAdaptor
+    {
+        /// <summary>
+        /// Determines whether the specified key is up or down.
         /// </summary>
         /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
         /// <returns>
         /// 	<c>true</c> if the key is down; otherwise, <c>false</c>.
         /// </returns>
-        /// <remarks>
-        /// The key status returned from this function changes as a thread reads key messages from its message queue. The status does not reflect the interrupt-level state associated with the hardware. Use the GetAsyncKeyState function to retrieve that information. 
-        /// An application calls GetKeyState in response to a keyboard-input message. This function retrieves the state of the key when the input message was generated. 
-        /// To retrieve state information for all the virtual keys, use the GetKeyboardState function. 
-        /// An application can use the virtual-key code constants VK_SHIFT, VK_CONTROL, and VK_MENU as values for Bthe nVirtKey parameter. This gives the status of the SHIFT, CTRL, or ALT keys without distinguishing between left and right. An application can also use the following virtual-key code constants as values for nVirtKey to distinguish between the left and right instances of those keys. 
-        /// VK_LSHIFT
-        /// VK_RSHIFT
-        /// VK_LCONTROL
-        /// VK_RCONTROL
-        /// VK_LMENU
-        /// VK_RMENU
-        /// 
-        /// These left- and right-distinguishing constants are available to an application only through the GetKeyboardState, SetKeyboardState, GetAsyncKeyState, GetKeyState, and MapVirtualKey functions. 
-        /// </remarks>
-        public bool IsKeyDown(VirtualKeyCode keyCode)
-        {
-            Int16 result = NativeMethods.GetKeyState((UInt16)keyCode);
-            return (result < 0);
-        }
+        bool IsKeyDown(VirtualKeyCode keyCode);
 
         /// <summary>
-        /// Determines whether the specified key is up or downby calling the <see cref="NativeMethods.GetKeyState"/> function. (See: http://msdn.microsoft.com/en-us/library/ms646301(VS.85).aspx)
+        /// Determines whether the specified key is up or down.
         /// </summary>
         /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
         /// <returns>
         /// 	<c>true</c> if the key is up; otherwise, <c>false</c>.
         /// </returns>
-        /// <remarks>
-        /// The key status returned from this function changes as a thread reads key messages from its message queue. The status does not reflect the interrupt-level state associated with the hardware. Use the GetAsyncKeyState function to retrieve that information. 
-        /// An application calls GetKeyState in response to a keyboard-input message. This function retrieves the state of the key when the input message was generated. 
-        /// To retrieve state information for all the virtual keys, use the GetKeyboardState function. 
-        /// An application can use the virtual-key code constants VK_SHIFT, VK_CONTROL, and VK_MENU as values for Bthe nVirtKey parameter. This gives the status of the SHIFT, CTRL, or ALT keys without distinguishing between left and right. An application can also use the following virtual-key code constants as values for nVirtKey to distinguish between the left and right instances of those keys. 
-        /// VK_LSHIFT
-        /// VK_RSHIFT
-        /// VK_LCONTROL
-        /// VK_RCONTROL
-        /// VK_LMENU
-        /// VK_RMENU
-        /// 
-        /// These left- and right-distinguishing constants are available to an application only through the GetKeyboardState, SetKeyboardState, GetAsyncKeyState, GetKeyState, and MapVirtualKey functions. 
-        /// </remarks>
-        public bool IsKeyUp(VirtualKeyCode keyCode)
-        {
-            return !IsKeyDown(keyCode);
-        }
+        bool IsKeyUp(VirtualKeyCode keyCode);
 
         /// <summary>
-        /// Determines whether the physical key is up or down at the time the function is called regardless of whether the application thread has read the keyboard event from the message pump by calling the <see cref="NativeMethods.GetAsyncKeyState"/> function. (See: http://msdn.microsoft.com/en-us/library/ms646293(VS.85).aspx)
+        /// Determines whether the physical key is up or down at the time the function is called regardless of whether the application thread has read the keyboard event from the message pump.
         /// </summary>
         /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
         /// <returns>
         /// 	<c>true</c> if the key is down; otherwise, <c>false</c>.
         /// </returns>
-        /// <remarks>
-        /// The GetAsyncKeyState function works with mouse buttons. However, it checks on the state of the physical mouse buttons, not on the logical mouse buttons that the physical buttons are mapped to. For example, the call GetAsyncKeyState(VK_LBUTTON) always returns the state of the left physical mouse button, regardless of whether it is mapped to the left or right logical mouse button. You can determine the system's current mapping of physical mouse buttons to logical mouse buttons by calling 
-        /// Copy CodeGetSystemMetrics(SM_SWAPBUTTON) which returns TRUE if the mouse buttons have been swapped.
-        /// 
-        /// Although the least significant bit of the return value indicates whether the key has been pressed since the last query, due to the pre-emptive multitasking nature of Windows, another application can call GetAsyncKeyState and receive the "recently pressed" bit instead of your application. The behavior of the least significant bit of the return value is retained strictly for compatibility with 16-bit Windows applications (which are non-preemptive) and should not be relied upon.
-        /// 
-        /// You can use the virtual-key code constants VK_SHIFT, VK_CONTROL, and VK_MENU as values for the vKey parameter. This gives the state of the SHIFT, CTRL, or ALT keys without distinguishing between left and right. 
-        /// 
-        /// Windows NT/2000/XP: You can use the following virtual-key code constants as values for vKey to distinguish between the left and right instances of those keys. 
-        /// 
-        /// Code Meaning 
-        /// VK_LSHIFT Left-shift key. 
-        /// VK_RSHIFT Right-shift key. 
-        /// VK_LCONTROL Left-control key. 
-        /// VK_RCONTROL Right-control key. 
-        /// VK_LMENU Left-menu key. 
-        /// VK_RMENU Right-menu key. 
-        /// 
-        /// These left- and right-distinguishing constants are only available when you call the GetKeyboardState, SetKeyboardState, GetAsyncKeyState, GetKeyState, and MapVirtualKey functions. 
-        /// </remarks>
-        public bool IsHardwareKeyDown(VirtualKeyCode keyCode)
-        {
-            var result = NativeMethods.GetAsyncKeyState((UInt16)keyCode);
-            return (result < 0);
-        }
+        bool IsHardwareKeyDown(VirtualKeyCode keyCode);
 
         /// <summary>
-        /// Determines whether the physical key is up or down at the time the function is called regardless of whether the application thread has read the keyboard event from the message pump by calling the <see cref="NativeMethods.GetAsyncKeyState"/> function. (See: http://msdn.microsoft.com/en-us/library/ms646293(VS.85).aspx)
+        /// Determines whether the physical key is up or down at the time the function is called regardless of whether the application thread has read the keyboard event from the message pump.
         /// </summary>
         /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
         /// <returns>
         /// 	<c>true</c> if the key is up; otherwise, <c>false</c>.
         /// </returns>
-        /// <remarks>
-        /// The GetAsyncKeyState function works with mouse buttons. However, it checks on the state of the physical mouse buttons, not on the logical mouse buttons that the physical buttons are mapped to. For example, the call GetAsyncKeyState(VK_LBUTTON) always returns the state of the left physical mouse button, regardless of whether it is mapped to the left or right logical mouse button. You can determine the system's current mapping of physical mouse buttons to logical mouse buttons by calling 
-        /// Copy CodeGetSystemMetrics(SM_SWAPBUTTON) which returns TRUE if the mouse buttons have been swapped.
-        /// 
-        /// Although the least significant bit of the return value indicates whether the key has been pressed since the last query, due to the pre-emptive multitasking nature of Windows, another application can call GetAsyncKeyState and receive the "recently pressed" bit instead of your application. The behavior of the least significant bit of the return value is retained strictly for compatibility with 16-bit Windows applications (which are non-preemptive) and should not be relied upon.
-        /// 
-        /// You can use the virtual-key code constants VK_SHIFT, VK_CONTROL, and VK_MENU as values for the vKey parameter. This gives the state of the SHIFT, CTRL, or ALT keys without distinguishing between left and right. 
-        /// 
-        /// Windows NT/2000/XP: You can use the following virtual-key code constants as values for vKey to distinguish between the left and right instances of those keys. 
-        /// 
-        /// Code Meaning 
-        /// VK_LSHIFT Left-shift key. 
-        /// VK_RSHIFT Right-shift key. 
-        /// VK_LCONTROL Left-control key. 
-        /// VK_RCONTROL Right-control key. 
-        /// VK_LMENU Left-menu key. 
-        /// VK_RMENU Right-menu key. 
-        /// 
-        /// These left- and right-distinguishing constants are only available when you call the GetKeyboardState, SetKeyboardState, GetAsyncKeyState, GetKeyState, and MapVirtualKey functions. 
-        /// </remarks>
-        public bool IsHardwareKeyUp(VirtualKeyCode keyCode)
-        {
-            return !IsHardwareKeyDown(keyCode);
-        }
+        bool IsHardwareKeyUp(VirtualKeyCode keyCode);
 
         /// <summary>
-        /// Determines whether the toggling key is toggled on (in-effect) or not by calling the <see cref="NativeMethods.GetKeyState"/> function.  (See: http://msdn.microsoft.com/en-us/library/ms646301(VS.85).aspx)
+        /// Determines whether the toggling key is toggled on (in-effect) or not.
         /// </summary>
         /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
         /// <returns>
         /// 	<c>true</c> if the toggling key is toggled on (in-effect); otherwise, <c>false</c>.
         /// </returns>
-        /// <remarks>
-        /// The key status returned from this function changes as a thread reads key messages from its message queue. The status does not reflect the interrupt-level state associated with the hardware. Use the GetAsyncKeyState function to retrieve that information. 
-        /// An application calls GetKeyState in response to a keyboard-input message. This function retrieves the state of the key when the input message was generated. 
-        /// To retrieve state information for all the virtual keys, use the GetKeyboardState function. 
-        /// An application can use the virtual-key code constants VK_SHIFT, VK_CONTROL, and VK_MENU as values for the nVirtKey parameter. This gives the status of the SHIFT, CTRL, or ALT keys without distinguishing between left and right. An application can also use the following virtual-key code constants as values for nVirtKey to distinguish between the left and right instances of those keys. 
-        /// VK_LSHIFT
-        /// VK_RSHIFT
-        /// VK_LCONTROL
-        /// VK_RCONTROL
-        /// VK_LMENU
-        /// VK_RMENU
-        /// 
-        /// These left- and right-distinguishing constants are available to an application only through the GetKeyboardState, SetKeyboardState, GetAsyncKeyState, GetKeyState, and MapVirtualKey functions. 
-        /// </remarks>
-        public bool IsTogglingKeyInEffect(VirtualKeyCode keyCode)
-        {
-            Int16 result = NativeMethods.GetKeyState((UInt16)keyCode);
-            return (result & 0x01) == 0x01;
-        }
+        bool IsTogglingKeyInEffect(VirtualKeyCode keyCode);
+    }
+}
+
+namespace WindowsInput
+{
+    /// <summary>
+    /// The contract for a service that dispatches <see cref="INPUT"/> messages to the appropriate destination.
+    /// </summary>
+    internal interface IInputMessageDispatcher
+    {
+        /// <summary>
+        /// Dispatches the specified list of <see cref="INPUT"/> messages in their specified order.
+        /// </summary>
+        /// <param name="inputs">The list of <see cref="INPUT"/> messages to be dispatched.</param>
+        /// <exception cref="ArgumentException">If the <paramref name="inputs"/> array is empty.</exception>
+        /// <exception cref="ArgumentNullException">If the <paramref name="inputs"/> array is null.</exception>
+        /// <exception cref="Exception">If the any of the commands in the <paramref name="inputs"/> array could not be sent successfully.</exception>
+        void DispatchInput(INPUT[] inputs);
+    }
+}
+
+namespace WindowsInput
+{
+    /// <summary>
+    /// The contract for a service that simulates Keyboard and Mouse input and Hardware Input Device state detection for the Windows Platform.
+    /// </summary>
+    public interface IInputSimulator
+    {
+        /// <summary>
+        /// Gets the <see cref="IKeyboardSimulator"/> instance for simulating Keyboard input.
+        /// </summary>
+        /// <value>The <see cref="IKeyboardSimulator"/> instance.</value>
+        IKeyboardSimulator Keyboard { get; }
+
+        /// <summary>
+        /// Gets the <see cref="IMouseSimulator"/> instance for simulating Mouse input.
+        /// </summary>
+        /// <value>The <see cref="IMouseSimulator"/> instance.</value>
+        IMouseSimulator Mouse { get; }
+
+        /// <summary>
+        /// Gets the <see cref="IInputDeviceStateAdaptor"/> instance for determining the state of the various input devices.
+        /// </summary>
+        /// <value>The <see cref="IInputDeviceStateAdaptor"/> instance.</value>
+        IInputDeviceStateAdaptor InputDeviceState { get; }
+    }
+}
+
+namespace WindowsInput
+{
+    /// <summary>
+    /// The service contract for a keyboard simulator for the Windows platform.
+    /// </summary>
+    public interface IKeyboardSimulator
+    {
+        /// <summary>
+        /// Gets the <see cref="IMouseSimulator"/> instance for simulating Mouse input.
+        /// </summary>
+        /// <value>The <see cref="IMouseSimulator"/> instance.</value>
+        IMouseSimulator Mouse { get; }
+
+        /// <summary>
+        /// Simulates the key down gesture for the specified key.
+        /// </summary>
+        /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
+        IKeyboardSimulator KeyDown(VirtualKeyCode keyCode);
+
+        /// <summary>
+        /// Simulates the key press gesture for the specified key.
+        /// </summary>
+        /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
+        IKeyboardSimulator KeyPress(VirtualKeyCode keyCode);
+
+        /// <summary>
+        /// Simulates a key press for each of the specified key codes in the order they are specified.
+        /// </summary>
+        /// <param name="keyCodes"></param>
+        IKeyboardSimulator KeyPress(params VirtualKeyCode[] keyCodes);
+
+        /// <summary>
+        /// Simulates the key up gesture for the specified key.
+        /// </summary>
+        /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
+        IKeyboardSimulator KeyUp(VirtualKeyCode keyCode);
+
+        /// <summary>
+        /// Simulates a modified keystroke where there are multiple modifiers and multiple keys like CTRL-ALT-K-C where CTRL and ALT are the modifierKeys and K and C are the keys.
+        /// The flow is Modifiers KeyDown in order, Keys Press in order, Modifiers KeyUp in reverse order.
+        /// </summary>
+        /// <param name="modifierKeyCodes">The list of <see cref="VirtualKeyCode"/>s for the modifier keys.</param>
+        /// <param name="keyCodes">The list of <see cref="VirtualKeyCode"/>s for the keys to simulate.</param>
+        IKeyboardSimulator ModifiedKeyStroke(IEnumerable<VirtualKeyCode> modifierKeyCodes, IEnumerable<VirtualKeyCode> keyCodes);
+
+        /// <summary>
+        /// Simulates a modified keystroke where there are multiple modifiers and one key like CTRL-ALT-C where CTRL and ALT are the modifierKeys and C is the key.
+        /// The flow is Modifiers KeyDown in order, Key Press, Modifiers KeyUp in reverse order.
+        /// </summary>
+        /// <param name="modifierKeyCodes">The list of <see cref="VirtualKeyCode"/>s for the modifier keys.</param>
+        /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
+        IKeyboardSimulator ModifiedKeyStroke(IEnumerable<VirtualKeyCode> modifierKeyCodes, VirtualKeyCode keyCode);
+
+        /// <summary>
+        /// Simulates a modified keystroke where there is one modifier and multiple keys like CTRL-K-C where CTRL is the modifierKey and K and C are the keys.
+        /// The flow is Modifier KeyDown, Keys Press in order, Modifier KeyUp.
+        /// </summary>
+        /// <param name="modifierKey">The <see cref="VirtualKeyCode"/> for the modifier key.</param>
+        /// <param name="keyCodes">The list of <see cref="VirtualKeyCode"/>s for the keys to simulate.</param>
+        IKeyboardSimulator ModifiedKeyStroke(VirtualKeyCode modifierKey, IEnumerable<VirtualKeyCode> keyCodes);
+
+        /// <summary>
+        /// Simulates a simple modified keystroke like CTRL-C where CTRL is the modifierKey and C is the key.
+        /// The flow is Modifier KeyDown, Key Press, Modifier KeyUp.
+        /// </summary>
+        /// <param name="modifierKeyCode">The <see cref="VirtualKeyCode"/> for the  modifier key.</param>
+        /// <param name="keyCode">The <see cref="VirtualKeyCode"/> for the key.</param>
+        IKeyboardSimulator ModifiedKeyStroke(VirtualKeyCode modifierKeyCode, VirtualKeyCode keyCode);
+
+        /// <summary>
+        /// Simulates uninterrupted text entry via the keyboard.
+        /// </summary>
+        /// <param name="text">The text to be simulated.</param>
+        IKeyboardSimulator TextEntry(string text);
+
+        /// <summary>
+        /// Simulates a single character text entry via the keyboard.
+        /// </summary>
+        /// <param name="character">The unicode character to be simulated.</param>
+        IKeyboardSimulator TextEntry(char character);
+
+        /// <summary>
+        /// Sleeps the executing thread to create a pause between simulated inputs.
+        /// </summary>
+        /// <param name="millsecondsTimeout">The number of milliseconds to wait.</param>
+        IKeyboardSimulator Sleep(int millsecondsTimeout);
+
+        /// <summary>
+        /// Sleeps the executing thread to create a pause between simulated inputs.
+        /// </summary>
+        /// <param name="timeout">The time to wait.</param>
+        IKeyboardSimulator Sleep(TimeSpan timeout);
     }
 }

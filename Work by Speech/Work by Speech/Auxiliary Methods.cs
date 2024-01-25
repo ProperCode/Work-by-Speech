@@ -802,19 +802,7 @@ namespace Speech
             Mouse.OverrideCursor = null;
         }
 
-        private void Iquestion1_PreviewMouseUp(object sender, MouseButtonEventArgs e)
-        {
-            try
-            {
-                MessageBox.Show(Iquestion1.ToolTip.ToString(), "Information", MessageBoxButton.OK,
-                MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error AM023", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
+        
         private void Iquestion2_PreviewMouseUp(object sender, MouseButtonEventArgs e)
         {
             try

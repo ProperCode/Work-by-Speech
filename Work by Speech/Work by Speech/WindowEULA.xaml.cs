@@ -17,7 +17,7 @@ namespace Speech
 
                 TB.Text = "MIT License"
                     + "\n\nWork by Speech"
-+ "\n\nCopyright © 2023 Mikołaj Magowski"
++ "\n\nCopyright © 2023 - 2024 Mikołaj Magowski"
 + "\n\n"
 + "Permission is hereby granted, free of charge, to any person obtaining a copy "
 + "of this software and associated documentation files(the \"Software\"), to deal "

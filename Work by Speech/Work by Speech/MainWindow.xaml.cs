@@ -42,9 +42,9 @@ namespace Speech
 {
     public partial class MainWindow : Window
     {
-        const string prog_version = "2.0";
+        const string prog_version = "2.1";
               string latest_version = "";
-        const string copyright_text = "Copyright © 2023 Mikołaj Magowski. All rights reserved.";
+        const string copyright_text = "Copyright © 2023 - 2024 Mikołaj Magowski. All rights reserved.";
         const string filename_settings = "settings.xml";
         const string filename_coords = "coords.txt"; //speech recognition window last location
         const string grids_foldername = "grids";
@@ -154,7 +154,7 @@ namespace Speech
         const int default_confidence_turning_on = 80;
         const int default_confidence_other_commands = 60;
         const int default_confidence_dictation = 20;
-        const bool default_better_dictation = true; //if set to true, use windows dictation tool
+        const bool default_better_dictation = false; //if set to true, use windows dictation tool
                                                     //(Windows key + H)
         
         string default_ss_voice = "";
@@ -1039,6 +1039,9 @@ namespace Speech
             
             if (current_mode == mode.command)
             {
+                toggle_grammar(false, grammar_type.grammar_dictation_commands);
+                toggle_grammar(false, grammar_type.grammar_dictation);
+
                 toggle_grammar(true, grammar_type.grammar_builtin_commands);
                 toggle_grammar(true, grammar_type.grammar_custom_commands_any);
                 toggle_grammar(true, grammar_type.grammar_custom_commands_foreground);
@@ -1088,6 +1091,11 @@ namespace Speech
             {
                 toggle_grammar(true, grammar_type.grammar_dictation_commands);
                 toggle_grammar(true, grammar_type.grammar_dictation);
+                toggle_grammar(false, grammar_type.grammar_builtin_commands);
+                toggle_grammar(false, grammar_type.grammar_custom_commands_any);
+                toggle_grammar(false, grammar_type.grammar_custom_commands_foreground);
+                toggle_grammar(false, grammar_type.grammar_apps_switching);
+                toggle_grammar(false, grammar_type.grammar_apps_opening);
 
                 Stream iconStream = System.Windows.Application.GetResourceStream(
                 new Uri(icon_dictation)).Stream;
@@ -2218,8 +2226,6 @@ namespace Speech
 
                         if (smart_grid)
                         {
-                            grids[grid_ind].elements[i].count++;
-
                             int ind = -1;
                             int length = grids[grid_ind].elements[i].word_length;
 
@@ -2227,7 +2233,7 @@ namespace Speech
                             {
                                 if (grids[grid_ind].elements[j].word_length < length
                                     && grids[grid_ind].elements[j].count
-                                    < grids[grid_ind].elements[i].count)
+                                    <= grids[grid_ind].elements[i].count)
                                 {
                                     ind = j;
                                     length = grids[grid_ind].elements[j].word_length;
@@ -2251,6 +2257,8 @@ namespace Speech
                                 grids[grid_ind].elements[i].word = word;
                                 grids[grid_ind].elements[i].word_length = length;
                             }
+
+                            grids[grid_ind].elements[i].count++;
                         }
 
                         //delayed Hide, because Mousegrid must be shown when figures content is updated
@@ -3047,15 +3055,15 @@ namespace Speech
                             else if (list_bic_general_and_mouse[i].type == bic_type.close_that)
                             {
                                 //left alt in WindowsInput library is bugged (keyup doesn't work)
-                                //key_down(VirtualKeyCode.LMENU);
+                                //keybd_event(VK_MENU, 0, KEYEVENTF_KEYDOWN, 0);
                                 //key_press(VirtualKeyCode.F4);
-                                //key_up(VirtualKeyCode.LMENU);
+                                //keybd_event(VK_MENU, 0, KEYEVENTF_KEYUP, 0);
                                 //Thread.Sleep(1);
 
                                 keybd_event(VK_MENU, 0, KEYEVENTF_KEYDOWN, 0);
-                                keybd_event(VK_F4, 0, KEYEVENTF_KEYDOWN, 0);
+                                key_down(VirtualKeyCode.F4);
                                 Thread.Sleep(75);
-                                keybd_event(VK_F4, 0, KEYEVENTF_KEYUP, 0);
+                                key_up(VirtualKeyCode.F4);
                                 keybd_event(VK_MENU, 0, KEYEVENTF_KEYUP, 0);
 
                                 //Admin req (wasn't working before, but it's fixed now):

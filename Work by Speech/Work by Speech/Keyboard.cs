@@ -127,7 +127,7 @@ namespace Speech
                 if (sim.InputDeviceState.IsKeyDown(vkc))
                     key_up(vkc);
             }
-            
+
             pause_holder = false;
         }
 
@@ -177,7 +177,7 @@ namespace Speech
         {
             pause_holder = true;
 
-            while(holder_paused == false)
+            while (holder_paused == false)
             {
                 Thread.Sleep(1);
             }
@@ -233,7 +233,7 @@ namespace Speech
         //user accidently presses held key (and releases it in this way)
         void hold_keys_and_buttons()
         {
-            while(true)
+            while (true)
             {
                 if (current_mode == mode.command)
                 {

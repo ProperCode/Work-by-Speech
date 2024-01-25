@@ -17,6 +17,8 @@ namespace Speech
                 TB.IsReadOnly = true;
 
                 TB.Text = "All notable changes to Work by Speech will be documented here."
+                + "\n\n[2.1] - January 25, 2024:"
+                + "\n- Fixed smart mousegrid and mode switching."
                 + "\n\n[2.0] - December 27, 2023:"
                 + "\n- Work by Speech is from now on an open source application."
                 + "\n\n[1.9] - October 11, 2023:"

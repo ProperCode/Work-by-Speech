@@ -960,14 +960,11 @@
                                      FontSize="14" Margin="22,4,0,0" Panel.ZIndex="3" 
                                      TextChanged="TBconfidence_dictation_TextChanged"/>
                             <CheckBox x:Name="CHBuse_better_dictation" 
-                                      Content="Use better dictation" 
+                                      Content="Use online dictation" 
                                       HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="14" 
                                       Width="146" Margin="5,7,0,0" Panel.ZIndex="4" 
                                       Checked="CHBuse_better_dictation_Checked" 
-                                      Unchecked="CHBuse_better_dictation_Unchecked"/>
-                            <Image Source="images/help 30x30.png" Width="30" Margin="0,1,0,0" x:Name="Iquestion1" 
-                                   PreviewMouseUp="Iquestion1_PreviewMouseUp" 
-                                   ToolTip="Better dictation requires internet access."/>
+                                      Unchecked="CHBuse_better_dictation_Unchecked"/>                            
                         </WrapPanel>
                     </GroupBox>
                     <GroupBox Header="Speech Synthesis Settings" HorizontalAlignment="Left" Height="135" 

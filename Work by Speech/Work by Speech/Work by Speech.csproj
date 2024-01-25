@@ -166,8 +166,8 @@
     <Compile Include="SpeechWindow.xaml.cs">
       <DependentUpon>SpeechWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="WindowsInput.cs" />
-    <Compile Include="WindowsInput Native.cs" />
+    <Compile Include="WindowsInput2.cs" />
+    <Compile Include="WindowsInputNative2.cs" />
     <Page Include="WindowAddEditActionWait.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
