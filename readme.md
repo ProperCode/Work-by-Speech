@@ -52,22 +52,6 @@ This program can recognize your speech with high accuracy only if you complete a
 [![Softlay Clean Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/softlay-300x110.png)](https://www.softlay.com/downloads/work-by-speech)
 [![Download Astro Best App Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/Best-App-Award-2-min.jpg)](https://en.downloadastro.com/apps/work-by-speech/)
 
-<!-- Begin SF Tag -->
-<div class="sf-root" data-id="3600310" data-badge="customers-love-us-white" data-variant-id="sf" style="width:125px;position:relative;float:left;margin-left:10px;">
-    <a href="https://sourceforge.net/software/product/Work-by-Speech/" target="_blank">Work by Speech Reviews</a>
-</div>
-<script>(function () {var sc=document.createElement('script');sc.async=true;sc.src='https://b.sf-syn.com/badge_js?sf_id=3600310&variant_id=sf';var p=document.getElementsByTagName('script')[0];p.parentNode.insertBefore(sc, p);})();
-</script>
-<!-- End SF Tag -->
-
-<!-- Begin SD Tag -->
-<div class="sf-root" data-id="3600310" data-badge="customers-love-us-white" data-variant-id="sd" style="width:152px;position:relative;float:left;margin-left:10px;">
-    <a href="https://slashdot.org/software/p/Work-by-Speech/" target="_blank">Work by Speech Reviews</a>
-</div>
-<script>(function () {var sc=document.createElement('script');sc.async=true;sc.src='https://b.sf-syn.com/badge_js?sf_id=3600310&variant_id=sd';var p=document.getElementsByTagName('script')[0];p.parentNode.insertBefore(sc, p);})();
-</script>
-<!-- End SD Tag -->
-
 ## Bug Report and Feedback
 If you wish to report a bug or send feedback, you can do so by sending me an e-mail: ![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/images/email.jpg) .
 Please include as much information as possible and provide screenshot(s) if applicable.
