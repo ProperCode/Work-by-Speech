@@ -409,8 +409,17 @@ namespace Speech
         {
             bool update_available = false;
 
+            string str = prog_version;
+
+            if(str.Contains("-"))
+            {
+                string[] arr = str.Split('-');
+
+                str = arr[0];
+            }
+
             if (latest_version != "unknown" &&
-                int.Parse(latest_version.Replace(".", "")) > int.Parse(prog_version.Replace(".", "")))
+                int.Parse(latest_version.Replace(".", "")) > int.Parse(str.Replace(".", "")))
             {
                 update_available = true;
             }
