@@ -80,11 +80,18 @@ namespace Speech
 
         public static List<VirtualKey> keys = new List<VirtualKey>()
         {
-            new VirtualKey() { name = "Control", vkc = VirtualKeyCode.CONTROL },
             new VirtualKey() { name = "Alt", vkc = VirtualKeyCode.LMENU },
-            new VirtualKey() { name = "Right Alt", vkc = VirtualKeyCode.RMENU },
+            new VirtualKey() { name = "Control", vkc = VirtualKeyCode.CONTROL },
             new VirtualKey() { name = "Shift", vkc = VirtualKeyCode.SHIFT },
             new VirtualKey() { name = "Windows", vkc = VirtualKeyCode.LWIN },
+            new VirtualKey() { name = "Left Alt", vkc = VirtualKeyCode.LMENU },
+            new VirtualKey() { name = "Right Alt", vkc = VirtualKeyCode.RMENU },
+            new VirtualKey() { name = "Left Control", vkc = VirtualKeyCode.LCONTROL },
+            new VirtualKey() { name = "Right Control", vkc = VirtualKeyCode.RCONTROL },            
+            new VirtualKey() { name = "Left Shift", vkc = VirtualKeyCode.LSHIFT},
+            new VirtualKey() { name = "Right Shift", vkc = VirtualKeyCode.RSHIFT },
+            new VirtualKey() { name = "Left Windows", vkc = VirtualKeyCode.LWIN },
+            new VirtualKey() { name = "Right Windows", vkc = VirtualKeyCode.RWIN },
             new VirtualKey() { name = "A", vkc = VirtualKeyCode.VK_A },
             new VirtualKey() { name = "B", vkc = VirtualKeyCode.VK_B },
             new VirtualKey() { name = "C", vkc = VirtualKeyCode.VK_C },

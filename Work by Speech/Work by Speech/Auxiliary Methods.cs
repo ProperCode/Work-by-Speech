@@ -832,8 +832,11 @@ namespace Speech
 
         void set_values()
         {
-            if (smart_grid && desired_figures_nr >= 5)
-                save_grids();
+            if (saving_enabled)
+            {
+                if (smart_grid && desired_figures_nr >= 5)
+                    save_grids();
+            }
 
             bool grid_size_changed = false;
             bool prev_better_dictation = better_dictation;
@@ -1675,6 +1678,9 @@ namespace Speech
         {
             protected override WebRequest GetWebRequest(Uri uri)
             {
+                ServicePointManager.Expect100Continue = true;
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
                 WebRequest w = base.GetWebRequest(uri);
                 w.Timeout = 3000;
                 return w;
