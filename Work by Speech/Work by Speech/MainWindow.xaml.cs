@@ -42,7 +42,7 @@ namespace Speech
 {
     public partial class MainWindow : Window
     {
-        const string prog_version = "2.2-beta";
+        const string prog_version = "2.2-beta.2";
               string latest_version = "";
         const string copyright_text = "Copyright © 2023 - 2024 Mikołaj Magowski. All rights reserved.";
         const string filename_settings = "settings.xml";
