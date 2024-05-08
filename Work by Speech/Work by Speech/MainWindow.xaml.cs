@@ -42,7 +42,7 @@ namespace Speech
 {
     public partial class MainWindow : Window
     {
-        const string prog_version = "2.2-beta.2";
+        const string prog_version = "2.2-beta.3";
               string latest_version = "";
         const string copyright_text = "Copyright © 2023 - 2024 Mikołaj Magowski. All rights reserved.";
         const string filename_settings = "settings.xml";
@@ -331,7 +331,7 @@ namespace Speech
                 StringBuilder path = new StringBuilder(260);
                 SHGetSpecialFolderPath(IntPtr.Zero, path, CSIDL_COMMON_STARTMENU, false);
                 start_menu_path = path.ToString();
-
+                
                 try
                 {
                     Directory.GetFiles(start_menu_path, "*.*", SearchOption.AllDirectories);
@@ -350,15 +350,7 @@ namespace Speech
                     {
                         start_menu_path = "C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programmes";
 
-                        try
-                        {
-                            Directory.GetFiles(start_menu_path, "*.*", SearchOption.AllDirectories);
-                        }
-                        catch (Exception ex3)
-                        {
-                            //less shortcuts unfortunately
-                            start_menu_path = Environment.GetFolderPath(Environment.SpecialFolder.StartMenu);
-                        }
+                        Directory.GetFiles(start_menu_path, "*.*", SearchOption.AllDirectories);
                     }
                 }
                 

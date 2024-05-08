@@ -80,7 +80,11 @@ namespace Speech
 
         public static List<VirtualKey> keys = new List<VirtualKey>()
         {
-            new VirtualKey() { name = "Control", vkc = VirtualKeyCode.CONTROL },
+            new VirtualKey() { name = "Control", vkc = VirtualKeyCode.CONTROL }, //only control can be used, because
+                                                                                 //VirtualKeyCode.LCONTROL is recognized as pressed
+                                                                                 //when right alt is pressed in macro recording
+                                                                                 //(so VirtualKeyCode.CONTROL is actually pressing
+                                                                                 //right control)
             new VirtualKey() { name = "Alt", vkc = VirtualKeyCode.LMENU },
             new VirtualKey() { name = "Right Alt", vkc = VirtualKeyCode.RMENU },
             new VirtualKey() { name = "Shift", vkc = VirtualKeyCode.SHIFT },
