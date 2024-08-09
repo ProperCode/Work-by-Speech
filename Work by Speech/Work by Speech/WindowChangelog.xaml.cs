@@ -18,7 +18,7 @@ namespace Speech
 
                 TB.Text = "All notable changes to Work by Speech will be documented here."
                 + "\n\n[2.2] - August 10, 2024:"
-                + "\n- Fixed access denied error which was ocurring in non-US Windows 11 installations."
+                + "\n- Fixed access denied error which was ocurring on non-US Windows 11 installations."
                 + "\n\n[2.1] - January 25, 2024:"
                 + "\n- Fixed smart mousegrid and mode switching."
                 + "\n\n[2.0] - December 27, 2023:"
