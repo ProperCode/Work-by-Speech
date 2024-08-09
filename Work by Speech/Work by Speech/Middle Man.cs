@@ -34,6 +34,7 @@ namespace Speech
         public static string registry_key_last_export_path = "last export profiles path";
         public static string registry_key_last_open_program_path = "last open file/program path";
         public static string registry_key_last_open_sound_file_path = "last open sound file path";
+        public static string registry_key_display_error_MW004a = "Display error MW004a";
 
         public static string url_homepage = "github.com/ProperCode/Work-by-Speech";
         public static string url_homepage_full = "https://github.com/ProperCode/Work-by-Speech";

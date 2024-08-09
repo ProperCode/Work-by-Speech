@@ -42,7 +42,7 @@ namespace Speech
 {
     public partial class MainWindow : Window
     {
-        const string prog_version = "2.2-beta.3";
+        const string prog_version = "2.2";
               string latest_version = "";
         const string copyright_text = "Copyright © 2023 - 2024 Mikołaj Magowski. All rights reserved.";
         const string filename_settings = "settings.xml";
@@ -327,33 +327,81 @@ namespace Speech
 
                 ni.ContextMenu = cm;
 
-                //Access All Users Start Menu
                 StringBuilder path = new StringBuilder(260);
-                SHGetSpecialFolderPath(IntPtr.Zero, path, CSIDL_COMMON_STARTMENU, false);
-                start_menu_path = path.ToString();
-                
+
                 try
                 {
+                    //Access All Users Start Menu
+                    SHGetSpecialFolderPath(IntPtr.Zero, path, CSIDL_COMMON_STARTMENU, false);
+                    start_menu_path = path.ToString();
+
                     Directory.GetFiles(start_menu_path, "*.*", SearchOption.AllDirectories);
                 }
-                catch (Exception ex)
+                catch (Exception not_used)
                 {
-                    //SHGetSpecialFolderPath may cause a bug if some folders in "C:\\ProgramData\\Microsoft\\Windows\\Start Menu"
-                    //path that it returns have denied access
+                    //Directory.GetFiles may throw access denied expection if some folders in
+                    //"C:\\ProgramData\\Microsoft\\Windows\\Start Menu" path that it returns have denied access
+
+                    //In non-US Windows 11 installations Directory.GetFiles for "C:\\ProgramData\\Microsoft\\Windows\\Start Menu" path
+                    //returns path to 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs' directory with 'Programs'
+                    //named in Windows installation language, but this directory doesn't exist
+                    //(it's a Windows 11 bug, [possibly Windows 10 too] which occurs after changing Windows language)
+
+                    //This solves 2 above problems:
                     start_menu_path = "C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs";
 
                     try
                     {
                         Directory.GetFiles(start_menu_path, "*.*", SearchOption.AllDirectories);
                     }
-                    catch (Exception ex2)
+                    catch (Exception not_used2)
                     {
-                        start_menu_path = "C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programmes";
+                        try
+                        {
+                            start_menu_path = path.ToString();
+                            Directory.GetFiles(start_menu_path, "*.*", SearchOption.AllDirectories);
+                        }
+                        catch (Exception ex)
+                        {
+                            start_menu_path = "";
 
-                        Directory.GetFiles(start_menu_path, "*.*", SearchOption.AllDirectories);
+                            Microsoft.Win32.RegistryKey reg_key_easy = Microsoft.Win32.Registry.CurrentUser
+                                    .OpenSubKey(Middle_Man.registry_path_easy, true);
+
+                            if (reg_key_easy == null)
+                            {
+                                MessageBox.Show(ex.Message + "\n\n" +
+                                    "This error means that you can't use 'Open app_name' speech command. ",
+                                    "Error MW004a", MessageBoxButton.OK, MessageBoxImage.Error);
+                            }
+                            else
+                            {
+                                string display_error_MW004a = "";
+
+                                object ob = reg_key_easy.GetValue(Middle_Man.registry_key_display_error_MW004a);
+
+                                if (ob != null)
+                                {
+                                    display_error_MW004a = ob.ToString();
+                                }
+
+                                if (display_error_MW004a != "No")
+                                {
+                                    MessageBoxResult mbr = MessageBox.Show(ex.Message + "\n\n" +
+                                        "This error means that you can't use 'Open app_name' speech command. " +
+                                        "Click 'Yes' if you want this error to appear the next time you run Work by Speech.",
+                                        "Error MW004a", MessageBoxButton.YesNo, MessageBoxImage.Error);
+
+                                    if (mbr == MessageBoxResult.No)
+                                    {
+                                        reg_key_easy.SetValue(Middle_Man.registry_key_display_error_MW004a, "No");
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
-                
+
                 //not enough shortcuts:
                 //start_menu_path = Environment.GetFolderPath(Environment.SpecialFolder.StartMenu);
 
@@ -532,8 +580,9 @@ namespace Speech
                 {
                     MessageBox.Show("This program requires English (United States, " +
                         "United Kingdom, Canada, India or Australia) set as default Windows language." +
-                        "\n\nIn order to change your Windows display language go to:" +
-                        "\nStart -> Settings -> Time & Language -> Language.",
+                        "\n\nIn order to change your Windows display language to English, go to:" +
+                        "\nStart -> Settings -> Time & Language -> Language." +
+                        "\nYou may need to add English language to Windows first.",
                         "Error MW002", MessageBoxButton.OK, MessageBoxImage.Error);
                     Process.GetCurrentProcess().Kill();
                 }
@@ -848,6 +897,9 @@ namespace Speech
 
         bool get_installed_apps()
         {
+            if (string.IsNullOrEmpty(start_menu_path))
+                return false;
+
             string[] allfiles = Directory.GetFiles(start_menu_path, "*.*", SearchOption.AllDirectories);
             
             string[] a;

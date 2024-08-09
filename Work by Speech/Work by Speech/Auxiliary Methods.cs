@@ -231,7 +231,7 @@ namespace Speech
             if (x == -1 && y == -1)
             {
                 SW.Left = (screenWidth / 2) - (windowWidth / 2);
-                SW.Top = (screenHeight) - (windowHeight + 34);
+                SW.Top = (screenHeight) - (windowHeight + 40);
             }
             else
             {
