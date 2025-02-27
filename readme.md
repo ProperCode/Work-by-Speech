@@ -52,7 +52,7 @@ This program can recognize your speech with high accuracy only if you complete a
 [![Majorgeeks Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/majorgeektested.gif)](https://www.majorgeeks.com/files/details/work_by_speech.html)
 [![File Transit 5/5 Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/filetransit_5of5.gif)](http://www.filetransit.com/view.php?id=453437)
 ![Softlay 4.5/5 Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/softlay-300x110.png)
-[![Download Astro Best App Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/Best-App-Award-2-min.jpg)](https://en.downloadastro.com/apps/work-by-speech/)
+![Download Astro Best App Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/Best-App-Award-2-min.jpg)
 
 ## Bug Report and Feedback
 If you wish to report a bug or send feedback, you can do so by sending me an e-mail: ![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/images/email.jpg) .
