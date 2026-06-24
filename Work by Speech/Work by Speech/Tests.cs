@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Speech.Recognition;
 using System.Threading;
 using System.Windows;
 using WindowsInput.Native;
@@ -14,18 +13,6 @@ namespace Speech
         short test3_on = 0;
         short test4_on = 0;
         short test5_on = 0;
-
-        void display_grammars_status()
-        {
-            string grammars_status_str = "";
-
-            foreach (Grammar gr in recognizer.Grammars)
-            {
-                grammars_status_str += gr.Name + ": " + gr.Enabled + "\r\n";
-            }
-
-            MessageBox.Show(grammars_status_str);
-        }
 
         void test1()
         {
@@ -288,30 +275,30 @@ namespace Speech
 
         void test3()
         {
-            FileStream fs = null;
-            StreamWriter sw = null;
+            //FileStream fs = null;
+            //StreamWriter sw = null;
 
-            fs = new FileStream(System.IO.Path.Combine(new string[] {
-                                        Middle_Man.app_folder_path, "test.txt" }),
-                    FileMode.Create, FileAccess.Write);
-            sw = new StreamWriter(fs);
+            //fs = new FileStream(System.IO.Path.Combine(new string[] {
+            //                            Middle_Man.app_folder_path, "test.txt" }),
+            //        FileMode.Create, FileAccess.Write);
+            //sw = new StreamWriter(fs);
 
-            Choices ch = new Choices();
+            //Choices ch = new Choices();
 
-            foreach (Installed_App app in installed_apps)
-            {
-                foreach (string name2 in app.names)
-                {
-                    if (name2 != null && name2 != "")
-                    {
-                        ch.Add(new string[] { name2 });
-                        sw.WriteLine(name2);
-                    }
-                }
-            }
+            //foreach (Installed_App app in installed_apps)
+            //{
+            //    foreach (string name2 in app.names)
+            //    {
+            //        if (name2 != null && name2 != "")
+            //        {
+            //            ch.Add(new string[] { name2 });
+            //            sw.WriteLine(name2);
+            //        }
+            //    }
+            //}
 
-            sw.Close();
-            fs.Close();
+            //sw.Close();
+            //fs.Close();
         }
 
         void test4()

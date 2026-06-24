@@ -631,7 +631,7 @@ namespace Speech
                 }
             }
 
-            Middle_Man.force_updating_both_cc_grammars = true;
+            Middle_Man.force_updating_both_cc_lists = true;
         }
 
         private void Badd_profile_Click(object sender, RoutedEventArgs e)
@@ -1266,7 +1266,7 @@ namespace Speech
 
                     cv_LVprofiles.Refresh();
 
-                    Middle_Man.force_updating_both_cc_grammars = true;
+                    Middle_Man.force_updating_both_cc_lists = true;
                 }
             }
             catch (Exception ex)
@@ -1297,7 +1297,7 @@ namespace Speech
 
                     cv_LVprofiles.Refresh();
 
-                    Middle_Man.force_updating_both_cc_grammars = true;
+                    Middle_Man.force_updating_both_cc_lists = true;
                 }
             }
             catch (Exception ex)
@@ -1407,7 +1407,7 @@ namespace Speech
 
                     cv_LVprofiles.Refresh();
 
-                    Middle_Man.force_updating_both_cc_grammars = true;
+                    Middle_Man.force_updating_both_cc_lists = true;
                 }
             }
             catch (Exception ex)
@@ -1458,7 +1458,7 @@ namespace Speech
 
                     cv_LVcommands.Refresh();
 
-                    Middle_Man.force_updating_both_cc_grammars = true;
+                    Middle_Man.force_updating_both_cc_lists = true;
                 }
             }
             catch (Exception ex)
@@ -1492,7 +1492,7 @@ namespace Speech
 
                     cv_LVcommands.Refresh();
 
-                    Middle_Man.force_updating_both_cc_grammars = true;
+                    Middle_Man.force_updating_both_cc_lists = true;
                 }
             }
             catch (Exception ex)
@@ -1637,7 +1637,7 @@ namespace Speech
 
                     cv_LVcommands.Refresh();
 
-                    Middle_Man.force_updating_both_cc_grammars = true;
+                    Middle_Man.force_updating_both_cc_lists = true;
                 }
             }
             catch (Exception ex)

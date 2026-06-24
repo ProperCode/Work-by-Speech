@@ -170,7 +170,7 @@ namespace Speech
                     }
                 }
 
-                Middle_Man.force_updating_both_cc_grammars = true;
+                Middle_Man.force_updating_both_cc_lists = true;
 
                 this.Close();
             }

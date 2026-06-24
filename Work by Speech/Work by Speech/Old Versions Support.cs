@@ -23,10 +23,8 @@ namespace Speech
 
                     TBconfidence_start.Text = sr.ReadLine();
                     TBconfidence_commands.Text = sr.ReadLine();
-                    TBconfidence_dictation.Text = sr.ReadLine();
                     CHBread_recognized_speech.IsChecked = read_recognized_speech
                         = bool.Parse(sr.ReadLine());
-                    CHBuse_better_dictation.IsChecked = better_dictation = bool.Parse(sr.ReadLine());
 
                     CBtype.SelectedIndex = int.Parse(sr.ReadLine());
                     CBlines.SelectedIndex = int.Parse(sr.ReadLine());

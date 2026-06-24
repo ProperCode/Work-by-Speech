@@ -19,7 +19,7 @@ Work by Speech Features:
 - Customizable and movable mousegrid which divides the screen into up to 2550 figures
 - Automatic mousegrid optimization for every used application
 - Very low processor and memory usage
-- Works with any microphone under Windows 10 and 11
+- Works with any microphone
 - Available for the English language only
 <br/><br/>
 

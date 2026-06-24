@@ -20,7 +20,7 @@ namespace Speech
         CollectionView cv_bic_mouse;
         CollectionView cv_bic_pressing;
         CollectionView cv_bic_inserting;
-        CollectionView cv_bic_dict_always;
+        CollectionView cv_bic_dict;
         CollectionView cv_bic_dict_better;
 
         public class BuiltInCommand
@@ -93,10 +93,9 @@ namespace Speech
         List<BuiltInCommand> list_bic_general_and_mouse; //enabled only
         List<BuiltInCommand> list_bic_keys_pressing;
         List<BuiltInCommand> list_bic_char_inserting;
-        List<BuiltInCommand> list_bic_dictation_always;
-        List<BuiltInCommand> list_bic_dictation_better;
+        List<BuiltInCommand> list_bic_dictation;
 
-        void update_bic_grammar()
+        void update_bic_lists()
         {
             try
             {
@@ -110,130 +109,56 @@ namespace Speech
                 Mouse.OverrideCursor = Cursors.Wait;
                 SW.Bmode.Visibility = Visibility.Hidden;
 
-                //THRswitch_to.Abort(); //abort only causes problems
-                thread_suspend1 = true;
-
-                //wait for suspend:
-                while (thread_suspended1 == false)
-                {
-                    Thread.Sleep(10);
-                }
-
-                unload_grammar_if_loaded(grammar_off_mode, grammar_off_mode_name);
-                unload_grammar_if_loaded(grammar_builtin_commands, grammar_builtin_commands_name);
-                unload_grammar_if_loaded(grammar_dictation_commands, grammar_dictation_commands_name);
+                list_off_mode = new List<string>();
+                list_builtin_commands = new List<string>();
+                list_dictation = new List<string>();
 
                 if (are_all_bic_off_disabled() == false)
-                    grammar_off_mode = create_off_mode_grammar();
-                else
-                    grammar_off_mode = null;
-
+                {
+                    list_off_mode = create_off_mode_list();
+                }
+                
                 if (are_all_bic_general_and_mouse_disabled() == false)
-                    grammar_builtin_commands = create_builtin_commands_grammar();
-                else
-                    grammar_builtin_commands = null;
+                {
+                    list_builtin_commands = create_builtin_commands_list();
+                }
 
                 if (are_all_bic_dictation_disabled() == false)
-                    grammar_dictation_commands = create_dictation_commands_grammar();
-                else
-                    grammar_dictation_commands = null;
+                {
+                    list_dictation = create_dictation_commands_list();
+                }
 
-                if (grammar_off_mode != null)
-                    recognizer.LoadGrammar(grammar_off_mode);
-
-                if (grammar_dictation_commands != null)
-                    recognizer.LoadGrammar(grammar_dictation_commands);
-
-                if (grammar_builtin_commands != null)
-                    recognizer.LoadGrammar(grammar_builtin_commands);
-
-                //debug only:
-                //display_grammars_status();
-
-                //loaded grammar is enabled by default
                 if (current_mode == mode.off)
                 {
-                    toggle_grammar(true, grammar_type.grammar_off_mode);
-                    toggle_grammar(false, grammar_type.grammar_builtin_commands);
-                    toggle_grammar(false, grammar_type.grammar_dictation_commands);
+                    list_current = new List<string>();
+                    add_to_list_current(list_type.list_off_mode);
                 }
                 else if (current_mode == mode.command)
                 {
-                    toggle_grammar(false, grammar_type.grammar_off_mode);
-                    toggle_grammar(true, grammar_type.grammar_builtin_commands);
-                    toggle_grammar(false, grammar_type.grammar_dictation_commands);
+                    list_current = new List<string>();
+                    add_to_list_current(list_type.list_builtin_commands);
+                    add_to_list_current(list_type.list_cc_any);
                 }
                 else if (current_mode == mode.dictation)
                 {
-                    toggle_grammar(false, grammar_type.grammar_off_mode);
-                    toggle_grammar(false, grammar_type.grammar_builtin_commands);
-                    toggle_grammar(true, grammar_type.grammar_dictation_commands);
+                    list_current = new List<string>();
+                    add_to_list_current(list_type.list_dictation);
                 }
-
-                //debug only:
-                //MessageBox.Show(is_bic_in_general_and_mouse_enabled(bic_type.open_app).ToString());
 
                 if (is_bic_in_general_and_mouse_enabled(bic_type.switch_to_app))
-                {
                     apps_switching = true;
-
-                    if (is_grammar_loaded(grammar_apps_switching_name))
-                    {
-                        if (current_mode == mode.command)
-                            toggle_grammar(true, grammar_type.grammar_apps_switching);
-                    }
-                    else
-                    {
-                        if (grammar_apps_switching != null)
-                        {
-                            recognizer.LoadGrammar(grammar_apps_switching);
-
-                            toggle_grammar(true, grammar_type.grammar_apps_switching);
-                        }
-                    }
-                }
                 else
-                {
                     apps_switching = false;
 
-                    unload_grammar_if_loaded(grammar_apps_switching, grammar_apps_switching_name);
-                }
-
                 if (is_bic_in_general_and_mouse_enabled(bic_type.open_app))
-                {
                     apps_opening = true;
-
-                    if (is_grammar_loaded(grammar_apps_opening_name))
-                    {
-                        if (current_mode == mode.command)
-                            toggle_grammar(true, grammar_type.grammar_apps_opening);
-                    }
-                    else
-                    {
-                        if (grammar_apps_opening != null)
-                        {
-                            recognizer.LoadGrammar(grammar_apps_opening);
-
-                            toggle_grammar(true, grammar_type.grammar_apps_opening);
-                        }
-                    }
-                }
                 else
-                {
                     apps_opening = false;
-
-                    unload_grammar_if_loaded(grammar_apps_opening, grammar_apps_opening_name);
-                }
-
-                thread_suspend1 = false;
 
                 recognition_suspended = false;
 
                 SW.Bmode.Visibility = Visibility.Visible;
                 Mouse.OverrideCursor = null;
-
-                //debug only
-                //display_grammars_status();
             }
             catch (Exception ex)
             {
@@ -393,6 +318,8 @@ namespace Speech
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + V",
                     bic_type.key_combination, "paste", "control victor", "No", 20, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + Z",
+                    bic_type.key_combination, "based", "control victor", "No", 20, false));
+                list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + Z",
                     bic_type.key_combination, "undo", "control zulu", "No", 20, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + Y",
                     bic_type.key_combination, "redo", "control yankee", "No", 20, false));
@@ -478,6 +405,8 @@ namespace Speech
                     bic_type.key_pressing, "caps lock", VirtualKeyCode.CAPITAL, "Yes", 1));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Backspace",
                     bic_type.key_pressing, "backspace", VirtualKeyCode.BACK, "Yes", 50));
+                list_bic_keys_pressing.Add(new BuiltInCommand("Backspace",
+                    bic_type.key_pressing, "back space", VirtualKeyCode.BACK, "Yes", 50));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Enter",
                     bic_type.key_pressing, "enter", VirtualKeyCode.RETURN, "Yes", 50));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Insert",
@@ -639,7 +568,7 @@ namespace Speech
                 list_bic_char_inserting.Add(new BuiltInCommand("=",
                     bic_type.character_ins, "equal", 3));
                 list_bic_char_inserting.Add(new BuiltInCommand(":",
-                    bic_type.character_ins, "colon", 1));
+                    bic_type.character_ins, "column", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("\"",
                     bic_type.character_ins, "double quote", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand(">",
@@ -659,17 +588,17 @@ namespace Speech
                 list_bic_char_inserting.Add(new BuiltInCommand("#",
                     bic_type.character_ins, "sharp", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("£",
-                    bic_type.character_ins, "pound", 1));
+                    bic_type.character_ins, "pound", 1));                
                 list_bic_char_inserting.Add(new BuiltInCommand("$",
                     bic_type.character_ins, "dollar", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("%",
                     bic_type.character_ins, "percent", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("^",
-                    bic_type.character_ins, "caret", 1));
+                    bic_type.character_ins, "caret", 1));                
                 list_bic_char_inserting.Add(new BuiltInCommand("(",
-                    bic_type.character_ins, "open paren", 1));
+                    bic_type.character_ins, "open parenthesis", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand(")",
-                    bic_type.character_ins, "close paren", 1));
+                    bic_type.character_ins, "close parenthesis", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("_",
                     bic_type.character_ins, "underscore", 2));
                 list_bic_char_inserting.Add(new BuiltInCommand("{",
@@ -707,28 +636,19 @@ namespace Speech
                 list_bic_char_inserting.Add(new BuiltInCommand("µ",
                     bic_type.character_ins, "micro", 1));
 
-                list_bic_dictation_always = new List<BuiltInCommand>();
+                list_bic_dictation = new List<BuiltInCommand>();
 
-                list_bic_dictation_always.Add(new BuiltInCommand("Turn off speech recognition",
+                list_bic_dictation.Add(new BuiltInCommand("Turn off speech recognition",
                     bic_type.turn_off, turn_off, 1));
-                list_bic_dictation_always.Add(new BuiltInCommand("Switch to command mode",
+                list_bic_dictation.Add(new BuiltInCommand("Switch to command mode",
                     bic_type.switch_to_command, switch_to_command_mode, 1));
-
-                list_bic_dictation_better = new List<BuiltInCommand>();
-
-                list_bic_dictation_better.Add(new BuiltInCommand("Change Windows Dictation Tool mode\r\n" +
-                    "to listening by restarting it.",
-                    bic_type.start_better_dictation_listening, start_better_dictation_listening, 1));
-                list_bic_dictation_better.Add(new BuiltInCommand("Toggle Windows Dictation Tool",
-                    bic_type.toggle_better_dictation, toggle_better_dictation_str, 1));
 
                 LVbic_off.ItemsSource = list_bic_off;
                 LVbic_general.ItemsSource = list_bic_general;
                 LVbic_mouse.ItemsSource = list_bic_mouse;
                 LVbic_keys_pressing.ItemsSource = list_bic_keys_pressing;
                 LVbic_char_inserting.ItemsSource = list_bic_char_inserting;
-                LVbic_dict_always.ItemsSource = list_bic_dictation_always;
-                LVbic_dict_better.ItemsSource = list_bic_dictation_better;
+                LVbic_dict.ItemsSource = list_bic_dictation;
 
                 cv_bic_off =
                     (CollectionView)CollectionViewSource.GetDefaultView(LVbic_off.ItemsSource);
@@ -740,10 +660,8 @@ namespace Speech
                     (CollectionView)CollectionViewSource.GetDefaultView(LVbic_keys_pressing.ItemsSource);
                 cv_bic_inserting =
                     (CollectionView)CollectionViewSource.GetDefaultView(LVbic_char_inserting.ItemsSource);
-                cv_bic_dict_always =
-                    (CollectionView)CollectionViewSource.GetDefaultView(LVbic_dict_always.ItemsSource);
-                cv_bic_dict_better =
-                    (CollectionView)CollectionViewSource.GetDefaultView(LVbic_dict_better.ItemsSource);
+                cv_bic_dict =
+                    (CollectionView)CollectionViewSource.GetDefaultView(LVbic_dict.ItemsSource);
 
                 create_bic_general_and_mouse_list();
             }
@@ -933,32 +851,11 @@ namespace Speech
                     }
                 }
                 {
-                    XmlNode list_node = xml_doc.CreateElement("dictation_always");
+                    XmlNode list_node = xml_doc.CreateElement("dictation");
 
                     root_node.AppendChild(list_node);
 
-                    foreach (BuiltInCommand bic in list_bic_dictation_always)
-                    {
-                        XmlNode bic_node = xml_doc.CreateElement("command");
-
-                        XmlNode name_node = xml_doc.CreateElement("name");
-                        name_node.InnerText = bic.name_firstupper;
-
-                        XmlNode enabled_node = xml_doc.CreateElement("enabled");
-                        enabled_node.InnerText = bic.enabled.ToString();
-
-                        bic_node.AppendChild(name_node);
-                        bic_node.AppendChild(enabled_node);
-
-                        list_node.AppendChild(bic_node);
-                    }
-                }
-                {
-                    XmlNode list_node = xml_doc.CreateElement("dictation_better");
-
-                    root_node.AppendChild(list_node);
-
-                    foreach (BuiltInCommand bic in list_bic_dictation_better)
+                    foreach (BuiltInCommand bic in list_bic_dictation)
                     {
                         XmlNode bic_node = xml_doc.CreateElement("command");
 
@@ -1174,7 +1071,7 @@ namespace Speech
                             }
                         }
 
-                        commands = xml_doc.SelectNodes("//built-in_commands/dictation_always")[0].ChildNodes;
+                        commands = xml_doc.SelectNodes("//built-in_commands/dictation")[0].ChildNodes;
 
                         foreach (XmlNode command in commands)
                         {
@@ -1204,39 +1101,6 @@ namespace Speech
                             if (i > 1)
                             {
                                 toggle_bic_always(enabled, name);
-                            }
-                        }
-
-                        commands = xml_doc.SelectNodes("//built-in_commands/dictation_better")[0].ChildNodes;
-
-                        foreach (XmlNode command in commands)
-                        {
-                            XmlNodeList nodes = command.ChildNodes;
-
-                            string name = "";
-                            bool enabled = true;
-
-                            int i = 0;
-
-                            foreach (XmlNode node in nodes)
-                            {
-                                if (node.Name == "name")
-                                {
-                                    name = node.InnerText;
-                                    i++;
-                                }
-                                else if (node.Name == "enabled")
-                                {
-                                    bool parsing = bool.TryParse(node.InnerText, out enabled);
-
-                                    if (parsing)
-                                        i++;
-                                }
-                            }
-
-                            if (i > 1)
-                            {
-                                toggle_bic_better(enabled, name);
                             }
                         }
 
@@ -1279,18 +1143,7 @@ namespace Speech
         {
             try
             {
-                foreach (BuiltInCommand bic in list_bic_dictation_always)
-                {
-                    if (bic.type == bt)
-                    {
-                        if (bic.enabled)
-                            return true;
-                        else
-                            return false;
-                    }
-                }
-
-                foreach (BuiltInCommand bic in list_bic_dictation_better)
+                foreach (BuiltInCommand bic in list_bic_dictation)
                 {
                     if (bic.type == bt)
                     {
@@ -1349,19 +1202,10 @@ namespace Speech
         {
             try
             {
-                foreach (BuiltInCommand bic in list_bic_dictation_always)
+                foreach (BuiltInCommand bic in list_bic_dictation)
                 {
                     if (bic.enabled)
                         return false;
-                }
-
-                if (better_dictation)
-                {
-                    foreach (BuiltInCommand bic in list_bic_dictation_better)
-                    {
-                        if (bic.enabled)
-                            return false;
-                    }
                 }
             }
             catch (Exception ex)
@@ -1484,35 +1328,17 @@ namespace Speech
         {
             try
             {
-                for (int i = 0; i < list_bic_dictation_always.Count; i++)
+                for (int i = 0; i < list_bic_dictation.Count; i++)
                 {
-                    if (list_bic_dictation_always[i].name_firstupper == name_firstupper)
+                    if (list_bic_dictation[i].name_firstupper == name_firstupper)
                     {
-                        list_bic_dictation_always[i].enabled = enabled;
+                        list_bic_dictation[i].enabled = enabled;
                     }
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error BIC013", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        void toggle_bic_better(bool enabled, string name_firstupper)
-        {
-            try
-            {
-                for (int i = 0; i < list_bic_dictation_better.Count; i++)
-                {
-                    if (list_bic_dictation_better[i].name_firstupper == name_firstupper)
-                    {
-                        list_bic_dictation_better[i].enabled = enabled;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error BIC014", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1641,53 +1467,28 @@ namespace Speech
             }
         }
 
-        private void LVbic_dict_always_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void LVbic_dict_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             try
             {
-                if (LVbic_dict_always.SelectedIndex != -1)
+                if (LVbic_dict.SelectedIndex != -1)
                 {
-                    Benable_bic_always.IsEnabled = true;
-                    Bdisable_bic_always.IsEnabled = true;
-                    MIenable_bic_always.IsEnabled = true;
-                    MIdisable_bic_always.IsEnabled = true;
+                    Benable_bic_dictation.IsEnabled = true;
+                    Bdisable_bic_dictation.IsEnabled = true;
+                    MIenable_bic_dictation.IsEnabled = true;
+                    MIdisable_bic_dictation.IsEnabled = true;
                 }
                 else
                 {
-                    Benable_bic_always.IsEnabled = false;
-                    Bdisable_bic_always.IsEnabled = false;
-                    MIenable_bic_always.IsEnabled = false;
-                    MIdisable_bic_always.IsEnabled = false;
+                    Benable_bic_dictation.IsEnabled = false;
+                    Bdisable_bic_dictation.IsEnabled = false;
+                    MIenable_bic_dictation.IsEnabled = false;
+                    MIdisable_bic_dictation.IsEnabled = false;
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error BIC020", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void LVbic_dict_better_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-            try
-            {
-                if (LVbic_dict_better.SelectedIndex != -1)
-                {
-                    Benable_bic_better.IsEnabled = true;
-                    Bdisable_bic_better.IsEnabled = true;
-                    MIenable_bic_better.IsEnabled = true;
-                    MIdisable_bic_better.IsEnabled = true;
-                }
-                else
-                {
-                    Benable_bic_better.IsEnabled = false;
-                    Bdisable_bic_better.IsEnabled = false;
-                    MIenable_bic_better.IsEnabled = false;
-                    MIdisable_bic_better.IsEnabled = false;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error BIC021", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1704,7 +1505,7 @@ namespace Speech
 
                     cv_bic_off.Refresh();
 
-                    update_bic_grammar();
+                    update_bic_lists();
 
                     save_bic_toggling_data();
                 }
@@ -1729,7 +1530,7 @@ namespace Speech
 
                     cv_bic_general.Refresh();
 
-                    update_bic_grammar();
+                    update_bic_lists();
 
                     save_bic_toggling_data();
                 }
@@ -1754,7 +1555,7 @@ namespace Speech
 
                     cv_bic_mouse.Refresh();
 
-                    update_bic_grammar();
+                    update_bic_lists();
 
                     save_bic_toggling_data();
                 }
@@ -1778,7 +1579,7 @@ namespace Speech
 
                     cv_bic_pressing.Refresh();
 
-                    update_bic_grammar();
+                    update_bic_lists();
 
                     save_bic_toggling_data();
                 }
@@ -1802,7 +1603,7 @@ namespace Speech
 
                     cv_bic_inserting.Refresh();
 
-                    update_bic_grammar();
+                    update_bic_lists();
 
                     save_bic_toggling_data();
                 }
@@ -1813,20 +1614,20 @@ namespace Speech
             }
         }
 
-        private void Benable_bic_always_Click(object sender, RoutedEventArgs e)
+        private void Benable_bic_dictation_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (LVbic_dict_always.SelectedIndex != -1)
+                if (LVbic_dict.SelectedIndex != -1)
                 {
-                    foreach (BuiltInCommand bic in LVbic_dict_always.SelectedItems)
+                    foreach (BuiltInCommand bic in LVbic_dict.SelectedItems)
                     {
                         toggle_bic_always(true, bic.name_firstupper);
                     }
 
-                    cv_bic_dict_always.Refresh();
+                    cv_bic_dict.Refresh();
 
-                    update_bic_grammar();
+                    update_bic_lists();
 
                     save_bic_toggling_data();
                 }
@@ -1834,30 +1635,6 @@ namespace Speech
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error BIC026", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void Benable_bic_better_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (LVbic_dict_better.SelectedIndex != -1)
-                {
-                    foreach (BuiltInCommand bic in LVbic_dict_better.SelectedItems)
-                    {
-                        toggle_bic_better(true, bic.name_firstupper);
-                    }
-
-                    cv_bic_dict_better.Refresh();
-
-                    update_bic_grammar();
-
-                    save_bic_toggling_data();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error BIC027", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1874,7 +1651,7 @@ namespace Speech
 
                     cv_bic_off.Refresh();
 
-                    update_bic_grammar();
+                    update_bic_lists();
 
                     save_bic_toggling_data();
                 }
@@ -1899,7 +1676,7 @@ namespace Speech
 
                     cv_bic_general.Refresh();
 
-                    update_bic_grammar();
+                    update_bic_lists();
 
                     save_bic_toggling_data();
                 }
@@ -1924,7 +1701,7 @@ namespace Speech
 
                     cv_bic_mouse.Refresh();
 
-                    update_bic_grammar();
+                    update_bic_lists();
 
                     save_bic_toggling_data();
                 }
@@ -1948,7 +1725,7 @@ namespace Speech
 
                     cv_bic_pressing.Refresh();
 
-                    update_bic_grammar();
+                    update_bic_lists();
 
                     save_bic_toggling_data();
                 }
@@ -1972,7 +1749,7 @@ namespace Speech
 
                     cv_bic_inserting.Refresh();
 
-                    update_bic_grammar();
+                    update_bic_lists();
 
                     save_bic_toggling_data();
                 }
@@ -1983,20 +1760,20 @@ namespace Speech
             }
         }
 
-        private void Bdisable_bic_always_Click(object sender, RoutedEventArgs e)
+        private void Bdisable_bic_dictation_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (LVbic_dict_always.SelectedIndex != -1)
+                if (LVbic_dict.SelectedIndex != -1)
                 {
-                    foreach (BuiltInCommand bic in LVbic_dict_always.SelectedItems)
+                    foreach (BuiltInCommand bic in LVbic_dict.SelectedItems)
                     {
                         toggle_bic_always(false, bic.name_firstupper);
                     }
 
-                    cv_bic_dict_always.Refresh();
+                    cv_bic_dict.Refresh();
 
-                    update_bic_grammar();
+                    update_bic_lists();
 
                     save_bic_toggling_data();
                 }
@@ -2004,30 +1781,6 @@ namespace Speech
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error BIC033", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void Bdisable_bic_better_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (LVbic_dict_better.SelectedIndex != -1)
-                {
-                    foreach (BuiltInCommand bic in LVbic_dict_better.SelectedItems)
-                    {
-                        toggle_bic_better(false, bic.name_firstupper);
-                    }
-
-                    cv_bic_dict_better.Refresh();
-
-                    update_bic_grammar();
-
-                    save_bic_toggling_data();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error BIC034", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -2091,23 +1844,11 @@ namespace Speech
             }
         }
 
-        private void Bselect_all_bic_better_Click(object sender, RoutedEventArgs e)
+        private void Bselect_all_bic_dictation_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                LVbic_dict_better.SelectAll();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error BIC040", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void Bselect_all_bic_always_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                LVbic_dict_always.SelectAll();
+                LVbic_dict.SelectAll();
             }
             catch (Exception ex)
             {
@@ -2215,43 +1956,23 @@ namespace Speech
             }
         }
 
-        private void LVbic_dict_always_PreviewKeyUp(object sender, KeyEventArgs e)
+        private void LVbic_dict_PreviewKeyUp(object sender, KeyEventArgs e)
         {
             try
             {
                 if (e.Key == Key.OemPlus && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
                 {
-                    Benable_bic_always_Click(null, null);
+                    Benable_bic_dictation_Click(null, null);
                 }
                 else if (e.Key == Key.OemMinus
                     && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
                 {
-                    Bdisable_bic_always_Click(null, null);
+                    Bdisable_bic_dictation_Click(null, null);
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error BIC047", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void LVbic_dict_better_PreviewKeyUp(object sender, KeyEventArgs e)
-        {
-            try
-            {
-                if (e.Key == Key.OemPlus && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
-                {
-                    Benable_bic_better_Click(null, null);
-                }
-                else if (e.Key == Key.OemMinus
-                    && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
-                {
-                    Bdisable_bic_better_Click(null, null);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error BIC048", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -2268,7 +1989,7 @@ namespace Speech
 
                 cv_bic_off.Refresh();
 
-                update_bic_grammar();
+                update_bic_lists();
 
                 save_bic_toggling_data();
             }
@@ -2297,7 +2018,7 @@ namespace Speech
 
                 cv_bic_general.Refresh();
 
-                update_bic_grammar();
+                update_bic_lists();
 
                 save_bic_toggling_data();
             }
@@ -2326,7 +2047,7 @@ namespace Speech
 
                 cv_bic_mouse.Refresh();
 
-                update_bic_grammar();
+                update_bic_lists();
 
                 save_bic_toggling_data();
             }
@@ -2349,7 +2070,7 @@ namespace Speech
 
                 cv_bic_pressing.Refresh();
 
-                update_bic_grammar();
+                update_bic_lists();
 
                 save_bic_toggling_data();
             }
@@ -2372,7 +2093,7 @@ namespace Speech
 
                 cv_bic_inserting.Refresh();
 
-                update_bic_grammar();
+                update_bic_lists();
 
                 save_bic_toggling_data();
             }
@@ -2382,49 +2103,26 @@ namespace Speech
             }
         }
 
-        private void LVbic_dict_always_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void LVbic_dict_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             try
             {
-                BuiltInCommand bic = (BuiltInCommand)LVbic_dict_always.SelectedItem;
+                BuiltInCommand bic = (BuiltInCommand)LVbic_dict.SelectedItem;
 
                 if (bic.enabled)
                     toggle_bic_always(false, bic.name_firstupper);
                 else
                     toggle_bic_always(true, bic.name_firstupper);
 
-                cv_bic_dict_always.Refresh();
+                cv_bic_dict.Refresh();
 
-                update_bic_grammar();
+                update_bic_lists();
 
                 save_bic_toggling_data();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error BIC054", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void LVbic_dict_better_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            try
-            {
-                BuiltInCommand bic = (BuiltInCommand)LVbic_dict_better.SelectedItem;
-
-                if (bic.enabled)
-                    toggle_bic_better(false, bic.name_firstupper);
-                else
-                    toggle_bic_better(true, bic.name_firstupper);
-
-                cv_bic_dict_better.Refresh();
-
-                update_bic_grammar();
-
-                save_bic_toggling_data();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error BIC055", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -2453,14 +2151,9 @@ namespace Speech
             Benable_bic_inserting_Click(null, null);
         }
 
-        private void MIenable_bic_always_Click(object sender, RoutedEventArgs e)
+        private void MIenable_bic_dictation_Click(object sender, RoutedEventArgs e)
         {
-            Benable_bic_always_Click(null, null);
-        }
-
-        private void MIenable_bic_better_Click(object sender, RoutedEventArgs e)
-        {
-            Benable_bic_better_Click(null, null);
+            Benable_bic_dictation_Click(null, null);
         }
 
         private void MIdisable_bic_off_Click(object sender, RoutedEventArgs e)
@@ -2488,14 +2181,9 @@ namespace Speech
             Bdisable_bic_inserting_Click(null, null);
         }
 
-        private void MIdisable_bic_always_Click(object sender, RoutedEventArgs e)
+        private void MIdisable_bic_dictation_Click(object sender, RoutedEventArgs e)
         {
-            Bdisable_bic_always_Click(null, null);
-        }
-
-        private void MIdisable_bic_better_Click(object sender, RoutedEventArgs e)
-        {
-            Bdisable_bic_better_Click(null, null);
+            Bdisable_bic_dictation_Click(null, null);
         }
 
         private void MIselect_all_bic_off_Click(object sender, RoutedEventArgs e)
@@ -2523,14 +2211,9 @@ namespace Speech
             Bselect_all_bic_inserting_Click(null, null);
         }
 
-        private void MIselect_all_bic_always_Click(object sender, RoutedEventArgs e)
+        private void MIselect_all_bic_dictation_Click(object sender, RoutedEventArgs e)
         {
-            Bselect_all_bic_always_Click(null, null);
-        }
-
-        private void MIselect_all_bic_better_Click(object sender, RoutedEventArgs e)
-        {
-            Bselect_all_bic_better_Click(null, null);
+            Bselect_all_bic_dictation_Click(null, null);
         }
     }
 }

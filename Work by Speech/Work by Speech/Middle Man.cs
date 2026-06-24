@@ -56,7 +56,7 @@ namespace Speech
         public static Point last_get_position_point = new Point(-1, -1); //acquired by saying "Get Position"
                                                                          //while in command mode
 
-        public static bool force_updating_both_cc_grammars = false; //cc = custom commands
+        public static bool force_updating_both_cc_lists = false; //cc = custom commands
         
         public static List<CC_Action> action_types = new List<CC_Action>()
         {

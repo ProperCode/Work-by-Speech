@@ -1067,7 +1067,7 @@ namespace Speech
 
                 Middle_Man.last_used_max_executions = max_executions;
 
-                Middle_Man.force_updating_both_cc_grammars = true;
+                Middle_Man.force_updating_both_cc_lists = true;
 
                 this.Close();
             }

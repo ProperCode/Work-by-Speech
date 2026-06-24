@@ -76,7 +76,6 @@ C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Spee
 C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowManageGroups.g.cs
 C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowChooseProgram.g.cs
 C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowChangelog.g.cs
-C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowEULA.g.cs
 C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditProfile.g.cs
 C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\MainWindow.g.cs
 C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Mousegrid.g.cs
@@ -98,7 +97,6 @@ C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Spee
 C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowManageGroups.baml
 C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowChooseProgram.baml
 C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowChangelog.baml
-C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowEULA.baml
 C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\WindowAddEditProfile.baml
 C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\MainWindow.baml
 C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Mousegrid.baml
@@ -110,3 +108,48 @@ C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Spee
 C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Work by .79D946E0.Up2Date
 C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Work by Speech.exe
 C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\obj\Debug\Work by Speech.pdb
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\libgcc_s_seh-1.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\libstdc++-6.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\libvosk.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\libwinpthread-1.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\Microsoft.Win32.Registry.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\NAudio.Asio.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\NAudio.Core.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\NAudio.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\NAudio.Midi.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\NAudio.Wasapi.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\NAudio.WinForms.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\NAudio.WinMM.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Buffers.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.IO.Pipelines.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Memory.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Numerics.Vectors.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Resources.Extensions.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Security.AccessControl.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Security.Principal.Windows.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Text.Encodings.Web.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Text.Json.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Threading.Tasks.Extensions.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\Vosk.dll
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\Microsoft.Bcl.AsyncInterfaces.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\Microsoft.Win32.Registry.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\NAudio.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\NAudio.Asio.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\NAudio.Core.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\NAudio.Midi.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\NAudio.Wasapi.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\NAudio.WinForms.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\NAudio.WinMM.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Buffers.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.IO.Pipelines.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Memory.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Numerics.Vectors.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Resources.Extensions.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Security.AccessControl.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Security.Principal.Windows.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Text.Encodings.Web.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Text.Json.xml
+C:\Users\mikol\Documents\Visual Studio 2022\Projects\Work by Speech\Work by Speech\bin\Debug\System.Threading.Tasks.Extensions.xml

@@ -16,10 +16,10 @@
         </Grid.Background>
         <TextBlock x:Name="TBrecognized_speech" HorizontalAlignment="Left" Height="79" Width="300" 
                    Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Background="White"
-                   Text="Recognized speech appears here."/>
+                   Text="Recognized speech appears here." Padding="5, 0, 0, 0"/>
         <TextBlock x:Name="TBconfidence" HorizontalAlignment="Left" Height="24" Margin="315,10,0,0" 
                    TextWrapping="Wrap" Text="Confidence" VerticalAlignment="Top" Width="94" 
-                   Background="White"/>
+                   Background="White" Padding="2"/>
         <Button x:Name="Bmode" Content="OFF" HorizontalAlignment="Left" Height="50" Margin="315,39,0,0" 
                 VerticalAlignment="Top" Width="94" Foreground="#FFE80404" FontSize="18" Click="Bmode_Click">
             <Button.Background>

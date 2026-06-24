@@ -1,50 +1,38 @@
 ﻿//highest error nr: MW013
+using NAudio.Wave;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Speech.Synthesis;
 using System.Text;
+using System.Text.Json;
+using System.Threading;
 using System.Windows;
+using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Speech.Recognition;
-using System.Speech.Synthesis;
-using System.Threading;
-using System.Diagnostics;
-using System.IO;
 using System.Windows.Threading;
+using Vosk;
 using WindowsInput;
 using WindowsInput.Native;
-using System.Net;
-using System.Globalization;
-using System.Windows.Input;
-using System.Windows.Data;
 
-//Do NOT use asynchronous speech recognition, because after a couple of hours of using
-//this app, it causes a bug when you have to say every command twice for it to be recognized
-
-//If there are too many grammar builders these commands don't work: up 100, left 50, etc.
-//because the dictionary is overloaded (so number of commands for each dictionary must
-//be carefully controlled - it mostly concerns built-in commands).
-//This app works well even after adding 1000 custom commands with max executions set to 50
-
-//Long unloading grammars (sometimes 1 second, sometimes even 20 seconds) was caused by
-//using a microphone connected via minijack while using an old sound card which
-//doesn't officially support Windows 10. Using USB microphone solved the problem.
-
+//WaveIn_DataAvailable handles speech recognition
 //ThreadPriority.Highest isn't really needed anywhere
-//recognizer.RequestRecognizerUpdate(); isn't really needed anywhere
-//initial_silence_timeout - defines the longest speech time that
-//can be recognized (default 30 seconds)
-
 //Fix cut window: x = -15px, y = -23px
 
 namespace Speech
 {
     public partial class MainWindow : Window
     {
-        const string prog_version = "2.2";
+        const string prog_version = "2.3";
               string latest_version = "";
-        const string copyright_text = "Copyright © 2023 - 2024 Mikołaj Magowski. All rights reserved.";
+        const string copyright_text = "Copyright © 2023 - 2026 Mikołaj Magowski. All rights reserved.";
+        const string filename_model = "vosk-model-en-us-daanzu-20200905"; //Vosk speech recogniton model
         const string filename_settings = "settings.xml";
         const string filename_coords = "coords.txt"; //speech recognition window last location
         const string grids_foldername = "grids";
@@ -52,9 +40,6 @@ namespace Speech
         const int max_font_size = 400;
         const bool resized_grid = true; //when true, resizes mousegrid so screen is fully covered
         const bool movable_grid = true; //when true, mousegrid can be moved by speech
-
-        const bool dont_unload_grammars = false; //set this to true if grammar unloading would ever become
-                                                 //bugged (need to update some code to use this)
         
         //Mode names in change mode button (in SpeechWindow) and notify icon (ni) context menu:
         const string mode_off = "OFF";
@@ -79,27 +64,17 @@ namespace Speech
 
         Process prc;
 
-        SpeechRecognitionEngine recognizer;
-
-        Grammar grammar_off_mode;
-        Grammar grammar_dictation_commands;
-        Grammar grammar_dictation;
-        Grammar grammar_mousegrid;
-        Grammar grammar_builtin_commands;
-        Grammar grammar_custom_commands_any; //any program
-        Grammar grammar_custom_commands_foreground; //foreground program
-        Grammar grammar_apps_switching;
-        Grammar grammar_apps_opening;
-
-        const string grammar_off_mode_name = "off mode";
-        const string grammar_dictation_commands_name = "dictation commands";
-        const string grammar_dictation_name = "dictation";
-        const string grammar_mousegrid_name = "mousegrid";
-        const string grammar_builtin_commands_name = "built-in commands";
-        const string grammar_custom_commands_any_name = "custom commands any";
-        const string grammar_custom_commands_foreground_name = "custom commands foreground";
-        const string grammar_apps_switching_name = "apps switching";
-        const string grammar_apps_opening_name = "apps opening";
+        List<string> list_current; //most commands available in current mode
+                                   //(not apps switching and opening commands and not foreground app custom commands)
+        List<string> list_switch_to_apps;
+        List<string> list_open_apps;
+        List<string> list_cc_foreground; //custom commands foreground program
+        List<string> list_mousegrid;
+        //------------------------------
+        List<string> list_off_mode;
+        List<string> list_dictation;        
+        List<string> list_builtin_commands;
+        List<string> list_cc_any; //custom commands any program
 
         List<string> dictation_commands;
 
@@ -110,8 +85,6 @@ namespace Speech
         const string switch_to_dictation_mode = "dictation";
         const string show_speech_recognition = "show speech recognition"; //window
         const string hide_speech_recognition = "hide speech recognition";
-        const string start_better_dictation_listening = "start listening"; //used in better dictation
-        const string toggle_better_dictation_str = "toggle"; //used in better dictation
         const string open_app_str = "Open"; //capital O here!!!
         const string switch_to_app_str = "switch to";
 
@@ -136,8 +109,6 @@ namespace Speech
         Thread THRrecognition;
         Thread THRholder; //for holding keys
         //bool thread_abort1 = false; //redeclaring and starting stopped thread doesn't work (weird)
-        bool thread_suspend1 = false;
-        bool thread_suspended1 = false;
         bool recognition_suspended = false;
         bool first_run = false;
 
@@ -154,8 +125,6 @@ namespace Speech
         const int default_confidence_turning_on = 80;
         const int default_confidence_other_commands = 60;
         const int default_confidence_dictation = 20;
-        const bool default_better_dictation = false; //if set to true, use windows dictation tool
-                                                    //(Windows key + H)
         
         string default_ss_voice = "";
         const int default_ss_volume = 100;
@@ -179,8 +148,6 @@ namespace Speech
         //---USER SETTINGS START---
         int confidence_turning_on;
         int confidence_other_commands;
-        int confidence_dictation;
-        bool better_dictation; //if set to true, use windows dictation tool (Windows key + H)
 
         string ss_voice;
         int ss_volume;
@@ -249,6 +216,9 @@ namespace Speech
         SpeechWindow SW;
 
         bool inside_speech_recognized_event = false;
+
+        WaveInEvent waveIn;
+        static VoskRecognizer recognizer;
 
         public SpeechSynthesizer ss = new SpeechSynthesizer();
 
@@ -409,7 +379,7 @@ namespace Speech
 
                 InitializeComponent();
 
-                this.Title = Middle_Man.prog_name;
+                this.Title = Middle_Man.prog_name + " " + prog_version;
                 Lprogram_name.Content = Middle_Man.prog_name;
                 Linstalled_version.Content = "Installed version: " + prog_version;
                 Lhomepage.Content = Middle_Man.url_homepage;
@@ -446,10 +416,8 @@ namespace Speech
                 Bdisable_bic_pressing.IsEnabled = false;
                 Benable_bic_inserting.IsEnabled = false;
                 Bdisable_bic_inserting.IsEnabled = false;
-                Benable_bic_always.IsEnabled = false;
-                Bdisable_bic_always.IsEnabled = false;
-                Benable_bic_better.IsEnabled = false;
-                Bdisable_bic_better.IsEnabled = false;
+                Benable_bic_dictation.IsEnabled = false;
+                Bdisable_bic_dictation.IsEnabled = false;
 
                 MIenable_bic_off.IsEnabled = false;
                 MIdisable_bic_off.IsEnabled = false;
@@ -461,10 +429,8 @@ namespace Speech
                 MIdisable_bic_pressing.IsEnabled = false;
                 MIenable_bic_inserting.IsEnabled = false;
                 MIdisable_bic_inserting.IsEnabled = false;
-                MIenable_bic_always.IsEnabled = false;
-                MIdisable_bic_always.IsEnabled = false;
-                MIenable_bic_better.IsEnabled = false;
-                MIdisable_bic_better.IsEnabled = false;
+                MIenable_bic_dictation.IsEnabled = false;
+                MIdisable_bic_dictation.IsEnabled = false;
 
                 installed_voices = ss.GetInstalledVoices();
 
@@ -534,8 +500,7 @@ namespace Speech
                 if (loading_error)
                 {
                     MessageBox.Show("Loading error was detected. All settings" +
-                        "will be restored to default and saved.", "Warning",
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                        " will be restored to default and saved.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
                     restore_default_settings();
                     save_settings(); //save settings so loading error won't happen again (default values
                                      //will take place of unread values)
@@ -567,48 +532,35 @@ namespace Speech
                     }
                 }
 
-                string culture = CultureInfo.CurrentUICulture.Name;
+                // Configure speech recognizer.
+                Vosk.Vosk.SetLogLevel(-1); // You can set to -1 to disable logging messages
 
+                string modelPath = @"vosk-model-en-us-daanzu-20200905"; //ma potencjał (zdobył 197 punktów)
+
+                Model model = new Model(modelPath);
+
+                recognizer = new VoskRecognizer(model, 16000.0f);
+
+                waveIn = new WaveInEvent
+                {
+                    DeviceNumber = 0,
+                    WaveFormat = new WaveFormat(16000, 1),
+                    BufferMilliseconds = 250
+                };
+
+                waveIn.DataAvailable += WaveIn_DataAvailable;
+                
                 try
                 {
-                    // Create an in-process speech recognizer for the en-US locale.  
-                    //recognizer = new SpeechRecognitionEngine(new CultureInfo("en-US"));
-                    //recognizer = new SpeechRecognitionEngine(new CultureInfo("en"));
-                    recognizer = new SpeechRecognitionEngine(new CultureInfo(culture));
+                    waveIn.StartRecording();
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("This program requires English (United States, " +
-                        "United Kingdom, Canada, India or Australia) set as default Windows language." +
-                        "\n\nIn order to change your Windows display language to English, go to:" +
-                        "\nStart -> Settings -> Time & Language -> Language." +
-                        "\nYou may need to add English language to Windows first.",
-                        "Error MW002", MessageBoxButton.OK, MessageBoxImage.Error);
-                    Process.GetCurrentProcess().Kill();
-                }
-
-                // Add a handler for the speech recognized event.  
-                recognizer.SpeechRecognized +=
-                      new EventHandler<SpeechRecognizedEventArgs>(recognizer_SpeechRecognized);
-
-                // Configure input to the speech recognizer.
-                try
-                {
-                    recognizer.SetInputToDefaultAudioDevice();
-                }
-                catch (InvalidOperationException ex5)
+                catch (Exception ex5)
                 {
                     MessageBox.Show("Please connect a microphone to your computer before running this " +
                         "application.",
                             "Error MW003", MessageBoxButton.OK, MessageBoxImage.Error);
                     Process.GetCurrentProcess().Kill();
                 }
-                // Configure recognition parameters.  
-                //Default (year 2022):
-                //recognizer.InitialSilenceTimeout = TimeSpan.FromSeconds(30.0);
-                //recognizer.BabbleTimeout = TimeSpan.FromSeconds(0);
-                //recognizer.EndSilenceTimeout = TimeSpan.FromSeconds(0.15);
-                //recognizer.EndSilenceTimeoutAmbiguous = TimeSpan.FromSeconds(0.5);
 
                 load_profiles();
 
@@ -632,35 +584,30 @@ namespace Speech
                 else
                     apps_opening = false;
 
-                create_grammars();
-
-                //start_time2();
-                load_grammars(true, false);
-                //stop_time2();
+                create_lists();
 
                 load_turned_off();
 
                 if (smart_grid)
                     load_grids();
 
-                // Start asynchronous, continuous speech recognition.  
-                //recognizer.RecognizeAsync(RecognizeMode.Multiple); //sometimes picks too much speech
-                //especially after running for a long time
-
-                //Best solution for speech recognition:
-                THRrecognition = new Thread(new ThreadStart(speech_recognition));
-                THRrecognition.Start();
-
                 if (CHBstart_with_hidden.IsChecked == false)
                 {
                     SW.Show();
                 }
+
+                single_app_list_update(true);
+
+                get_installed_apps();
 
                 THRmonitor = new Thread(new ThreadStart(monitor));
                 THRmonitor.Start();
 
                 THRholder = new Thread(new ThreadStart(hold_keys_and_buttons));
                 THRholder.Start();
+
+                THRswitch_to = new Thread(new ThreadStart(keep_lists_updated));
+                THRswitch_to.Start();
             }
             catch (Exception ex)
             {
@@ -669,206 +616,35 @@ namespace Speech
 
             Mouse.OverrideCursor = null;
         }
+        
+        //List<string> list_custom_commands_foreground; //foreground program
+        //List<string> list_apps_switching;
+        //List<string> list_apps_opening;
 
-        void speech_recognition()
+        void create_lists()
         {
-            while(true)
-            {
-                SW.Bmode.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                {
-                    SW.Bmode.Visibility = Visibility.Visible;
-                }));
+            list_off_mode = new List<string>();
+            list_builtin_commands = new List<string>();
+            list_dictation = new List<string>();
 
-                if (dont_unload_grammars)
-                {
-                    try
-                    {
-                        recognizer.Recognize();
-                    }
-                    catch (Exception ex)
-                    {
-                        //fu
-                    }
-                }
-                else
-                    recognizer.Recognize();
-
-                //recognizer.RecognizeAsync(RecognizeMode.Single);
-                //while (speech_recognized == false)
-                //{
-                //    Thread.Sleep(10);
-                //}
-                //speech_recognized = false;
-
-                SW.Bmode.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                {
-                    SW.Bmode.Visibility = Visibility.Hidden;
-                }));
-
-                Thread.Sleep(10);
-
-                //inside_speech_recognized_event isn't really necessary, because Recognize() without
-                //async means that this thread will execute speech recognized event
-                while (recognition_suspended || inside_speech_recognized_event)
-                    //|| ss.State == SynthesizerState.Speaking) //slows down too much
-                {
-                    Thread.Sleep(10);
-                }
-
-                Thread.Sleep(10); //at least 3ms, because of how fast sound travels
-            }
-        }
-
-        void create_grammars()
-        {
             if (are_all_bic_off_disabled() == false)
-                grammar_off_mode = create_off_mode_grammar();
-            else
-                grammar_off_mode = null;
-
-            grammar_mousegrid = create_grid_grammar(true);
-
-            if (are_all_bic_dictation_disabled() == false)
-                grammar_dictation_commands = create_dictation_commands_grammar();
-            else
-                grammar_dictation_commands = null;
-
-            // Create and load a dictation grammar.
-            grammar_dictation = new DictationGrammar();
-            //grammar_dictation = new DictationGrammar("grammar:dictation");
-            //grammar_dictation = new DictationGrammar("grammar:dictation#spelling");
-            grammar_dictation.Name = grammar_dictation_name;
+            {
+                list_off_mode = create_off_mode_list();
+            }
 
             if (are_all_bic_general_and_mouse_disabled() == false)
-                grammar_builtin_commands = create_builtin_commands_grammar();
-            else
-                grammar_builtin_commands = null;
-
-            grammar_custom_commands_any = create_custom_commands_grammar(Middle_Man.any_program_name);
-        }
-
-        void load_grammars(bool first_execute = false, bool reset_smart_grid = true)
-        {
-            if (grammar_off_mode != null)
-                recognizer.LoadGrammar(grammar_off_mode);
-
-            if (reset_smart_grid)
             {
-                grammar_mousegrid = create_grid_grammar(true);
+                list_builtin_commands = create_builtin_commands_list();
             }
 
-            if (grammar_mousegrid != null)
-                recognizer.LoadGrammar(grammar_mousegrid);
-
-            if (grammar_dictation_commands != null)
-                recognizer.LoadGrammar(grammar_dictation_commands);
-
-            if (grammar_dictation != null)
-                recognizer.LoadGrammar(grammar_dictation);
-
-            if (grammar_builtin_commands != null)
-                recognizer.LoadGrammar(grammar_builtin_commands);
-
-            if(grammar_custom_commands_any != null)
-                recognizer.LoadGrammar(grammar_custom_commands_any);
-
-            //Debug only:
-            //display_grammars_status();
-
-            if (first_execute == true)
+            if (are_all_bic_dictation_disabled() == false)
             {
-                single_app_grammar_update(true);
+                list_dictation = create_dictation_commands_list();
             }
-            else //can't happen anymore (load_grammars is currently executed only once)
-            {
-                Middle_Man.force_updating_both_cc_grammars = true;
-
-                if (grammar_apps_switching != null & apps_switching)
-                    recognizer.LoadGrammar(grammar_apps_switching);
-                if (grammar_apps_opening != null && apps_opening)
-                    recognizer.LoadGrammar(grammar_apps_opening);
-            }
-
-            if (first_execute == true)
-            {
-                THRswitch_to = new Thread(new ThreadStart(keep_grammars_updated));
-                THRswitch_to.Start();
-            }
-        }
-
-        void restart_recognizer(bool reset_smart_grid)
-        {
-            recognition_suspended = true;
-
-            SW.Bmode.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-            {
-                SW.Bmode.Visibility = Visibility.Hidden;
-            }));
-
-            //THRswitch_to.Abort(); //abort only causes problems
-            thread_suspend1 = true;
-
-            //wait for suspend:
-            while (thread_suspended1 == false)
-            {
-                Thread.Sleep(10);
-            }
-
-            List<bool> grammars_status = new List<bool>();
-
-            for(int i=0; i<recognizer.Grammars.Count; i++)
-            {
-                grammars_status.Add(recognizer.Grammars[i].Enabled);
-            }
-
-            start_time2();
-            recognizer.Dispose();
-            stop_time2();
-
-            string culture = CultureInfo.CurrentUICulture.Name;
             
-            try
-            {
-                recognizer = new SpeechRecognitionEngine(new CultureInfo(culture));
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\n\nPlease change your Windows display language" +
-                    " to English (United States, United Kingdom, Canada, India or Australia).",
-                    "Error MW005", MessageBoxButton.OK, MessageBoxImage.Error);
-                Process.GetCurrentProcess().Kill();
-            }
+            list_mousegrid = create_grid_list(true);
 
-            recognizer.SpeechRecognized +=
-                  new EventHandler<SpeechRecognizedEventArgs>(recognizer_SpeechRecognized);
-
-            try
-            {
-                recognizer.SetInputToDefaultAudioDevice();
-            }
-            catch (InvalidOperationException ex5)
-            {
-                MessageBox.Show("Please connect a microphone to your computer before running this " +
-                    "application.",
-                        "Error MW006", MessageBoxButton.OK, MessageBoxImage.Error);
-                Process.GetCurrentProcess().Kill();
-            }
-
-            load_grammars(false, reset_smart_grid);
-
-            for (int i = 0; i < grammars_status.Count; i++)
-            {
-                recognizer.Grammars[i].Enabled = grammars_status[i];
-            }
-
-            thread_suspend1 = false;
-
-            recognition_suspended = false;
-
-            SW.Bmode.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-            {
-                SW.Bmode.Visibility = Visibility.Visible;
-            }));
+            list_cc_any = create_custom_commands_list(Middle_Man.any_program_name);
         }
 
         void is_program_already_running()
@@ -914,9 +690,6 @@ namespace Speech
 
             foreach (var file in allfiles)
             {
-                if (thread_suspend1)
-                    return false;
-
                 FileInfo info = new FileInfo(file);
 
                 installed_apps_str += info.Name;
@@ -929,9 +702,6 @@ namespace Speech
 
             foreach (var file in allfiles)
             {
-                if (thread_suspend1)
-                    return false;
-
                 FileInfo info = new FileInfo(file);
                 if (info.Name.ToLower().Contains("install")
                     || info.Name.ToLower().Contains("application") || info.Name.Length < 6
@@ -980,8 +750,6 @@ namespace Speech
             //sort apps by app name length ascending
             for (int i = 0; i < installed_apps2.Count; i++)
             {
-                if (thread_suspend1)
-                    return false;
                 for (int j = 0; j < installed_apps2.Count; j++)
                 {
                     if (installed_apps2[j].name_length > installed_apps2[i].name_length)
@@ -999,17 +767,41 @@ namespace Speech
                 }
             }
 
-            if (thread_suspend1)
-                return false;
+            installed_apps = installed_apps2;
+            prev_installed_apps_str = installed_apps_str;
+
+            //dt1 = DateTime.Now;
+            //dt2 = DateTime.Now;
+            //ts = dt2 - dt1;
+            //MessageBox.Show("processes: " + ts.TotalMilliseconds.ToString());
+
+            //if get_installed_apps() == true means apps number has changed
+            list_open_apps = new List<string>();
+
+            s = open_app_str;
+
+            if (test_mode > 0 && test3_on > 0)
+            {
+                test3();
+            }
             else
             {
-                installed_apps = installed_apps2;
-                prev_installed_apps_str = installed_apps_str;
-                return true;
+                foreach (Installed_App app in installed_apps)
+                {
+                    foreach (string name2 in app.names)
+                    {
+                        if (name2 != null && name2 != "")
+                        {
+                            list_open_apps.Add(s + " " + name2);
+                        }
+                    }
+                }
             }
+
+            return true;
         }
 
-        void load_turned_off()
+        void load_turned_off(bool loaded_from_speech_recognized = false)
         {
             int i = 0;
             
@@ -1021,24 +813,16 @@ namespace Speech
             }));
 
             //THRswitch_to.Abort(); //abort only causes problems
-            thread_suspend1 = true;
-            
+
             //wait for suspend:
-            while (thread_suspended1 == false)
+            while (inside_speech_recognized_event == true && loaded_from_speech_recognized == false)
             {
                 Thread.Sleep(10);
                 i++;
             }
 
-            toggle_grammar(true, grammar_type.grammar_off_mode);
-            toggle_grammar(false, grammar_type.grammar_mousegrid);
-            toggle_grammar(false, grammar_type.grammar_dictation_commands);
-            toggle_grammar(false, grammar_type.grammar_dictation);
-            toggle_grammar(false, grammar_type.grammar_builtin_commands);
-            toggle_grammar(false, grammar_type.grammar_custom_commands_any);
-            toggle_grammar(false, grammar_type.grammar_custom_commands_foreground);
-            toggle_grammar(false, grammar_type.grammar_apps_switching);
-            toggle_grammar(false, grammar_type.grammar_apps_opening);
+            list_current = new List<string>();
+            add_to_list_current(list_type.list_off_mode);
 
             //Debug only:
             //display_grammars_status();
@@ -1072,8 +856,6 @@ namespace Speech
             mi_switch_to_dictation_mode.Visible = true;
             mi_switch_to_command_mode.Visible = true;
 
-            thread_suspend1 = false;
-
             if (current_mode != mode.off)
                 last_mode = current_mode;
 
@@ -1085,7 +867,7 @@ namespace Speech
             }));
         }
 
-        void load_turned_on(bool allow_dictation_toggle = true)
+        void load_turned_on(bool loaded_from_speech_recognized = false)
         {   
             int i = 0;
             
@@ -1099,36 +881,21 @@ namespace Speech
             */
 
             //THRswitch_to.Abort(); //abort only causes problems
-            thread_suspend1 = true;
             
             //wait for suspend:
-            while (thread_suspended1 == false)
+            while (inside_speech_recognized_event == true && loaded_from_speech_recognized == false)
             {
                 Thread.Sleep(10);
                 i++;
             }
 
-            toggle_grammar(false, grammar_type.grammar_off_mode);
-            toggle_grammar(false, grammar_type.grammar_mousegrid);
-            
             if (current_mode == mode.command)
             {
-                toggle_grammar(false, grammar_type.grammar_dictation_commands);
-                toggle_grammar(false, grammar_type.grammar_dictation);
+                list_current = new List<string>();
+                add_to_list_current(list_type.list_builtin_commands);
+                add_to_list_current(list_type.list_cc_any);
 
-                toggle_grammar(true, grammar_type.grammar_builtin_commands);
-                toggle_grammar(true, grammar_type.grammar_custom_commands_any);
-                toggle_grammar(true, grammar_type.grammar_custom_commands_foreground);
-                
-                if (is_bic_in_general_and_mouse_enabled(bic_type.switch_to_app))
-                    toggle_grammar(true, grammar_type.grammar_apps_switching);
-                else
-                    toggle_grammar(false, grammar_type.grammar_apps_switching);
-                
-                if (is_bic_in_general_and_mouse_enabled(bic_type.open_app))
-                    toggle_grammar(true, grammar_type.grammar_apps_opening);
-                else
-                    toggle_grammar(false, grammar_type.grammar_apps_opening);
+                list_cc_foreground = new List<string>();
 
                 Stream iconStream = System.Windows.Application.GetResourceStream(
                         new Uri(icon_command)).Stream;
@@ -1163,13 +930,8 @@ namespace Speech
             }
             else if(current_mode == mode.dictation)
             {
-                toggle_grammar(true, grammar_type.grammar_dictation_commands);
-                toggle_grammar(true, grammar_type.grammar_dictation);
-                toggle_grammar(false, grammar_type.grammar_builtin_commands);
-                toggle_grammar(false, grammar_type.grammar_custom_commands_any);
-                toggle_grammar(false, grammar_type.grammar_custom_commands_foreground);
-                toggle_grammar(false, grammar_type.grammar_apps_switching);
-                toggle_grammar(false, grammar_type.grammar_apps_opening);
+                list_current = new List<string>();
+                add_to_list_current(list_type.list_dictation);
 
                 Stream iconStream = System.Windows.Application.GetResourceStream(
                 new Uri(icon_dictation)).Stream;
@@ -1201,12 +963,7 @@ namespace Speech
                 mi_switch_to_off_mode.Visible = true;
                 mi_switch_to_dictation_mode.Visible = false;
                 mi_switch_to_command_mode.Visible = true;
-
-                if (better_dictation && allow_dictation_toggle)
-                    toggle_better_dictation();
             }
-
-            thread_suspend1 = false;
 
             recognition_suspended = false;
 
@@ -1216,7 +973,7 @@ namespace Speech
             }));
         }
 
-        private void enable_grid_gr()
+        private void enable_grid()
         {
             int i = 0;
             
@@ -1228,26 +985,23 @@ namespace Speech
             }));
 
             //THRswitch_to.Abort(); //abort only causes problems
-            thread_suspend1 = true;
-            
+
             //wait for suspend:
-            while (thread_suspended1 == false)
+            while (inside_speech_recognized_event == true)
             {
                 Thread.Sleep(10);
                 i++;
             }
 
-            toggle_grammar(false, grammar_type.grammar_off_mode);
-            toggle_grammar(true, grammar_type.grammar_mousegrid);
-            toggle_grammar(false, grammar_type.grammar_dictation_commands);
-            toggle_grammar(false, grammar_type.grammar_dictation);
-            toggle_grammar(false, grammar_type.grammar_builtin_commands);
-            toggle_grammar(false, grammar_type.grammar_custom_commands_any);
-            toggle_grammar(false, grammar_type.grammar_custom_commands_foreground);
-            toggle_grammar(false, grammar_type.grammar_apps_switching);
-            toggle_grammar(false, grammar_type.grammar_apps_opening);
-                        
-            thread_suspend1 = false;
+            //toggle_grammar(false, grammar_type.grammar_off_mode);
+            //toggle_grammar(true, grammar_type.grammar_mousegrid);
+            //toggle_grammar(false, grammar_type.grammar_dictation_commands);
+            //toggle_grammar(false, grammar_type.grammar_dictation);
+            //toggle_grammar(false, grammar_type.grammar_builtin_commands);
+            //toggle_grammar(false, grammar_type.grammar_custom_commands_any);
+            //toggle_grammar(false, grammar_type.grammar_custom_commands_foreground);
+            //toggle_grammar(false, grammar_type.grammar_apps_switching);
+            //toggle_grammar(false, grammar_type.grammar_apps_opening);
 
             recognition_suspended = false;
 
@@ -1260,7 +1014,7 @@ namespace Speech
         }
 
         string s_last_ch = "";
-        void keep_grammars_updated()
+        void keep_lists_updated()
         {
             while (true)
             {
@@ -1268,9 +1022,9 @@ namespace Speech
                 {
                     //is_command_mode_active() is not enough, because all grammars are temporarily
                     //enabled when load_grammars() is executed
-                    if (current_mode == mode.command && THRrecognition != null)
+                    if (current_mode == mode.command && inside_speech_recognized_event == false)
                     {
-                        single_app_grammar_update();
+                        single_app_list_update();
                     }
                 }
                 catch (Exception ex)
@@ -1278,26 +1032,17 @@ namespace Speech
                     MessageBox.Show(ex.Message, "Error MW008", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
 
-                for (int i = 0; i < 50 && thread_suspend1 == false; i++)
-                {
-                    Thread.Sleep(10);
-                }
-
-                thread_suspended1 = true;
-
-                while (thread_suspend1)
-                {
-                    Thread.Sleep(50);
-                }
-
-                thread_suspended1 = false;
+                Thread.Sleep(1000);
             }
         }
 
         string last_foreground_window_process = "";
+        bool inside_app_list_update = false;
 
-        void single_app_grammar_update(bool first_execute = false)
+        void single_app_list_update(bool first_execute = false)
         {
+            inside_app_list_update = true;
+
             bool changes_detected = false;
             string s = "", w, s_ch = "";
 
@@ -1323,70 +1068,29 @@ namespace Speech
             }
 
             process_name = process_name.ToLower();
+            List<string> new_grammar_custom_commands_foreground = create_custom_commands_list(process_name);
 
-            Grammar new_grammar_custom_commands_foreground = create_custom_commands_grammar(process_name);
-
-            if (Middle_Man.force_updating_both_cc_grammars)
+            if (Middle_Man.force_updating_both_cc_lists)
             {
-                if (dont_unload_grammars == false)
-                {
-                    if (is_grammar_loaded(grammar_custom_commands_foreground_name))
-                        recognizer.UnloadGrammar(grammar_custom_commands_foreground);
-
-                    if (is_grammar_loaded(grammar_custom_commands_any_name))
-                        recognizer.UnloadGrammar(grammar_custom_commands_any);
-                }
-
-                grammar_custom_commands_foreground = new_grammar_custom_commands_foreground;
-                grammar_custom_commands_any = create_custom_commands_grammar(Middle_Man.any_program_name);
-
-                if (dont_unload_grammars == false)
-                {
-                    //recognizer.RequestRecognizerUpdate();
-                    if (grammar_custom_commands_any != null)
-                    {
-                        recognizer.LoadGrammar(grammar_custom_commands_any);
-                        toggle_grammar(true, grammar_type.grammar_custom_commands_any);
-                    }
-                        
-                    if (grammar_custom_commands_foreground != null)
-                    {
-                        recognizer.LoadGrammar(grammar_custom_commands_foreground);
-                        toggle_grammar(true, grammar_type.grammar_custom_commands_foreground);
-                    }
-                }
+                list_cc_foreground = new_grammar_custom_commands_foreground;
+                list_cc_any = create_custom_commands_list(Middle_Man.any_program_name);
 
                 last_foreground_window_process = process_name;
 
-                Middle_Man.force_updating_both_cc_grammars = false;
+                Middle_Man.force_updating_both_cc_lists = false;
             }
             else if (last_foreground_window_process != process_name)
             {
-                if (dont_unload_grammars == false)
-                {
-                    if (is_grammar_loaded(grammar_custom_commands_foreground_name))
-                        recognizer.UnloadGrammar(grammar_custom_commands_foreground);
-                }
-
-                grammar_custom_commands_foreground = new_grammar_custom_commands_foreground;
-
-                if (new_grammar_custom_commands_foreground != null)
-                {
-                    //recognizer.RequestRecognizerUpdate();
-                    recognizer.LoadGrammar(grammar_custom_commands_foreground);
-                    toggle_grammar(true, grammar_type.grammar_custom_commands_foreground);
-                }
+                list_cc_foreground = new_grammar_custom_commands_foreground;
 
                 last_foreground_window_process = process_name;
             }
-            
+
             if (apps_switching)
             {
-                s = switch_to_app_str;
+                list_switch_to_apps = new List<string>();
 
-                Choices ch = new Choices();
-                GrammarBuilder gb = new GrammarBuilder();
-                gb.Append(s);
+                s = switch_to_app_str;
 
                 //around 150ms on my CPU (Q9550)
                 foreach (Process p in arr)
@@ -1405,7 +1109,7 @@ namespace Speech
 
                             if (a[i].Length > 1)
                             {
-                                ch.Add(new string[] { a[i] });
+                                list_switch_to_apps.Add(s + " " + a[i]);
                                 s_ch += a[i];
                             }
                         }
@@ -1417,161 +1121,59 @@ namespace Speech
                             if (a[i].Length > 0 || a[i + 1].Length > 0)
                             {
                                 w = a[i] + " " + a[i + 1];
-                                ch.Add(new string[] { w });
+                                list_switch_to_apps.Add(s + " " + w);
                                 s_ch += w;
                             }
                         }
                         if (a.Length > 2)
                         {
-                            ch.Add(new string[] { name });
+                            list_switch_to_apps.Add(s + " " + name);
                             s_ch += name;
                         }
                     }
-
-                    if (thread_suspend1)
-                        break;
                 }
 
-                if (thread_suspend1 == false)
+                //usually 30ms
+                if (s_last_ch != s_ch)
                 {
-                    //usually 30ms
-                    if (s_last_ch != s_ch)
-                    {
-                        changes_detected = true;
+                    changes_detected = true;
 
-                        gb.Append(ch);
-
-                        if (dont_unload_grammars == false)
-                        {
-                            //start_time2();
-                            //recognizer.RequestRecognizerUpdate();
-                            if (is_grammar_loaded(grammar_apps_switching_name))
-                                recognizer.UnloadGrammar(grammar_apps_switching);
-                            //stop_time2();
-                        }
-
-                        grammar_apps_switching = new Grammar(gb);
-                        grammar_apps_switching.Name = grammar_apps_switching_name;
-
-                        if (dont_unload_grammars == false && grammar_apps_switching != null)
-                        {
-                            //recognizer.RequestRecognizerUpdate();
-                            recognizer.LoadGrammar(grammar_apps_switching);
-                            toggle_grammar(true, grammar_type.grammar_apps_switching);
-                        }
-
-                        s_last_ch = s_ch;
-                    }
+                    s_last_ch = s_ch;
                 }
             }
 
-            //dt1 = DateTime.Now;
-            //dt2 = DateTime.Now;
-            //ts = dt2 - dt1;
-            //MessageBox.Show("processes: " + ts.TotalMilliseconds.ToString());
-
-            //if get_installed_apps() == true means apps number has changed
-            if (apps_opening && thread_suspend1 == false && get_installed_apps())
-            {
-                Choices ch = new Choices();
-                GrammarBuilder gb = new GrammarBuilder();
-
-                changes_detected = true;
-
-                s = open_app_str;
-
-                ch = new Choices();
-                gb = new GrammarBuilder();
-                gb.Append(s);
-
-                if (test_mode > 0 && test3_on > 0)
-                {
-                    test3();
-                }
-                else
-                {
-                    foreach (Installed_App app in installed_apps)
-                    {
-                        foreach (string name2 in app.names)
-                        {
-                            if (name2 != null && name2 != "")
-                            {
-                                ch.Add(new string[] { name2 });
-                            }
-                        }
-                    }
-                }
-
-                gb.Append(ch);
-
-                if (dont_unload_grammars == false && first_execute == false)
-                {
-                    //recognizer.RequestRecognizerUpdate();
-                    if (is_grammar_loaded(grammar_apps_opening_name))
-                        recognizer.UnloadGrammar(grammar_apps_opening);
-                }
-
-                grammar_apps_opening = new Grammar(gb);
-                grammar_apps_opening.Name = grammar_apps_opening_name;
-
-                if (dont_unload_grammars == false && grammar_apps_opening != null)
-                {
-                    //recognizer.RequestRecognizerUpdate();
-                    recognizer.LoadGrammar(grammar_apps_opening);
-                    toggle_grammar(true, grammar_type.grammar_apps_opening);
-                }
-            }
-
-            if (dont_unload_grammars && first_execute == false && changes_detected)
-            {
-                restart_recognizer(false);
-            }
+            inside_app_list_update = false;
         }
 
-        Grammar create_off_mode_grammar()
+        List<string> create_off_mode_list()
         {
-            Grammar gr = new Grammar(new GrammarBuilder(turn_on));
-            gr.Name = grammar_off_mode_name;
+            List<string> off_mode_list = new List<string>();
 
-            return gr;
+            if(are_all_bic_off_disabled() == false)
+                off_mode_list.Add(turn_on);
+
+            return off_mode_list;
         }
 
-        Grammar create_dictation_commands_grammar()
+        List<string> create_dictation_commands_list()
         {
-            Choices ch = new Choices();
-            GrammarBuilder gb;
+            List<string> dictation_commands_list = new List<string>();
 
-            for (int i = 0; i < list_bic_dictation_always.Count(); i++)
+            for (int i = 0; i < list_bic_dictation.Count(); i++)
             {
-                if (list_bic_dictation_always[i].enabled)
+                if (list_bic_dictation[i].enabled)
                 {
-                    gb = new GrammarBuilder();
-                    gb.Append(list_bic_dictation_always[i].name);
-                    ch.Add(gb);
+                    dictation_commands_list.Add(list_bic_dictation[i].name);
                 }
             }
 
-            if (better_dictation)
-            {
-                for (int i = 0; i < list_bic_dictation_better.Count(); i++)
-                {
-                    if (list_bic_dictation_better[i].enabled)
-                    {
-                        gb = new GrammarBuilder();
-                        gb.Append(list_bic_dictation_better[i].name);
-                        ch.Add(gb);
-                    }
-                }
-            }
-
-            Grammar gr = new Grammar(ch);
-            gr.Name = grammar_dictation_commands_name;
-
-            return gr;
+            return dictation_commands_list;
         }
 
-        Grammar create_grid_grammar(bool reset_smart_grid)
+        List<string> create_grid_list(bool reset_smart_grid)
         {
+            List<string> grid_list = new List<string>();
+
             //create_full_grid_alphabet();
             create_optimized_grid_alphabet();
             //create_normal_grid_alphabet();
@@ -1722,52 +1324,39 @@ namespace Speech
                 color_font, rows_nr, cols_nr, figure_width, figure_height, grids[0].elements);
             //MW.regenerate_grid_symbols();
 
-            GrammarBuilder gb;
-            Choices ch = new Choices();
+            grid_list = new List<string>();
 
-            Choices cancels = new Choices(cancels_str);
-            Choices directions = new Choices(directions_str);
-            Choices drag_edges = new Choices(drag_edges_str);
+            for (int i = 0; i < cancels_str.Length; i++)
+            {
+                grid_list.Add(cancels_str[i]);
+            }
 
-            gb = new GrammarBuilder();
-            gb.Append(cancels);
-            ch.Add(gb);
+            for (int i = 0; i < directions_str.Length; i++)
+            {
+                grid_list.Add(directions_str[i]);
+            }
 
-            gb = new GrammarBuilder();
-            gb.Append(directions);
-            ch.Add(gb);
-
-            gb = new GrammarBuilder();
-            gb.Append(drag_edges);
-            ch.Add(gb);
+            for (int i = 0; i < drag_edges_str.Length; i++)
+            {
+                grid_list.Add(drag_edges_str[i]);
+            }
 
             for (int i = 0; i < count; i++)
             {
-                gb = new GrammarBuilder();
-                gb.Append(grid_alphabet[i].word);
-                ch.Add(gb);
+                grid_list.Add(grid_alphabet[i].word);
             }
+
             for (int i = 0; i < count; i++)
             {
                 for (int j = 0; j < count; j++)
                 {
-                    gb = new GrammarBuilder();
-                    gb.Append(grid_alphabet[i].word);
-                    gb.Append(grid_alphabet[j].word);
-                    ch.Add(gb);
+                    grid_list.Add(grid_alphabet[i].word + " " + grid_alphabet[j].word);
                 }
             }
+
             for (int i = 0; i < count; i++)
             {
-                for (int j = 0; j < count; j++)
-                {
-                    if (grid_alphabet[i].word == grid_alphabet[j].word)
-                    {
-                        gb = new GrammarBuilder();
-                        gb.Append(grid_alphabet[i].word + " twice");
-                        ch.Add(gb);
-                    }
-                }
+                grid_list.Add(grid_alphabet[i].word + " twice");
             }
 
             int r1, r2;
@@ -1778,259 +1367,244 @@ namespace Speech
                     if (int.TryParse(grid_alphabet[i].symbol, out r1)
                         && int.TryParse(grid_alphabet[j].symbol, out r2))
                     {
-                        gb = new GrammarBuilder();
-                        gb.Append(grid_alphabet[i].symbol + grid_alphabet[j].symbol);
-                        ch.Add(gb);
+                        grid_list.Add(grid_alphabet[i].symbol + grid_alphabet[j].symbol);
                     }
                 }
             }
 
-            Grammar grammar = new Grammar(ch);
-            grammar.Name = grammar_mousegrid_name;
-            return grammar;
+            return grid_list;
         }
 
-        Grammar create_builtin_commands_grammar()
+        List<string> create_builtin_commands_list()
         {
-            GrammarBuilder gb;
-            Choices ch = new Choices();
+            List<string> commands_list = new List<string>();
 
-            Choices pixels = new Choices();
-
-            Choices combo = new Choices(s_combo);
-            Choices combo2 = new Choices(s_combo2);
-            Choices multi = new Choices(new string[] { "twice" });
-
-            for (int i = 0; i < list_bic_general_and_mouse.Count(); i++)
+            if (are_all_bic_general_and_mouse_disabled() == false)
             {
-                if (list_bic_general_and_mouse[i].enabled
-                    && list_bic_general_and_mouse[i].type != bic_type.move_up
-                    && list_bic_general_and_mouse[i].type != bic_type.move_down
-                    && list_bic_general_and_mouse[i].type != bic_type.move_left
-                    && list_bic_general_and_mouse[i].type != bic_type.move_right
-                    && list_bic_general_and_mouse[i].type != bic_type.open_app
-                    && list_bic_general_and_mouse[i].type != bic_type.switch_to_app)
+                List<string> multi = new List<string>();
+                multi.Add("twice");
+
+                for (int i = 0; i < list_bic_general_and_mouse.Count(); i++)
                 {
-                    gb = new GrammarBuilder();
-                    gb.Append(list_bic_general_and_mouse[i].name);
-                    ch.Add(gb);
-
-                    if (list_bic_general_and_mouse[i].key_combination == "Yes")
+                    if (list_bic_general_and_mouse[i].enabled
+                        && list_bic_general_and_mouse[i].type != bic_type.move_up
+                        && list_bic_general_and_mouse[i].type != bic_type.move_down
+                        && list_bic_general_and_mouse[i].type != bic_type.move_left
+                        && list_bic_general_and_mouse[i].type != bic_type.move_right
+                        && list_bic_general_and_mouse[i].type != bic_type.open_app
+                        && list_bic_general_and_mouse[i].type != bic_type.switch_to_app)
                     {
-                        gb = new GrammarBuilder();
-                        gb.Append(combo);
-                        gb.Append(list_bic_general_and_mouse[i].name);
-                        ch.Add(gb);
-                        gb = new GrammarBuilder();
-                        gb.Append(combo);
-                        gb.Append(combo2);
-                        gb.Append(list_bic_general_and_mouse[i].name);
-                        ch.Add(gb);
-                    }
+                        commands_list.Add(list_bic_general_and_mouse[i].name);
 
-                    if (list_bic_general_and_mouse[i].max_executions > 1)
-                    {
-                        multi = new Choices(new string[] { "twice" });
-
-                        for (int j = 2; j <= list_bic_general_and_mouse[i].max_executions; j++)
+                        if (list_bic_general_and_mouse[i].key_combination == "Yes")
                         {
-                            multi.Add(new string[] { j + " times" });
-                        }
-
-                        gb = new GrammarBuilder();
-                        gb.Append(list_bic_general_and_mouse[i].name);
-                        gb.Append(multi);
-                        ch.Add(gb);
-                    }
-
-                    if (list_bic_general_and_mouse[i].key_combination == "Yes" 
-                        && list_bic_general_and_mouse[i].max_executions > 1)
-                    {
-                        gb = new GrammarBuilder();
-                        gb.Append(combo);
-                        gb.Append(list_bic_general_and_mouse[i].name);
-                        gb.Append(multi);
-                        ch.Add(gb);
-
-                        gb = new GrammarBuilder();
-                        gb.Append(combo);
-                        gb.Append(combo2);
-                        gb.Append(list_bic_general_and_mouse[i].name);
-                        gb.Append(multi);
-                        ch.Add(gb);
-                    }
-                }
-            }
-
-            //Choices ch2 = new Choices();
-            //for (int i = 0; i < list_bic_keys_pressing.Count(); i++)
-            //{
-            //    if (list_bic_keys_pressing[i].key_combination == "Yes")
-            //    {
-            //        ch2.Add(list_bic_keys_pressing[i].name);
-            //    }
-            //}
-
-            //Choices ch3 = new Choices();
-            //for (int i = 0; i < list_bic_keys_pressing.Count(); i++)
-            //{
-            //    if (list_bic_keys_pressing[i].key_combination == "Yes"
-            //      && list_bic_keys_pressing[i].max_executions > 1)
-            //    {
-            //        ch3.Add(list_bic_keys_pressing[i].name);
-            //    }
-            //}
-
-            for (int i = 0; i < list_bic_keys_pressing.Count(); i++)
-            {
-                if (list_bic_keys_pressing[i].enabled)
-                {
-                    gb = new GrammarBuilder();
-                    gb.Append(list_bic_keys_pressing[i].name);
-                    ch.Add(gb);
-
-                    if (list_bic_keys_pressing[i].key_combination == "Yes")
-                    {
-                        gb = new GrammarBuilder();
-                        gb.Append(combo);
-                        gb.Append(list_bic_keys_pressing[i].name);
-                        ch.Add(gb);
-
-                        gb = new GrammarBuilder();
-                        gb.Append(combo);
-                        gb.Append(combo);
-                        gb.Append(list_bic_keys_pressing[i].name);
-                        ch.Add(gb);
-                    }
-
-                    if (list_bic_keys_pressing[i].max_executions > 1)
-                    {
-                        multi = new Choices(new string[] { "twice" });
-
-                        for (int j = 2; j <= list_bic_keys_pressing[i].max_executions; j++)
-                        {
-                            multi.Add(new string[] { j + " times" });
-                        }
-
-                        gb = new GrammarBuilder();
-                        gb.Append(list_bic_keys_pressing[i].name);
-                        gb.Append(multi);
-                        ch.Add(gb);
-                    }
-
-                    /* This is the right solution, but it overloads the dictionary
-                     * (left 100 isn't recognized)
-                     * Compile time increased by 7 seconds when this is used
-                    if (list_bic_keys_pressing[i].key_combination == "Yes" && list_bic_keys_pressing[i].max_executions > 1)
-                    {
-                        for (int m = 0; m < list_bic_keys_pressing.Count(); m++)
-                        {
-                            if (list_bic_keys_pressing[m].key_combination == "Yes" && list_bic_keys_pressing[m].max_executions > 1)
+                            for (int j = 0; j < s_combo.Length; j++)
                             {
-                                multi = new Choices(new string[] { "twice" });
+                                commands_list.Add(s_combo[j] + " " + list_bic_general_and_mouse[i].name);
+                            }
 
-                                for (int j = 2; j <= list_bic_keys_pressing[i].max_executions
-                                             && j <= list_bic_keys_pressing[m].max_executions; j++)
+                            for (int j = 0; j < s_combo.Length; j++)
+                            {
+                                for (int k = 0; k < s_combo2.Length; k++)
                                 {
-                                    multi.Add(new string[] { j + " times" });
+                                    commands_list.Add(s_combo[j] + " " + s_combo2[k] + " " + list_bic_general_and_mouse[i].name);
                                 }
+                            }
+                        }
 
-                                gb = new GrammarBuilder();
-                                gb.Append(list_bic_keys_pressing[m].name);
-                                gb.Append(list_bic_keys_pressing[i].name);
-                                gb.Append(multi);
-                                ch.Add(gb);
+                        if (list_bic_general_and_mouse[i].max_executions > 1)
+                        {
+                            multi = new List<string>();
+                            multi.Add("twice");
 
-                                gb = new GrammarBuilder();
-                                gb.Append(combo);
-                                gb.Append(list_bic_keys_pressing[m].name);
-                                gb.Append(list_bic_keys_pressing[i].name);
-                                gb.Append(multi);
-                                ch.Add(gb);
+                            for (int j = 2; j <= list_bic_general_and_mouse[i].max_executions; j++)
+                            {
+                                multi.Add(j + " times");
+                            }
+
+                            for (int k = 0; k < multi.Count; k++)
+                            {
+                                commands_list.Add(list_bic_general_and_mouse[i].name + " " + multi[k]);
+                            }
+                        }
+
+                        if (list_bic_general_and_mouse[i].key_combination == "Yes"
+                            && list_bic_general_and_mouse[i].max_executions > 1)
+                        {
+                            for (int j = 0; j < s_combo.Length; j++)
+                            {
+                                for (int k = 0; k < multi.Count; k++)
+                                {
+                                    commands_list.Add(s_combo[j] + " " + list_bic_general_and_mouse[i].name + " " + multi[k]);
+                                }
+                            }
+
+                            for (int j = 0; j < s_combo.Length; j++)
+                            {
+                                for (int k = 0; k < s_combo2.Length; k++)
+                                {
+                                    for (int m = 0; m < multi.Count; m++)
+                                    {
+                                        commands_list.Add(s_combo[j] + " " + s_combo2[k] + " " + list_bic_general_and_mouse[i].name + " " + multi[m]);
+                                    }
+                                }
                             }
                         }
                     }
-                    */
-
-            if (list_bic_keys_pressing[i].key_combination == "Yes" 
-                        && list_bic_keys_pressing[i].max_executions > 1)
-                    {
-                        gb = new GrammarBuilder();
-                        gb.Append(combo);
-                        gb.Append(list_bic_keys_pressing[i].name);
-                        gb.Append(multi);
-                        ch.Add(gb);
-
-                        gb = new GrammarBuilder();
-                        gb.Append(combo);
-                        gb.Append(combo);
-                        gb.Append(list_bic_keys_pressing[i].name);
-                        gb.Append(multi);
-                        ch.Add(gb);
-                    }
                 }
-            }
-            
-            for (int i = 0; i < list_bic_char_inserting.Count(); i++)
-            {
-                if (list_bic_char_inserting[i].enabled)
+
+                for (int i = 0; i < list_bic_keys_pressing.Count(); i++)
                 {
-                    gb = new GrammarBuilder();
-                    gb.Append(list_bic_char_inserting[i].name);
-                    ch.Add(gb);
-
-                    if (list_bic_char_inserting[i].max_executions > 1)
+                    if (list_bic_keys_pressing[i].enabled)
                     {
-                        multi = new Choices(new string[] { "twice" });
+                        commands_list.Add(list_bic_keys_pressing[i].name);
 
-                        for (int j = 2; j <= list_bic_char_inserting[i].max_executions; j++)
+                        if (list_bic_keys_pressing[i].key_combination == "Yes")
                         {
-                            multi.Add(new string[] { j + " times" });
+                            for (int j = 0; j < s_combo.Length; j++)
+                            {
+                                commands_list.Add(s_combo[j] + " " + list_bic_keys_pressing[i].name);
+                            }
+
+                            for (int j = 0; j < s_combo.Length; j++)
+                            {
+                                for (int k = 0; k < s_combo2.Length; k++)
+                                {
+                                    commands_list.Add(s_combo[j] + " " + s_combo2[k] + " " + list_bic_keys_pressing[i].name);
+                                }
+                            }
                         }
 
-                        gb = new GrammarBuilder();
-                        gb.Append(list_bic_char_inserting[i].name);
-                        gb.Append(multi);
-                        ch.Add(gb);
+                        if (list_bic_keys_pressing[i].max_executions > 1)
+                        {
+                            multi = new List<string>();
+                            multi.Add("twice");
+
+                            for (int j = 2; j <= list_bic_keys_pressing[i].max_executions; j++)
+                            {
+                                multi.Add(j + " times");
+                            }
+
+                            for (int k = 0; k < multi.Count; k++)
+                            {
+                                commands_list.Add(list_bic_keys_pressing[i].name + " " + multi[k]);
+                            }
+                        }
+
+                        if (list_bic_keys_pressing[i].key_combination == "Yes"
+                            && list_bic_keys_pressing[i].max_executions > 1)
+                        {
+                            for (int j = 0; j < s_combo.Length; j++)
+                            {
+                                for (int k = 0; k < multi.Count; k++)
+                                {
+                                    commands_list.Add(s_combo[j] + " " + list_bic_keys_pressing[i].name + " " + multi[k]);
+                                }
+                            }
+
+                            for (int j = 0; j < s_combo.Length; j++)
+                            {
+                                for (int k = 0; k < s_combo2.Length; k++)
+                                {
+                                    for (int m = 0; m < multi.Count; m++)
+                                    {
+                                        commands_list.Add(s_combo[j] + " " + s_combo2[k] + " " + list_bic_keys_pressing[i].name + " " + multi[m]);
+                                    }
+                                }
+                            }
+                        }
+
+                        /* This is the right solution, but it overloads the dictionary
+                         * (left 100 isn't recognized)
+                         * Compile time increased by 7 seconds when this is used
+                        if (list_bic_keys_pressing[i].key_combination == "Yes" && list_bic_keys_pressing[i].max_executions > 1)
+                        {
+                            for (int m = 0; m < list_bic_keys_pressing.Count(); m++)
+                            {
+                                if (list_bic_keys_pressing[m].key_combination == "Yes" && list_bic_keys_pressing[m].max_executions > 1)
+                                {
+                                    multi = new Choices(new string[] { "twice" });
+
+                                    for (int j = 2; j <= list_bic_keys_pressing[i].max_executions
+                                                 && j <= list_bic_keys_pressing[m].max_executions; j++)
+                                    {
+                                        multi.Add(new string[] { j + " times" });
+                                    }
+
+                                    gb = new GrammarBuilder();
+                                    gb.Append(list_bic_keys_pressing[m].name);
+                                    gb.Append(list_bic_keys_pressing[i].name);
+                                    gb.Append(multi);
+                                    ch.Add(gb);
+
+                                    gb = new GrammarBuilder();
+                                    gb.Append(combo);
+                                    gb.Append(list_bic_keys_pressing[m].name);
+                                    gb.Append(list_bic_keys_pressing[i].name);
+                                    gb.Append(multi);
+                                    ch.Add(gb);
+                                }
+                            }
+                        }
+                        */
+                    }
+                }
+
+                for (int i = 0; i < list_bic_char_inserting.Count(); i++)
+                {
+                    if (list_bic_char_inserting[i].enabled)
+                    {
+                        commands_list.Add(list_bic_char_inserting[i].name);
+
+                        if (list_bic_char_inserting[i].max_executions > 1)
+                        {
+                            multi = new List<string>();
+                            multi.Add("twice");
+
+                            for (int j = 2; j <= list_bic_char_inserting[i].max_executions; j++)
+                            {
+                                multi.Add(j + " times");
+                            }
+
+                            for (int k = 0; k < multi.Count; k++)
+                            {
+                                commands_list.Add(list_bic_char_inserting[i].name + " " + multi[k]);
+                            }
+                        }
+                    }
+                }
+
+                List<int> pixels = new List<int>();
+
+                for (int i = 1; i <= 100; i++)
+                {
+                    pixels.Add(i);
+                }
+
+                List<string> enabled_mouse_moves = new List<string>();
+
+                if (is_bic_in_general_and_mouse_enabled(bic_type.move_up))
+                    enabled_mouse_moves.Add(s_mouse_moves[0]);
+                if (is_bic_in_general_and_mouse_enabled(bic_type.move_down))
+                    enabled_mouse_moves.Add(s_mouse_moves[1]);
+                if (is_bic_in_general_and_mouse_enabled(bic_type.move_left))
+                    enabled_mouse_moves.Add(s_mouse_moves[2]);
+                if (is_bic_in_general_and_mouse_enabled(bic_type.move_right))
+                    enabled_mouse_moves.Add(s_mouse_moves[3]);
+
+                if (enabled_mouse_moves.Count > 0)
+                {
+                    for (int i = 0; i < enabled_mouse_moves.Count; i++)
+                    {
+                        for (int j = 0; j < pixels.Count; j++)
+                        {
+                            commands_list.Add(enabled_mouse_moves[i] + " " + pixels[j]);
+                        }
                     }
                 }
             }
 
-            //careful - adding too many can overload the dictionary
-            for (int i = 1; i <= 100; i++)
-            {
-                pixels.Add(new string[] { i.ToString() });
-            }
-            //for (int i = 100; i <= 8000; i += 50)
-            //for (int i = 150; i <= 1000; i += 50)
-            //{
-            //    pixels.Add(new string[] { i.ToString() });
-            //}
-
-            List<string> enabled_mouse_moves = new List<string>();
-
-            if (is_bic_in_general_and_mouse_enabled(bic_type.move_up))
-                enabled_mouse_moves.Add(s_mouse_moves[0]);
-            if (is_bic_in_general_and_mouse_enabled(bic_type.move_down))
-                enabled_mouse_moves.Add(s_mouse_moves[1]);
-            if (is_bic_in_general_and_mouse_enabled(bic_type.move_left))
-                enabled_mouse_moves.Add(s_mouse_moves[2]);
-            if (is_bic_in_general_and_mouse_enabled(bic_type.move_right))
-                enabled_mouse_moves.Add(s_mouse_moves[3]);
-
-            Choices mouse_moves = new Choices(enabled_mouse_moves.ToArray());
-
-            if (enabled_mouse_moves.Count > 0)
-            {
-                gb = new GrammarBuilder();
-                gb.Append(mouse_moves);
-                gb.Append(pixels);
-                ch.Add(gb);
-            }
-
-            Grammar grammar = new Grammar(ch);
-            grammar.Name = grammar_builtin_commands_name;
-            return grammar;
+            return commands_list;
         }
                 
         //returns custom command actions for recognized string (returns null if not found)
@@ -2078,19 +1652,16 @@ namespace Speech
             return null;
         }
 
-        Grammar create_custom_commands_grammar(string program)
+        List<string> create_custom_commands_list(string program)
         {
-            GrammarBuilder gb;
-            Choices ch = new Choices();
-
-            Choices multi = new Choices(new string[] { "twice" });
+            List<string> ccommands_list = new List<string>();
+            List<string> multi = new List<string>(); ;
+            multi.Add("twice");
 
             program = program.ToLower();
 
             int cc2_commands_found = 0;
 
-            //adding same words to grammar multiple times may generate exception:
-            //System.FormatException: ''' rule reference not defined in this grammar.'
             List<CustomCommand> unique_commands = new List<CustomCommand>();
 
             foreach (Profile p in Middle_Man.profiles)
@@ -2121,9 +1692,7 @@ namespace Speech
 
                             if (found_name == false)
                             {
-                                gb = new GrammarBuilder();
-                                gb.Append(cc.name);
-                                ch.Add(gb);
+                                ccommands_list.Add(cc.name);
 
                                 CustomCommand u = new CustomCommand();
                                 u.name = cc.name;
@@ -2134,17 +1703,18 @@ namespace Speech
 
                             if (found_both == false && cc.max_executions > 1)
                             {
-                                multi = new Choices(new string[] { "twice" });
+                                multi = new List<string>();
+                                multi.Add("twice");
 
                                 for (int j = 2; j <= cc.max_executions; j++)
                                 {
-                                    multi.Add(new string[] { j + " times" });
+                                    multi.Add(j + " times");
                                 }
 
-                                gb = new GrammarBuilder();
-                                gb.Append(cc.name);
-                                gb.Append(multi);
-                                ch.Add(gb);
+                                for (int j = 0; j < multi.Count; j++)
+                                {
+                                    ccommands_list.Add(cc.name + " " + multi[j]);
+                                }
 
                                 CustomCommand u = new CustomCommand();
                                 u.name = cc.name;
@@ -2159,19 +1729,7 @@ namespace Speech
                 }
             }
 
-            Grammar grammar = null;
-
-            if (cc2_commands_found > 0)
-            {
-                grammar = new Grammar(ch);
-
-                if (program == Middle_Man.any_program_name.ToLower())
-                    grammar.Name = grammar_custom_commands_any_name;
-                else
-                    grammar.Name = grammar_custom_commands_foreground_name;
-            }            
-
-            return grammar;
+            return ccommands_list;
         }
 
         void adv_mouse()
@@ -2477,7 +2035,7 @@ namespace Speech
             if ((click_times > 0 && last_command != bic_type.cancel)
                 || last_command == bic_type.drag)
             {
-                enable_grid_gr();
+                enable_grid();
                 if (smart_grid)
                 {
                     MW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
@@ -2529,302 +2087,611 @@ namespace Speech
 
         bool control = false, shift = false, alt = false, windows = false;
 
-        string r, r_lowercase;
+        string r, r_lowercase; //r = recognized speech
         bool speech_recognized = false;
 
-        // Handle the SpeechRecognized event.  
-        void recognizer_SpeechRecognized(object sender, SpeechRecognizedEventArgs e)
+        // Handle the SpeechRecognized event
+        void WaveIn_DataAvailable(object sender, WaveInEventArgs e)
         {
-            speech_recognized = true;
-            inside_speech_recognized_event = true;
-
-            try
+            if (recognition_suspended == false)
             {
-                if (recognition_suspended == false)
+                inside_speech_recognized_event = true;
+
+                if (recognizer == null)
+                    return;
+
+                if (recognizer.AcceptWaveform(e.Buffer, e.BytesRecorded) && recognition_suspended == false)
                 {
-                    if (ss.Volume != ss_volume)
-                        ss.Volume = ss_volume;
+                    string json = recognizer.Result();
 
-                    r = e.Result.Text;
-                    r_lowercase = r.ToLower();
-                    int c = (int)Math.Floor(e.Result.Confidence * 100);
+                    JsonDocument doc = JsonDocument.Parse(json);
 
-                    bool dictation_command = false;
+                    r = doc.RootElement.GetProperty("text").GetString() ?? ""; //r = recognized speech
+                    r = replace_number_words(r);
 
-                    foreach (BuiltInCommand bic in list_bic_dictation_always)
+                    int c = 100; //confidence
+
+                    if (r != null && r != "")
                     {
-                        if (r == bic.name && bic.enabled)
-                        {
-                            dictation_command = true;
-                            break;
-                        }
-                    }
+                        speech_recognized = true;
 
-                    if (better_dictation)
-                    {
-                        foreach (BuiltInCommand bic in list_bic_dictation_better)
+                        try
                         {
-                            if (r == bic.name && bic.enabled)
+                            if (ss.Volume != ss_volume)
+                                ss.Volume = ss_volume;
+
+                            c = 0;
+
+                            if (current_mode == mode.grid)
                             {
-                                dictation_command = true;
-                                break;
+                                r = r.Replace("alpha", "alfa");
+                                r = r.Replace("council", "cancel");
+                                r = r.Replace("killer", "kilo");
+                                r = r.Replace("lemme", "lima");
+                                r = r.Replace("brad shaw", "bravo");
+                                r = r.Replace("fox trot", "foxtrot");
+                                r = r.Replace("x ray", "xray");
+                                r = r.Replace("amber's and", "ampersand");
+                                r = r.Replace("amber's end", "ampersand");
+                                r = r.Replace("am percent", "ampersand");
+                                r = r.Replace("drug", "drag");
+                                r = r.Replace("offer", "alpha");
+                                r = r.Replace("alva", "alpha");
+                                r = r.Replace("weiss", "twice");
+                                r = r.Replace("wise", "twice");
+                                r = r.Replace("act three", "xray");
+                                r = r.Replace("algo", "echo");
+                                r = r.Replace("glove", "golf");
+                                r = r.Replace("julian", "juliett");
+                                r = r.Replace("good back", "quebec");
+                                r = r.Replace("axe three", "xray");
+                                r = r.Replace("lb", "pound");
+                                r = r.Replace("juliet", "juliett");
+
+                                int ind = -1; //indexes of highest confidence words
+                                int c_curr;
+
+                                //List<string> list = new List<string>();
+
+                                //for (int i = 0; i < grids[grid_ind].elements.Count; i++)
+                                //{
+                                //    if (grids[grid_ind].elements[i].word.Contains("4"))
+                                //    {
+                                //        list.Add(grids[grid_ind].elements[i].word);
+                                //    }
+                                //}
+
+                                //int z = 5;
+
+                                //for (int i = 0; i < list_mousegrid.Count; i++)
+                                //{
+                                //    if (list_mousegrid[i] == "4 alfa")
+                                //    {
+                                //        string s = list_mousegrid[i];
+                                //        int x = 5;
+                                //    }
+                                //}
+
+                                for (int i = 0; i < list_mousegrid.Count; i++)
+                                {
+                                    c_curr = (int)get_similarity(r, list_mousegrid[i]);
+
+                                    if (c_curr > c)
+                                    {
+                                        c = c_curr;
+                                        ind = i;
+                                    }
+                                }
+
+                                if (ind != -1)
+                                    r = list_mousegrid[ind];
+                                else
+                                    r = "";
+
+                                SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                {
+                                    if (r.Length > 0)
+                                        SW.TBrecognized_speech.Text = r.FirstCharToUpper();
+                                    SW.TBconfidence.Text = c.ToString() + "/" + confidence_other_commands;
+
+                                    if (c >= confidence_other_commands)
+                                    {
+                                        SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                            = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                    }
+                                    else
+                                    {
+                                        SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                            = new SolidColorBrush(Color.FromRgb(232, 4, 4));
+                                    }
+                                }));
+
+                                //move mouse grid
+                                if (c >= confidence_other_commands && grid_visible && movable_grid
+                                && (r == directions_str[0] || r == directions_str[1]
+                                || r == directions_str[2] || r == directions_str[3]))
+                                {
+                                    if (r == directions_str[0])
+                                    {
+                                        offset_y -= (int)Math.Round(offset * figure_height);
+                                    }
+                                    else if (r == directions_str[1])
+                                    {
+                                        offset_y += (int)Math.Round(offset * figure_height);
+                                    }
+                                    else if (r == directions_str[2])
+                                    {
+                                        offset_x -= (int)Math.Round(offset * figure_width);
+                                    }
+                                    else if (r == directions_str[3])
+                                    {
+                                        offset_x += (int)Math.Round(offset * figure_width);
+                                    }
+
+                                    MW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                    {
+                                        MW.Top = offset_y;
+                                        MW.Left = offset_x;
+                                    }));
+                                }
+                                //perform a mousegrid action
+                                else if (grid_visible && c >= confidence_other_commands)
+                                {
+                                    if (read_recognized_speech) ss.SpeakAsync(r);
+
+                                    MW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                    {
+                                        if (smart_grid)
+                                            MW.Opacity = 0; //hide is delayed until mousegrid content changes
+                                        else
+                                            MW.Hide();
+                                    }));
+                                    grid_visible = false;
+
+                                    r = r.Replace(" ", "");
+
+                                    THRmouse = new Thread(new ThreadStart(adv_mouse));
+                                    THRmouse.Start();
+                                }
                             }
-                        }
-                    }
-
-                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                    {
-                        if (current_mode != mode.dictation || better_dictation == false
-                            || dictation_command)
-                        {
-                            SW.TBrecognized_speech.Text = r.FirstCharToUpper();
-                            SW.TBconfidence.Text = c.ToString();
-                        }
-
-                        if (current_mode == mode.off)
-                        {
-                            SW.TBconfidence.Text += "/" + confidence_turning_on;
-                            if (c >= confidence_turning_on)
+                            else if (current_mode != mode.dictation)
                             {
-                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                    = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                r = r.Replace("juliet", "juliett");
+                                r = r.Replace("alpha", "alfa");
+                                r = r.Replace("pays", "paste");
+                                r = r.Replace("based", "paste");
+                                r = r.Replace("council", "cancel");
+                                r = r.Replace("back space", "backspace");
+                                r = r.Replace("tax space", "backspace");
+                                r = r.Replace("killer", "kilo");
+                                r = r.Replace("lemme", "lima");
+                                r = r.Replace("column", "colon");
+                                r = r.Replace("lb", "pound");
+                                r = r.Replace("carrot", "caret");
+                                r = r.Replace("clegg", "click");
+                                r = r.Replace("tremble", "triple");
+                                r = r.Replace("treble", "triple");
+                                r = r.Replace("tribble", "triple");
+                                r = r.Replace("evil", "ouble");
+                                r = r.Replace("oh then", "open");
+                                r = r.Replace("friend", "print");
+                                r = r.Replace("chap", "tab");
+                                r = r.Replace("you tube", "new tab");
+                                r = r.Replace("brad shaw", "bravo");
+                                r = r.Replace("fox trot", "foxtrot");
+                                r = r.Replace("x ray", "xray");
+                                r = r.Replace("hi fen", "hyphen");
+                                r = r.Replace("hi finn", "hyphen");
+                                r = r.Replace("colin", "colon");
+                                r = r.Replace("cullen", "colon");
+                                r = r.Replace("carried", "carot");
+                                r = r.Replace("that quote", "back quote");
+                                r = r.Replace("amber's and", "ampersand");
+                                r = r.Replace("amber's end", "ampersand");
+                                r = r.Replace("am percent", "ampersand");
+                                r = r.Replace("sent", "cent");
+                                r = r.Replace("drug", "drag");
+                                r = r.Replace("offer", "alpha");
+                                r = r.Replace("alva", "alpha");
+                                r = r.Replace("cold", "hold");
+                                r = r.Replace("injured", "enter");
+                                r = r.Replace("answered", "enter");
+                                r = r.Replace("weiss", "twice");
+                                r = r.Replace("wise", "twice");
+                                r = r.Replace("pains", "paint");
+                                r = r.Replace("out", "alt");
+                                r = r.Replace("added", "alt");
+                                r = r.Replace("act three", "xray");
+                                r = r.Replace("hum", "home");
+                                r = r.Replace("palm", "home");
+                                r = r.Replace("pay job", "page up");
+                                r = r.Replace("algo", "echo");
+                                r = r.Replace("glove", "golf");
+                                r = r.Replace("julian", "juliett");
+                                r = r.Replace("good back", "quebec");
+                                r = r.Replace("axe three", "xray");
+                                //r = r.Replace("", "");
+
+                                int ind1 = 0, ind2 = 0, ind3 = 0, ind4 = 0, ind5 = 0; //indexes of highest confidence words
+                                int c1 = 0, c2 = 0, c3 = 0, c4 = 0, c5 = 0; //confidences for each list
+                                int c_curr;
+                                c = 0;
+
+                                if (current_mode == mode.command)
+                                {
+                                    for (int i = 0; i < list_cc_foreground.Count; i++)
+                                    {
+                                        c_curr = (int)get_similarity(r, list_cc_foreground[i]);
+
+                                        if (c_curr > c1)
+                                        {
+                                            c1 = c_curr;
+                                            ind1 = i;
+                                        }
+                                    }
+
+                                    for (int i = 0; i < list_cc_any.Count; i++)
+                                    {
+                                        c_curr = (int)get_similarity(r, list_cc_any[i]);
+
+                                        if (c_curr > c2)
+                                        {
+                                            c2 = c_curr;
+                                            ind2 = i;
+                                        }
+                                    }
+
+                                    if (apps_opening)
+                                    {
+                                        for (int i = 0; i < list_open_apps.Count; i++)
+                                        {
+                                            c_curr = (int)get_similarity(r, list_open_apps[i]);
+
+                                            if (c_curr > c3)
+                                            {
+                                                c3 = c_curr;
+                                                ind3 = i;
+                                            }
+                                        }
+                                    }
+
+                                    if (apps_switching)
+                                    {
+                                        while (inside_app_list_update)
+                                        {
+                                            Thread.Sleep(10);
+                                        }
+
+                                        for (int i = 0; i < list_switch_to_apps.Count; i++)
+                                        {
+                                            c_curr = (int)get_similarity(r, list_switch_to_apps[i]);
+
+                                            if (c_curr > c4)
+                                            {
+                                                c4 = c_curr;
+                                                ind4 = i;
+                                            }
+                                        }
+                                    }                                                                       
+                                }
+
+                                for (int i = 0; i < list_current.Count; i++)
+                                {
+                                    c_curr = (int)get_similarity(r, list_current[i]);
+
+                                    if (c_curr > c5)
+                                    {
+                                        c5 = c_curr;
+                                        ind5 = i;
+                                    }
+                                }
+
+                                if (current_mode == mode.command)
+                                {
+                                    if (list_cc_foreground.Count > 0)
+                                    {
+                                        if (c1 > c)
+                                        {
+                                            c = c1;
+                                            r = list_cc_foreground[ind1];
+                                        }
+                                    }
+
+                                    if (list_cc_any.Count > 0)
+                                    {
+                                        if (c2 > c)
+                                        {
+                                            c = c2;
+                                            r = list_cc_any[ind2];
+                                        }
+                                    }
+
+                                    if (apps_opening && list_open_apps.Count > 0)
+                                    {
+                                        if (c3 > c)
+                                        {
+                                            c = c3;
+                                            r = list_open_apps[ind3];
+                                        }
+                                    }
+
+                                    if (apps_switching && list_switch_to_apps.Count > 0)
+                                    {
+                                        if (c4 > c)
+                                        {
+                                            c = c4;
+                                            r = list_switch_to_apps[ind4];
+                                        }
+                                    }                                    
+                                }
+
+                                if (list_current.Count > 0)
+                                {
+                                    if (c5 > c)
+                                    {
+                                        c = c5;
+                                        r = list_current[ind5];
+                                    }
+                                }
                             }
                             else
                             {
-                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                    = new SolidColorBrush(Color.FromRgb(232, 4, 4));
+                                int ind1 = 0; //index of highest confidence words
+                                int c1 = 0; //confidences for each list
+                                int c_curr;
+
+                                for (int i = 0; i < list_current.Count; i++)
+                                {
+                                    c_curr = (int)get_similarity(r, list_current[i]);
+
+                                    if (c_curr > c1)
+                                    {
+                                        c1 = c_curr;
+                                        ind1 = i;
+                                    }
+                                }
+
+                                if (c1 >= confidence_other_commands)
+                                {
+                                    r = list_current[ind1];
+                                    c = c1;
+                                }
                             }
-                        }
-                        else if (current_mode == mode.command || current_mode == mode.grid || dictation_command)
-                        {
-                            SW.TBconfidence.Text += "/" + confidence_other_commands;
-                            if (c >= confidence_other_commands)
+
+                            if (current_mode != mode.grid)
                             {
-                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                    = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                r_lowercase = r.ToLower();
+
+                                bool dictation_command = false;
+
+                                foreach (BuiltInCommand bic in list_bic_dictation)
+                                {
+                                    if (r == bic.name && bic.enabled)
+                                    {
+                                        dictation_command = true;
+                                        break;
+                                    }
+                                }
+
+                                if (current_mode != mode.dictation && c > 0)
+                                {
+                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                    {
+                                        SW.TBrecognized_speech.Text = r.FirstCharToUpper();
+                                        SW.TBconfidence.Text = c.ToString();
+                                    }));
+                                }
+
+                                if (current_mode == mode.off && c > 0)
+                                {
+                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                    {
+                                        SW.TBconfidence.Text += "/" + confidence_turning_on;
+                                        if (c >= confidence_turning_on)
+                                        {
+                                            SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                                = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                        }
+                                        else
+                                        {
+                                            SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                                = new SolidColorBrush(Color.FromRgb(232, 4, 4));
+                                        }
+                                    }));
+                                }
+                                else if (current_mode == mode.command || dictation_command)
+                                {
+                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                    {
+                                        SW.TBconfidence.Text += "/" + confidence_other_commands;
+                                        if (c >= confidence_other_commands)
+                                        {
+                                            SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                                = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                        }
+                                        else
+                                        {
+                                            SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                                = new SolidColorBrush(Color.FromRgb(232, 4, 4));
+                                        }
+                                    }));
+                                }
+
+                                //B.Content = r + " | " + c + " | " + e.Result.ReplacementWordUnits.Count;
+                                //B.Content = r + " | " + c + " | " + sem;
+
+                                if (r_lowercase == "open computer")
+                                    r = r_lowercase = "open computer";
+                                if (r_lowercase == "open task manager")
+                                    r = r_lowercase = "open task manager";
+                                if (r_lowercase == "open settings")
+                                    r = r_lowercase = "open settings";
+                                if (r_lowercase == "open power menu")
+                                    r = r_lowercase = "open power menu";
+
+                                List<CC_Action> actions = get_custom_command_actions(r);
+
+                                //Custom Command
+                                if (current_mode == mode.command && c >= confidence_other_commands
+                                    && actions != null)
+                                {
+                                    recognition_suspended = true;
+
+                                    THRcommands = new Thread(() => execute_custom_commands(actions));
+                                    THRcommands.Start();
+                                }
+                                //turn off speech recognition
+                                else if (r == turn_off && c >= confidence_other_commands &&
+                                    (current_mode == mode.command
+                                    && is_bic_in_general_and_mouse_enabled(bic_type.turn_off)
+                                    || (current_mode == mode.dictation
+                                    && is_bic_in_dictation_enabled(bic_type.turn_off))))
+                                {
+                                    if (read_recognized_speech) ss.SpeakAsync(r);
+
+                                    load_turned_off(true);
+
+                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                    {
+                                        SW.TBrecognized_speech.Text = r.FirstCharToUpper();
+                                        SW.TBconfidence.Text = c.ToString() + "/" + confidence_other_commands;
+                                        SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                            = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                    }));
+                                }
+                                //turn on speech recognition
+                                else if (r == turn_on && current_mode == mode.off && c >= confidence_turning_on)
+                                {
+                                    if (read_recognized_speech) ss.SpeakAsync(r);
+
+                                    current_mode = last_mode;
+
+                                    load_turned_on(true);
+                                }
+                                //switch to command mode
+                                else if ((int)get_similarity(r, switch_to_command_mode) >= confidence_other_commands
+                                    && current_mode == mode.dictation && is_bic_in_dictation_enabled(bic_type.switch_to_command))
+                                {
+                                    if (read_recognized_speech) ss.SpeakAsync(r);
+
+                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                    {
+                                        SW.TBrecognized_speech.Text = r.FirstCharToUpper();
+                                        SW.TBconfidence.Text = ((int)get_similarity(r, switch_to_command_mode)).ToString();
+                                        SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                            = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                    }));
+
+                                    current_mode = mode.command;
+
+                                    load_turned_on(true);
+                                }
+                                //switch to dictation mode
+                                else if (r == switch_to_dictation_mode
+                                    && c >= confidence_other_commands && current_mode == mode.command)
+                                {
+                                    if (read_recognized_speech) ss.SpeakAsync(r);
+
+                                    current_mode = mode.dictation;
+
+                                    load_turned_on(true);
+                                }
+                                //show speech recognition window
+                                else if (r == show_speech_recognition && current_mode == mode.command
+                                    && c >= confidence_other_commands)
+                                {
+                                    if (read_recognized_speech) ss.SpeakAsync(r);
+                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                    {
+                                        if (SW.IsLoaded)
+                                        {
+                                            SW.Show();
+                                        }
+                                        else
+                                        {
+                                            SW = new SpeechWindow();
+                                            SW.Topmost = true;
+                                            SW.ShowInTaskbar = false;
+                                            load_coords();
+                                            SW.Show();
+                                        }
+                                    }));
+
+                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                    {
+                                        SW.mode = 1;
+                                        SW.Bmode.Content = mode_command;
+                                        SW.Bmode.Foreground = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+
+                                        // Create a BitmapSource  
+                                        BitmapImage bitmap = new BitmapImage();
+                                        bitmap.BeginInit();
+                                        bitmap.UriSource = new Uri(icon_command);
+                                        bitmap.EndInit();
+
+                                        SW.Icon = bitmap;
+
+                                        SW.TBrecognized_speech.Text = r.FirstCharToUpper();
+                                        SW.TBconfidence.Text = c.ToString() + "/" + confidence_other_commands;
+                                        SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                            = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                    }));
+                                }
+                                //hide speech recognition window
+                                else if (r == hide_speech_recognition && current_mode == mode.command
+                                    && c >= confidence_other_commands)
+                                {
+                                    if (read_recognized_speech) ss.SpeakAsync(r);
+                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                    {
+                                        if (SW.IsVisible)
+                                        {
+                                            SW.Hide();
+                                        }
+                                    }));
+                                }
+                                //dictation text
+                                else if (current_mode == mode.dictation)
+                                //&& (r.Length < 6 || r.Substring(0, 6).ToLower() != "press "))
+                                {
+                                    if (read_recognized_speech) ss.SpeakAsync(r);
+
+                                    sim.Keyboard.TextEntry(r.FirstCharToUpper() + ". ");
+                                    c = 100;
+
+                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                    {
+                                        if (SW.IsVisible)
+                                        {
+                                            SW.TBrecognized_speech.Text = r.FirstCharToUpper();
+                                            SW.TBconfidence.Text = c.ToString();
+                                            SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                                = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                        }
+                                    }));
+                                }
+                                //execute a command
+                                else if (current_mode == mode.command && c >= confidence_other_commands)
+                                {
+                                    //if (r.Length >= 6 && r.Substring(0, 6).ToLower() != "press ")
+                                    //    r.Replace("press ", "");
+                                    recognition_suspended = true;
+
+                                    THRcommands = new Thread(new ThreadStart(execute_commands));
+                                    THRcommands.Start();
+                                }
                             }
-                            else
-                            {
-                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                    = new SolidColorBrush(Color.FromRgb(232, 4, 4));
-                            }
                         }
-                        //hide recognized dictation when better dictation is enabled
-                        else if (better_dictation == false)
+                        catch (Exception ex)
                         {
-                            SW.TBconfidence.Text += "/" + confidence_dictation;
-                            if (c >= confidence_dictation)
-                            {
-                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                    = new SolidColorBrush(Color.FromRgb(0, 128, 0));
-                            }
-                            else
-                            {
-                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                    = new SolidColorBrush(Color.FromRgb(232, 4, 4));
-                            }
+                            MessageBox.Show(ex.Message, "Error MW009", MessageBoxButton.OK, MessageBoxImage.Error);
                         }
-                    }));
-                    //B.Content = r + " | " + c + " | " + e.Result.ReplacementWordUnits.Count;
-                    //B.Content = r + " | " + c + " | " + sem;
-
-                    if (r_lowercase == "open computer")
-                        r = r_lowercase = "open computer";
-                    if (r_lowercase == "open task manager")
-                        r = r_lowercase = "open task manager";
-                    if (r_lowercase == "open settings")
-                        r = r_lowercase = "open settings";
-                    if (r_lowercase == "open power menu")
-                        r = r_lowercase = "open power menu";
-
-                    List<CC_Action> actions = get_custom_command_actions(r);
-
-                    //Custom Command
-                    if (current_mode == mode.command && c >= confidence_other_commands
-                        && actions != null)
-                    {
-                        THRcommands = new Thread(() => execute_custom_commands(actions));
-                        THRcommands.Start();
-                    }
-                    //turn off speech recognition
-                    else if (r == turn_off && c >= confidence_other_commands &&
-                        (current_mode == mode.command 
-                        && is_bic_in_general_and_mouse_enabled(bic_type.turn_off)
-                        || (current_mode == mode.dictation
-                        && is_bic_in_dictation_enabled(bic_type.turn_off))))
-                    {
-                        if (current_mode == mode.dictation && better_dictation)
-                        {
-                            toggle_better_dictation();
-                        }
-
-                        if (read_recognized_speech) ss.SpeakAsync(r);
-
-                        load_turned_off();
-                    }
-                    //turn on speech recognition
-                    else if (r == turn_on && current_mode == mode.off && c >= confidence_turning_on)
-                    {
-                        if (read_recognized_speech) ss.SpeakAsync(r);
-                        
-                        current_mode = last_mode;
-
-                        load_turned_on();
-                    }
-                    //switch to command mode
-                    else if (r == switch_to_command_mode
-                        && c >= confidence_other_commands && current_mode == mode.dictation
-                        && is_bic_in_dictation_enabled(bic_type.switch_to_command))
-                    {
-                        if (current_mode == mode.dictation && better_dictation)
-                        {
-                            toggle_better_dictation();
-                        }
-
-                        if (read_recognized_speech) ss.SpeakAsync(r);
-                        
-                        current_mode = mode.command;
-                        
-                        load_turned_on();
-                    }
-                    //switch to dictation mode
-                    else if (r == switch_to_dictation_mode
-                        && c >= confidence_other_commands && current_mode == mode.command)
-                    {
-                        if (read_recognized_speech) ss.SpeakAsync(r);
-                        
-                        current_mode = mode.dictation;
-                        
-                        load_turned_on();
-                    }
-                    //show speech recognition window
-                    else if (r == show_speech_recognition && current_mode == mode.command
-                        && c >= confidence_other_commands)
-                    {
-                        if (read_recognized_speech) ss.SpeakAsync(r);
-                        SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                        {
-                            if (SW.IsLoaded)
-                            {
-                                SW.Show();
-                            }
-                            else
-                            {
-                                SW = new SpeechWindow();
-                                SW.Topmost = true;
-                                SW.ShowInTaskbar = false;
-                                load_coords();
-                                SW.Show();
-                            }
-                        }));
-                    }
-                    //hide speech recognition window
-                    else if (r == hide_speech_recognition && current_mode == mode.command 
-                        && c >= confidence_other_commands)
-                    {
-                        if (read_recognized_speech) ss.SpeakAsync(r);
-                        SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                        {
-                            if (SW.IsVisible)
-                            {
-                                SW.Hide();
-                            }
-                        }));
-                    }
-                    else if (current_mode == mode.dictation && better_dictation
-                        && r == toggle_better_dictation_str
-                        && is_bic_in_dictation_enabled(bic_type.toggle_better_dictation))
-                    {
-                        if (read_recognized_speech) ss.SpeakAsync(r);
-                        
-                        toggle_better_dictation();
-                    }
-                    else if (current_mode == mode.dictation && better_dictation
-                        && r == start_better_dictation_listening
-                        && is_bic_in_dictation_enabled(bic_type.start_better_dictation_listening))
-                    {
-                        if (read_recognized_speech) ss.SpeakAsync(r);
-                        
-                        restart_better_dictation();
-                    }
-                    //dictation text
-                    else if (current_mode == mode.dictation && better_dictation == false
-                        && c >= confidence_dictation)
-                    //&& (r.Length < 6 || r.Substring(0, 6).ToLower() != "press "))
-                    {
-                        if (read_recognized_speech) ss.SpeakAsync(r);
-                        
-                        sim.Keyboard.TextEntry(r + " ");
-                    }
-                    //move mouse grid
-                    else if (c >= confidence_other_commands && grid_visible && movable_grid
-                        && (r == directions_str[0] || r == directions_str[1]
-                        || r == directions_str[2] || r == directions_str[3]))
-                    {
-                        if (r == directions_str[0])
-                        {
-                            offset_y -= (int)Math.Round(offset * figure_height);
-                        }
-                        else if (r == directions_str[1])
-                        {
-                            offset_y += (int)Math.Round(offset * figure_height);
-                        }
-                        else if (r == directions_str[2])
-                        {
-                            offset_x -= (int)Math.Round(offset * figure_width);
-                        }
-                        else if (r == directions_str[3])
-                        {
-                            offset_x += (int)Math.Round(offset * figure_width);
-                        }
-
-                        MW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                        {
-                            MW.Top = offset_y;
-                            MW.Left = offset_x;
-                        }));
-                    }
-                    //perform a mousegrid action
-                    else if (grid_visible && c >= confidence_other_commands)
-                    {
-                        if (read_recognized_speech) ss.SpeakAsync(r);
-
-                        MW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                        {
-                            if (smart_grid)
-                                MW.Opacity = 0; //hide is delayed until mousegrid content changes
-                            else
-                                MW.Hide();
-                        }));
-                        grid_visible = false;
-
-                        THRmouse = new Thread(new ThreadStart(adv_mouse));
-                        THRmouse.Start();
-                    }
-                    //execute a command
-                    else if (current_mode == mode.command && c >= confidence_other_commands)
-                    {
-                        //if (r.Length >= 6 && r.Substring(0, 6).ToLower() != "press ")
-                        //    r.Replace("press ", "");
-                        THRcommands = new Thread(new ThreadStart(execute_commands));
-                        THRcommands.Start();
                     }
                 }
-                else
-                {
-                    if (read_recognized_speech)
-                    { 
-                        ss.SpeakAsync("I'm busy");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error MW009", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
 
-            inside_speech_recognized_event = false;
-        }        
+                inside_speech_recognized_event = false;
+            }
+        }
 
         void execute_commands()
         {
@@ -3025,7 +2892,7 @@ namespace Speech
                                 else grid_ind = 0;
 
                                 last_command = list_bic_general_and_mouse[i].type;
-                                enable_grid_gr();
+                                enable_grid();
                                 //if(debug_mode) start_time();
                                 if (smart_grid)
                                 {
@@ -3708,11 +3575,6 @@ namespace Speech
                     {
                         if (SW.mode == 0)
                         {
-                            if (current_mode == mode.dictation && better_dictation)
-                            {
-                                toggle_better_dictation();
-                            }
-
                             load_turned_off();
                         }
                         else if (SW.mode == 1)

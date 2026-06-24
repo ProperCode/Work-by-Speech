@@ -6,9 +6,9 @@ using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Speech.Recognition;
 using System.Speech.Synthesis;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -66,66 +66,10 @@ namespace Speech
                 / SystemParameters.PrimaryScreenWidth);
         }
 
-        void toggle_grammar(bool enabled, grammar_type gt)
-        {
-            string grammar_name = "";
-
-            if (gt == grammar_type.grammar_apps_opening)
-                grammar_name = grammar_apps_opening_name;
-            else if (gt == grammar_type.grammar_apps_switching)
-                grammar_name = grammar_apps_switching_name;
-            else if (gt == grammar_type.grammar_builtin_commands)
-                grammar_name = grammar_builtin_commands_name;
-            else if (gt == grammar_type.grammar_custom_commands_any)
-                grammar_name = grammar_custom_commands_any_name;
-            else if (gt == grammar_type.grammar_custom_commands_foreground)
-                grammar_name = grammar_custom_commands_foreground_name;
-            else if (gt == grammar_type.grammar_dictation)
-                grammar_name = grammar_dictation_name;
-            else if (gt == grammar_type.grammar_dictation_commands)
-                grammar_name = grammar_dictation_commands_name;
-            else if (gt == grammar_type.grammar_mousegrid)
-                grammar_name = grammar_mousegrid_name;
-            else if (gt == grammar_type.grammar_off_mode)
-                grammar_name = grammar_off_mode_name;
-
-            for (int i = 0; i < recognizer.Grammars.Count; i++)
-            {
-                if (recognizer.Grammars[i].Name == grammar_name)
-                {
-                    recognizer.Grammars[i].Enabled = enabled;
-                    break;
-                }
-            }
-        }
-
-        bool is_grammar_loaded(string grammar_name)
-        {
-            for (int i = 0; i < recognizer.Grammars.Count; i++)
-            {
-                if (recognizer.Grammars[i].Name == grammar_name)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        void unload_grammar_if_loaded(Grammar grammar, string grammar_name)
-        {
-            if (is_grammar_loaded(grammar_name))
-            {
-                recognizer.UnloadGrammar(grammar);
-            }
-        }
-
         void restore_default_settings()
         {
             TBconfidence_start.Text = default_confidence_turning_on.ToString();
             TBconfidence_commands.Text = default_confidence_other_commands.ToString();
-            TBconfidence_dictation.Text = default_confidence_dictation.ToString();
-            CHBuse_better_dictation.IsChecked = default_better_dictation;
 
             bool found = false;
             for (int i = 0; i < ss_voices_priority_list.Count && found == false; i++)
@@ -290,11 +234,6 @@ namespace Speech
         {
             try
             {
-                if (current_mode == mode.dictation && better_dictation)
-                {
-                    toggle_better_dictation();
-                }
-
                 current_mode = mode.command;
                 load_turned_on();
             }
@@ -321,11 +260,6 @@ namespace Speech
         {
             try
             {
-                if (current_mode == mode.dictation && better_dictation)
-                {
-                    toggle_better_dictation();
-                }
-
                 load_turned_off();
             }
             catch (Exception ex)
@@ -352,11 +286,6 @@ namespace Speech
             {
                 ni.Visible = false;
                 ni.Dispose();
-
-                if (THRmonitor != null && current_mode == mode.dictation && better_dictation)
-                {
-                    toggle_better_dictation();
-                }
 
                 release_buttons_and_keys();
 
@@ -385,14 +314,8 @@ namespace Speech
 
                 if (first_run)
                 {
-                    MessageBox.Show("This program can recognize your speech with high accuracy only if you " +
-                        "complete at least two voice trainings. One voice training takes about 7 minutes. " +
-                        "You can find more information about voice training in point 4 of the user guide, " +
-                        "which is located in the help section.\n\n"
-                        + "To learn how to use this program, go to the help section and read " +
-                        "all the documents.",
-                        "Welcome",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("To learn how to use this program, go to the help section and read " +
+                        "all the documents.", "Welcome", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
                 update_app_if_necessary();
@@ -735,10 +658,28 @@ namespace Speech
 
         private void Beula_Click(object sender, RoutedEventArgs e)
         {
-            WindowEULA w = new WindowEULA();
-            w.Owner = Application.Current.MainWindow;
-            w.ShowInTaskbar = false;
-            w.ShowDialog();
+            try
+            {
+                Process.Start("Licenses\\License.txt");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error AM009a", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void Bthird_party_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Process.Start("Licenses\\Windows Input Simulator License.txt");
+                Process.Start("Licenses\\Vosk License.txt");
+                Process.Start("Licenses\\Vosk Model License.txt");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error AM009b", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -848,13 +789,10 @@ namespace Speech
             }
 
             bool grid_size_changed = false;
-            bool prev_better_dictation = better_dictation;
             GridType prev_grid_type = grid_type;
 
             confidence_turning_on = int.Parse(TBconfidence_start.Text);
             confidence_other_commands = int.Parse(TBconfidence_commands.Text);
-            confidence_dictation = int.Parse(TBconfidence_dictation.Text);
-            better_dictation = (bool)CHBuse_better_dictation.IsChecked;
 
             if(CBss_voices.Items.Count > 0)
                 ss_voice = CBss_voices.SelectedItem.ToString();
@@ -961,27 +899,9 @@ namespace Speech
             if ((grid_size_changed || prev_smart_grid != smart_grid)
                 && THRswitch_to != null && THRmonitor != null) //we don't want this executed when settings are being loaded
             {
-                if (dont_unload_grammars)
-                {
-                    restart_recognizer(true);
-                }
-                else
-                {
-                    //recognizer.RequestRecognizerUpdate();
-                    
-                    unload_grammar_if_loaded(grammar_mousegrid, grammar_mousegrid_name);
+                list_mousegrid = create_grid_list(true);
 
-                    grammar_mousegrid = create_grid_grammar(true);
-
-                    if (grammar_mousegrid != null)
-                        recognizer.LoadGrammar(grammar_mousegrid);
-
-                    //loaded grammar is enabled by default
-                    if(current_mode == mode.grid)
-                        toggle_grammar(true, grammar_type.grammar_mousegrid);
-                    else
-                        toggle_grammar(false, grammar_type.grammar_mousegrid);
-                }
+                //if(current_mode == mode.grid)
 
                 if ((smart_grid && prev_smart_grid == false) || grid_size_changed)
                 {
@@ -989,39 +909,15 @@ namespace Speech
                 }
             }
 
-            //better dictation uses different grammar
-            if (prev_better_dictation != better_dictation
-                && THRswitch_to != null && THRmonitor != null) //we don't want this executed when settings are being loaded
+            if (THRswitch_to != null && THRmonitor != null) //we don't want this executed when settings are being loaded
             {
-                if (dont_unload_grammars)
-                {
-                    restart_recognizer(false);
-                }
-                else
-                {
-                    //recognizer.RequestRecognizerUpdate();
-                    
-                    unload_grammar_if_loaded(grammar_dictation_commands, grammar_dictation_commands_name);
+                if (are_all_bic_dictation_disabled() == false)
+                    list_dictation = create_dictation_commands_list();
 
-                    if (are_all_bic_dictation_disabled() == false)
-                        grammar_dictation_commands = create_dictation_commands_grammar();
-                    else
-                        grammar_dictation_commands = null;
-
-                    if (grammar_dictation_commands != null)
-                        recognizer.LoadGrammar(grammar_dictation_commands);
-
-                    if(current_mode == mode.dictation)
-                    {
-                        toggle_grammar(true, grammar_type.grammar_dictation_commands);
-                        
-                        toggle_better_dictation();
-                    }
-                    else
-                    {
-                        toggle_grammar(false, grammar_type.grammar_dictation_commands);
-                    }
-                }
+                //if(current_mode == mode.dictation)
+                //{
+                //    toggle_grammar(true, grammar_type.grammar_dictation_commands);
+                //}
             }
 
             //only needed if grid was already created //we don't want this executed when settings
@@ -1114,12 +1010,6 @@ namespace Speech
                         throw new Exception("Confidence required for other commands" +
                             " must be between 0 and 99");
 
-                    if (int.TryParse(TBconfidence_dictation.Text, out trash) == false 
-                        || int.Parse(TBconfidence_dictation.Text) < 0
-                        || int.Parse(TBconfidence_dictation.Text) > 99)
-                        throw new Exception("Confidence required for dictation" +
-                            " must be between 0 and 99");
-
                     if (CBss_voices.SelectedIndex == -1 && (bool)CHBread_recognized_speech.IsChecked)
                         throw new Exception("Speech synthesis voice must be selected when" +
                             " \"Read recognized speech\" is checked.");
@@ -1173,14 +1063,8 @@ namespace Speech
                     setting_node = xml_doc.CreateElement("confidence_commands");
                     setting_node.InnerText = TBconfidence_commands.Text;
                     root_node.AppendChild(setting_node);
-                    setting_node = xml_doc.CreateElement("confidence_dictation");
-                    setting_node.InnerText = TBconfidence_dictation.Text;
-                    root_node.AppendChild(setting_node);
                     setting_node = xml_doc.CreateElement("read_aloud_recognized_speech");
                     setting_node.InnerText = CHBread_recognized_speech.IsChecked.ToString();
-                    root_node.AppendChild(setting_node);
-                    setting_node = xml_doc.CreateElement("use_better_dictation");
-                    setting_node.InnerText = CHBuse_better_dictation.IsChecked.ToString();
                     root_node.AppendChild(setting_node);
 
                     setting_node = xml_doc.CreateElement("type");
@@ -1273,13 +1157,8 @@ namespace Speech
                                 TBconfidence_start.Text = node.InnerText;
                             else if (node.Name == "confidence_commands")
                                 TBconfidence_commands.Text = node.InnerText;
-                            else if (node.Name == "confidence_dictation")
-                                TBconfidence_dictation.Text = node.InnerText;
                             else if (node.Name == "read_aloud_recognized_speech")
                                 CHBread_recognized_speech.IsChecked = bool.Parse(node.InnerText);
-                            else if (node.Name == "use_better_dictation")
-                                CHBuse_better_dictation.IsChecked = better_dictation = 
-                                    bool.Parse(node.InnerText);
                             else if (node.Name == "type")
                                 CBtype.SelectedIndex = int.Parse(node.InnerText);
                             else if (node.Name == "lines")
@@ -1353,11 +1232,6 @@ namespace Speech
                 {
                     confidence_other_commands = 60;
                     TBconfidence_commands.Text = confidence_other_commands.ToString();
-                }
-                if (confidence_dictation > 99 || confidence_dictation < 0)
-                {
-                    confidence_dictation = 20;
-                    TBconfidence_dictation.Text = confidence_dictation.ToString();
                 }
                 if (ss_volume > 100 || ss_volume < 0)
                 {
@@ -1570,8 +1444,6 @@ namespace Speech
 
                     if (TBconfidence_start.Text != confidence_turning_on.ToString()
                     || TBconfidence_commands.Text != confidence_other_commands.ToString()
-                    || TBconfidence_dictation.Text != confidence_dictation.ToString()
-                    || CHBuse_better_dictation.IsChecked != better_dictation
                     || (CBss_voices.Items.Count > 0 &&
                        CBss_voices.SelectedItem.ToString() != ss_voice)
                     || TBss_volume.Text != ss_volume.ToString()
@@ -1621,8 +1493,6 @@ namespace Speech
 
                     if (TBconfidence_start.Text != default_confidence_turning_on.ToString()
                         || TBconfidence_commands.Text != default_confidence_other_commands.ToString()
-                        || TBconfidence_dictation.Text != default_confidence_dictation.ToString()
-                        || CHBuse_better_dictation.IsChecked != default_better_dictation
                         || (CBss_voices.Items.Count > 0 &&
                            CBss_voices.SelectedItem.ToString() != default_ss_voice)
                         || TBss_volume.Text != default_ss_volume.ToString()
@@ -1681,6 +1551,45 @@ namespace Speech
             else if (gt == GridType.square_vertical_precision)
                 return folder_name_grid_vertical;
             else return null;
+        }
+
+        void add_to_list_current(list_type LT)
+        {
+            if(LT == list_type.list_off_mode)
+            {
+                for (int i = 0; i < list_off_mode.Count; i++)
+                {
+                    list_current.Add(list_off_mode[i]);
+                }
+            }
+            else if (LT == list_type.list_dictation)
+            {
+                for (int i = 0; i < list_dictation.Count; i++)
+                {
+                    list_current.Add(list_dictation[i]);
+                }
+            }
+            else if (LT == list_type.list_mousegrid)
+            {
+                for (int i = 0; i < list_mousegrid.Count; i++)
+                {
+                    list_current.Add(list_mousegrid[i]);
+                }
+            }
+            else if (LT == list_type.list_builtin_commands)
+            {
+                for (int i = 0; i < list_builtin_commands.Count; i++)
+                {
+                    list_current.Add(list_builtin_commands[i]);
+                }
+            }
+            else if (LT == list_type.list_cc_any)
+            {
+                for (int i = 0; i < list_cc_any.Count; i++)
+                {
+                    list_current.Add(list_cc_any[i]);
+                }
+            }
         }
 
         private class MyWebClient : WebClient
@@ -1756,6 +1665,92 @@ namespace Speech
             T result = (T)formatter.Deserialize(stream);
             stream.Close();
             return result;
+        }
+
+        public static double get_similarity(string word1, string word2)
+        {
+            if (string.IsNullOrEmpty(word1) && string.IsNullOrEmpty(word2))
+                return 100.0;
+
+            int distance = LevenshteinDistance(word1, word2);
+            int maxLength = Math.Max(word1.Length, word2.Length);
+
+            return (1.0 - (double)distance / maxLength) * 100.0;
+        }
+
+        private static int LevenshteinDistance(string s, string t)
+        {
+            int[,] d = new int[s.Length + 1, t.Length + 1];
+
+            for (int i = 0; i <= s.Length; i++)
+                d[i, 0] = i;
+
+            for (int j = 0; j <= t.Length; j++)
+                d[0, j] = j;
+
+            for (int i = 1; i <= s.Length; i++)
+            {
+                for (int j = 1; j <= t.Length; j++)
+                {
+                    int cost = s[i - 1] == t[j - 1] ? 0 : 1;
+
+                    d[i, j] = Math.Min(
+                        Math.Min(
+                            d[i - 1, j] + 1,      // deletion
+                            d[i, j - 1] + 1),     // insertion
+                        d[i - 1, j - 1] + cost); // substitution
+                }
+            }
+
+            return d[s.Length, t.Length];
+        }
+
+        readonly Dictionary<string, int> Numbers =
+        new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "one", 1 }, { "two", 2 }, { "three", 3 }, { "four", 4 },
+            { "five", 5 }, { "six", 6 }, { "seven", 7 }, { "eight", 8 },
+            { "nine", 9 }, { "ten", 10 }, { "eleven", 11 }, { "twelve", 12 },
+            { "thirteen", 13 }, { "fourteen", 14 }, { "fifteen", 15 },
+            { "sixteen", 16 }, { "seventeen", 17 }, { "eighteen", 18 },
+            { "nineteen", 19 }, { "twenty", 20 }, { "thirty", 30 },
+            { "forty", 40 }, { "fifty", 50 }, { "sixty", 60 },
+            { "seventy", 70 }, { "eighty", 80 }, { "ninety", 90 },
+            { "one hundred", 100 }
+        };
+
+        string replace_number_words(string text)
+        {
+            // Replace "one hundred" first
+            text = Regex.Replace(
+                text,
+                @"\bone hundred\b",
+                "100",
+                RegexOptions.IgnoreCase);
+
+            // Replace compound numbers such as twenty one, ninety nine
+            text = Regex.Replace(
+                text,
+                @"\b(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety) (one|two|three|four|five|six|seven|eight|nine)\b",
+                delegate (Match match)
+                {
+                    string[] parts = match.Value.ToLower().Split(' ');
+                    int value = Numbers[parts[0]] + Numbers[parts[1]];
+                    return value.ToString();
+                },
+                RegexOptions.IgnoreCase);
+
+            // Replace single-word numbers
+            foreach (KeyValuePair<string, int> pair in Numbers)
+            {
+                text = Regex.Replace(
+                    text,
+                    @"\b" + Regex.Escape(pair.Key) + @"\b",
+                    pair.Value.ToString(),
+                    RegexOptions.IgnoreCase);
+            }
+
+            return text;
         }
     }
 

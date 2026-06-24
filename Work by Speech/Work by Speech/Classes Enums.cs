@@ -57,20 +57,16 @@ namespace Speech
 			off,
 			command,
 			dictation,
-			grid //part of command mode
+			grid
 		}
 
-        enum grammar_type
+        enum list_type
         {
-            grammar_off_mode,
-            grammar_dictation_commands,
-            grammar_dictation,
-            grammar_mousegrid,
-            grammar_builtin_commands,
-            grammar_custom_commands_any, //any program
-            grammar_custom_commands_foreground, //foreground program
-            grammar_apps_switching,
-            grammar_apps_opening
+            list_off_mode,
+            list_dictation,
+            list_mousegrid,
+            list_builtin_commands,
+            list_cc_any, //any program
         }
 
         public enum bic_type //bic = built-in command
@@ -162,15 +158,15 @@ namespace Speech
             grid_alphabet.Add(new Grid_Symbol("xray", "x"));
             grid_alphabet.Add(new Grid_Symbol("yankee", "y"));
             grid_alphabet.Add(new Grid_Symbol("zulu", "z"));
-            grid_alphabet.Add(new Grid_Symbol("one", "1"));
-            grid_alphabet.Add(new Grid_Symbol("two", "2"));
-            grid_alphabet.Add(new Grid_Symbol("three", "3"));
-            grid_alphabet.Add(new Grid_Symbol("four", "4"));
-            grid_alphabet.Add(new Grid_Symbol("five", "5"));
-            grid_alphabet.Add(new Grid_Symbol("six", "6"));
-            grid_alphabet.Add(new Grid_Symbol("seven", "7"));
-            grid_alphabet.Add(new Grid_Symbol("eight", "8"));
-            grid_alphabet.Add(new Grid_Symbol("nine", "9"));
+            grid_alphabet.Add(new Grid_Symbol("1", "1"));
+            grid_alphabet.Add(new Grid_Symbol("2", "2"));
+            grid_alphabet.Add(new Grid_Symbol("3", "3"));
+            grid_alphabet.Add(new Grid_Symbol("4", "4"));
+            grid_alphabet.Add(new Grid_Symbol("5", "5"));
+            grid_alphabet.Add(new Grid_Symbol("6", "6"));
+            grid_alphabet.Add(new Grid_Symbol("7", "7"));
+            grid_alphabet.Add(new Grid_Symbol("8", "8"));
+            grid_alphabet.Add(new Grid_Symbol("9", "9"));
             grid_alphabet.Add(new Grid_Symbol("slash", "/"));
 			grid_alphabet.Add(new Grid_Symbol("minus", "-"));
 			grid_alphabet.Add(new Grid_Symbol("question", "?"));
@@ -209,155 +205,155 @@ namespace Speech
 			//grid_alphabet.Add(new Grid_Symbol("mike", "m"));
 		}
 
-		void create_normal_grid_alphabet()
-		{
-			grid_alphabet = new List<Grid_Symbol>();
+		//void create_normal_grid_alphabet()
+		//{
+		//	grid_alphabet = new List<Grid_Symbol>();
 
-			grid_alphabet.Add(new Grid_Symbol("alfa", "a"));
-			grid_alphabet.Add(new Grid_Symbol("bravo", "b"));
-			grid_alphabet.Add(new Grid_Symbol("charlie", "c"));
-			grid_alphabet.Add(new Grid_Symbol("delta", "d"));
-			grid_alphabet.Add(new Grid_Symbol("echo", "e"));
-			grid_alphabet.Add(new Grid_Symbol("foxtrot", "f"));
-			grid_alphabet.Add(new Grid_Symbol("golf", "g"));
-			grid_alphabet.Add(new Grid_Symbol("hotel", "h"));
-			grid_alphabet.Add(new Grid_Symbol("india", "i"));
-			grid_alphabet.Add(new Grid_Symbol("juliett", "j"));
-			grid_alphabet.Add(new Grid_Symbol("kilo", "k"));
-			grid_alphabet.Add(new Grid_Symbol("lima", "l"));
-			grid_alphabet.Add(new Grid_Symbol("mike", "m"));
-			grid_alphabet.Add(new Grid_Symbol("november", "n"));
-			grid_alphabet.Add(new Grid_Symbol("oscar", "o"));
-			grid_alphabet.Add(new Grid_Symbol("papa", "p"));
-			grid_alphabet.Add(new Grid_Symbol("quebec", "q"));
-			grid_alphabet.Add(new Grid_Symbol("romeo", "r"));
-			grid_alphabet.Add(new Grid_Symbol("sierra", "s"));
-			grid_alphabet.Add(new Grid_Symbol("tango", "t"));
-			grid_alphabet.Add(new Grid_Symbol("uniform", "u"));
-			grid_alphabet.Add(new Grid_Symbol("victor", "v"));
-			grid_alphabet.Add(new Grid_Symbol("whiskey", "w"));
-			grid_alphabet.Add(new Grid_Symbol("xray", "x"));
-			grid_alphabet.Add(new Grid_Symbol("yankee", "y"));
-			grid_alphabet.Add(new Grid_Symbol("zulu", "z"));
-			grid_alphabet.Add(new Grid_Symbol("one", "1"));
-			grid_alphabet.Add(new Grid_Symbol("two", "2"));
-			grid_alphabet.Add(new Grid_Symbol("three", "3"));
-			grid_alphabet.Add(new Grid_Symbol("four", "4"));
-			grid_alphabet.Add(new Grid_Symbol("five", "5"));
-			grid_alphabet.Add(new Grid_Symbol("six", "6"));
-			grid_alphabet.Add(new Grid_Symbol("seven", "7"));
-			grid_alphabet.Add(new Grid_Symbol("eight", "8"));
-			grid_alphabet.Add(new Grid_Symbol("nine", "9"));
-			grid_alphabet.Add(new Grid_Symbol("zero", "0"));
-		}
+		//	grid_alphabet.Add(new Grid_Symbol("alfa", "a"));
+		//	grid_alphabet.Add(new Grid_Symbol("bravo", "b"));
+		//	grid_alphabet.Add(new Grid_Symbol("charlie", "c"));
+		//	grid_alphabet.Add(new Grid_Symbol("delta", "d"));
+		//	grid_alphabet.Add(new Grid_Symbol("echo", "e"));
+		//	grid_alphabet.Add(new Grid_Symbol("foxtrot", "f"));
+		//	grid_alphabet.Add(new Grid_Symbol("golf", "g"));
+		//	grid_alphabet.Add(new Grid_Symbol("hotel", "h"));
+		//	grid_alphabet.Add(new Grid_Symbol("india", "i"));
+		//	grid_alphabet.Add(new Grid_Symbol("juliett", "j"));
+		//	grid_alphabet.Add(new Grid_Symbol("kilo", "k"));
+		//	grid_alphabet.Add(new Grid_Symbol("lima", "l"));
+		//	grid_alphabet.Add(new Grid_Symbol("mike", "m"));
+		//	grid_alphabet.Add(new Grid_Symbol("november", "n"));
+		//	grid_alphabet.Add(new Grid_Symbol("oscar", "o"));
+		//	grid_alphabet.Add(new Grid_Symbol("papa", "p"));
+		//	grid_alphabet.Add(new Grid_Symbol("quebec", "q"));
+		//	grid_alphabet.Add(new Grid_Symbol("romeo", "r"));
+		//	grid_alphabet.Add(new Grid_Symbol("sierra", "s"));
+		//	grid_alphabet.Add(new Grid_Symbol("tango", "t"));
+		//	grid_alphabet.Add(new Grid_Symbol("uniform", "u"));
+		//	grid_alphabet.Add(new Grid_Symbol("victor", "v"));
+		//	grid_alphabet.Add(new Grid_Symbol("whiskey", "w"));
+		//	grid_alphabet.Add(new Grid_Symbol("xray", "x"));
+		//	grid_alphabet.Add(new Grid_Symbol("yankee", "y"));
+		//	grid_alphabet.Add(new Grid_Symbol("zulu", "z"));
+		//	grid_alphabet.Add(new Grid_Symbol("one", "1"));
+		//	grid_alphabet.Add(new Grid_Symbol("two", "2"));
+		//	grid_alphabet.Add(new Grid_Symbol("three", "3"));
+		//	grid_alphabet.Add(new Grid_Symbol("four", "4"));
+		//	grid_alphabet.Add(new Grid_Symbol("five", "5"));
+		//	grid_alphabet.Add(new Grid_Symbol("six", "6"));
+		//	grid_alphabet.Add(new Grid_Symbol("seven", "7"));
+		//	grid_alphabet.Add(new Grid_Symbol("eight", "8"));
+		//	grid_alphabet.Add(new Grid_Symbol("nine", "9"));
+		//	grid_alphabet.Add(new Grid_Symbol("zero", "0"));
+		//}
 
-		void create_wide_grid_alphabet()
-		{
-			grid_alphabet = new List<Grid_Symbol>();
+		//void create_wide_grid_alphabet()
+		//{
+		//	grid_alphabet = new List<Grid_Symbol>();
 
-			grid_alphabet.Add(new Grid_Symbol("mike", "m"));
-			grid_alphabet.Add(new Grid_Symbol("whiskey", "w"));
-			grid_alphabet.Add(new Grid_Symbol("Tilde", "~"));
-			grid_alphabet.Add(new Grid_Symbol("At", "@"));
-			grid_alphabet.Add(new Grid_Symbol("Hash", "#"));
-			grid_alphabet.Add(new Grid_Symbol("Percent", "%"));
-			grid_alphabet.Add(new Grid_Symbol("Ampersand", "&"));
-			grid_alphabet.Add(new Grid_Symbol("Section", "§"));
-			grid_alphabet.Add(new Grid_Symbol("Paragraph", "¶"));
-			grid_alphabet.Add(new Grid_Symbol("Function", "ƒ"));
-			grid_alphabet.Add(new Grid_Symbol("Micro", "µ"));
-		}
+		//	grid_alphabet.Add(new Grid_Symbol("mike", "m"));
+		//	grid_alphabet.Add(new Grid_Symbol("whiskey", "w"));
+		//	grid_alphabet.Add(new Grid_Symbol("Tilde", "~"));
+		//	grid_alphabet.Add(new Grid_Symbol("At", "@"));
+		//	grid_alphabet.Add(new Grid_Symbol("Hash", "#"));
+		//	grid_alphabet.Add(new Grid_Symbol("Percent", "%"));
+		//	grid_alphabet.Add(new Grid_Symbol("Ampersand", "&"));
+		//	grid_alphabet.Add(new Grid_Symbol("Section", "§"));
+		//	grid_alphabet.Add(new Grid_Symbol("Paragraph", "¶"));
+		//	grid_alphabet.Add(new Grid_Symbol("Function", "ƒ"));
+		//	grid_alphabet.Add(new Grid_Symbol("Micro", "µ"));
+		//}
 
-		void create_full_grid_alphabet()
-        {
-			grid_alphabet = new List<Grid_Symbol>();
+		//void create_full_grid_alphabet()
+  //      {
+		//	grid_alphabet = new List<Grid_Symbol>();
 
-			grid_alphabet.Add(new Grid_Symbol("alfa", "a"));
-			grid_alphabet.Add(new Grid_Symbol("bravo", "b"));
-			grid_alphabet.Add(new Grid_Symbol("charlie", "c"));
-			grid_alphabet.Add(new Grid_Symbol("delta", "d"));
-			grid_alphabet.Add(new Grid_Symbol("echo", "e"));
-			grid_alphabet.Add(new Grid_Symbol("foxtrot", "f"));
-			grid_alphabet.Add(new Grid_Symbol("golf", "g"));
-			grid_alphabet.Add(new Grid_Symbol("hotel", "h"));
-			grid_alphabet.Add(new Grid_Symbol("india", "i"));
-			grid_alphabet.Add(new Grid_Symbol("juliett", "j"));
-			grid_alphabet.Add(new Grid_Symbol("kilo", "k"));
-			grid_alphabet.Add(new Grid_Symbol("lima", "l"));
-			grid_alphabet.Add(new Grid_Symbol("mike", "m"));
-			grid_alphabet.Add(new Grid_Symbol("november", "n"));
-			grid_alphabet.Add(new Grid_Symbol("oscar", "o"));
-			grid_alphabet.Add(new Grid_Symbol("papa", "p"));
-			grid_alphabet.Add(new Grid_Symbol("quebec", "q"));
-			grid_alphabet.Add(new Grid_Symbol("romeo", "r"));
-			grid_alphabet.Add(new Grid_Symbol("sierra", "s"));
-			grid_alphabet.Add(new Grid_Symbol("tango", "t"));
-			grid_alphabet.Add(new Grid_Symbol("uniform", "u"));
-			grid_alphabet.Add(new Grid_Symbol("victor", "v"));
-			grid_alphabet.Add(new Grid_Symbol("whiskey", "w"));
-			grid_alphabet.Add(new Grid_Symbol("xray", "x"));
-			grid_alphabet.Add(new Grid_Symbol("yankee", "y"));
-			grid_alphabet.Add(new Grid_Symbol("zulu", "z"));
-			grid_alphabet.Add(new Grid_Symbol("one", "1"));
-			grid_alphabet.Add(new Grid_Symbol("two", "2"));
-			grid_alphabet.Add(new Grid_Symbol("three", "3"));
-			grid_alphabet.Add(new Grid_Symbol("four", "4"));
-			grid_alphabet.Add(new Grid_Symbol("five", "5"));
-			grid_alphabet.Add(new Grid_Symbol("six", "6"));
-			grid_alphabet.Add(new Grid_Symbol("seven", "7"));
-			grid_alphabet.Add(new Grid_Symbol("eight", "8"));
-			grid_alphabet.Add(new Grid_Symbol("nine", "9"));
-			grid_alphabet.Add(new Grid_Symbol("zero", "0"));
-			grid_alphabet.Add(new Grid_Symbol("Comma", ","));
-			grid_alphabet.Add(new Grid_Symbol("Semicolon", ";"));
-			grid_alphabet.Add(new Grid_Symbol("Dot", "."));
-			grid_alphabet.Add(new Grid_Symbol("Quote", "'"));
-			grid_alphabet.Add(new Grid_Symbol("Slash", "/"));
-			grid_alphabet.Add(new Grid_Symbol("Backslash", "\\"));
-			grid_alphabet.Add(new Grid_Symbol("Minus", "-"));
-			grid_alphabet.Add(new Grid_Symbol("Open bracket", "["));
-			grid_alphabet.Add(new Grid_Symbol("Close bracket", "]"));
-			grid_alphabet.Add(new Grid_Symbol("Asterisk", "*"));
-			grid_alphabet.Add(new Grid_Symbol("Plus", "+"));
-			grid_alphabet.Add(new Grid_Symbol("Equal", "="));
-			grid_alphabet.Add(new Grid_Symbol("Colon", ":"));
-			grid_alphabet.Add(new Grid_Symbol("Double quote", "\""));
-			grid_alphabet.Add(new Grid_Symbol("Greater than", ">"));
-			grid_alphabet.Add(new Grid_Symbol("Less than", "<"));
-			grid_alphabet.Add(new Grid_Symbol("Tilde", "~"));
-			grid_alphabet.Add(new Grid_Symbol("At", "@"));
-			grid_alphabet.Add(new Grid_Symbol("Exclamation", "!"));
-			grid_alphabet.Add(new Grid_Symbol("Question", "?"));
-			grid_alphabet.Add(new Grid_Symbol("Hash", "#"));;
-			grid_alphabet.Add(new Grid_Symbol("Pound", "£"));
-			grid_alphabet.Add(new Grid_Symbol("Dollar", "$"));
-			grid_alphabet.Add(new Grid_Symbol("Percent", "%"));
-			grid_alphabet.Add(new Grid_Symbol("Caret", "^"));
-			grid_alphabet.Add(new Grid_Symbol("Open paren", "("));
-			grid_alphabet.Add(new Grid_Symbol("Close paren", ")"));
-			grid_alphabet.Add(new Grid_Symbol("Underscore", "_"));
-			grid_alphabet.Add(new Grid_Symbol("Open brace", "{"));
-			grid_alphabet.Add(new Grid_Symbol("Close brace", "}"));
-			grid_alphabet.Add(new Grid_Symbol("Vertical bar", "|"));
-			grid_alphabet.Add(new Grid_Symbol("Trademark", "™"));
-			grid_alphabet.Add(new Grid_Symbol("Three-quarter", "¾"));
-			grid_alphabet.Add(new Grid_Symbol("One-quarter", "¼"));
-			grid_alphabet.Add(new Grid_Symbol("One-half", "½"));
-			grid_alphabet.Add(new Grid_Symbol("Ampersand", "&"));
-			grid_alphabet.Add(new Grid_Symbol("Back quote", "`"));
-			grid_alphabet.Add(new Grid_Symbol("Plus or minus", "±"));
-			grid_alphabet.Add(new Grid_Symbol("Open angle quote", "«"));
-			grid_alphabet.Add(new Grid_Symbol("Close angle quote", "»"));
-			grid_alphabet.Add(new Grid_Symbol("Division", "÷"));
-			grid_alphabet.Add(new Grid_Symbol("Cent", "¢"));
-			grid_alphabet.Add(new Grid_Symbol("Yen", "¥"));
-			grid_alphabet.Add(new Grid_Symbol("Section", "§"));
-			grid_alphabet.Add(new Grid_Symbol("Copyright", "©"));
-			grid_alphabet.Add(new Grid_Symbol("Registered", "®"));
-			grid_alphabet.Add(new Grid_Symbol("Degree", "°"));
-			grid_alphabet.Add(new Grid_Symbol("Paragraph", "¶"));
-			grid_alphabet.Add(new Grid_Symbol("Function", "ƒ"));
-			grid_alphabet.Add(new Grid_Symbol("Micro", "µ"));
-		}		
+		//	grid_alphabet.Add(new Grid_Symbol("alfa", "a"));
+		//	grid_alphabet.Add(new Grid_Symbol("bravo", "b"));
+		//	grid_alphabet.Add(new Grid_Symbol("charlie", "c"));
+		//	grid_alphabet.Add(new Grid_Symbol("delta", "d"));
+		//	grid_alphabet.Add(new Grid_Symbol("echo", "e"));
+		//	grid_alphabet.Add(new Grid_Symbol("foxtrot", "f"));
+		//	grid_alphabet.Add(new Grid_Symbol("golf", "g"));
+		//	grid_alphabet.Add(new Grid_Symbol("hotel", "h"));
+		//	grid_alphabet.Add(new Grid_Symbol("india", "i"));
+		//	grid_alphabet.Add(new Grid_Symbol("juliett", "j"));
+		//	grid_alphabet.Add(new Grid_Symbol("kilo", "k"));
+		//	grid_alphabet.Add(new Grid_Symbol("lima", "l"));
+		//	grid_alphabet.Add(new Grid_Symbol("mike", "m"));
+		//	grid_alphabet.Add(new Grid_Symbol("november", "n"));
+		//	grid_alphabet.Add(new Grid_Symbol("oscar", "o"));
+		//	grid_alphabet.Add(new Grid_Symbol("papa", "p"));
+		//	grid_alphabet.Add(new Grid_Symbol("quebec", "q"));
+		//	grid_alphabet.Add(new Grid_Symbol("romeo", "r"));
+		//	grid_alphabet.Add(new Grid_Symbol("sierra", "s"));
+		//	grid_alphabet.Add(new Grid_Symbol("tango", "t"));
+		//	grid_alphabet.Add(new Grid_Symbol("uniform", "u"));
+		//	grid_alphabet.Add(new Grid_Symbol("victor", "v"));
+		//	grid_alphabet.Add(new Grid_Symbol("whiskey", "w"));
+		//	grid_alphabet.Add(new Grid_Symbol("xray", "x"));
+		//	grid_alphabet.Add(new Grid_Symbol("yankee", "y"));
+		//	grid_alphabet.Add(new Grid_Symbol("zulu", "z"));
+		//	grid_alphabet.Add(new Grid_Symbol("one", "1"));
+		//	grid_alphabet.Add(new Grid_Symbol("two", "2"));
+		//	grid_alphabet.Add(new Grid_Symbol("three", "3"));
+		//	grid_alphabet.Add(new Grid_Symbol("four", "4"));
+		//	grid_alphabet.Add(new Grid_Symbol("five", "5"));
+		//	grid_alphabet.Add(new Grid_Symbol("six", "6"));
+		//	grid_alphabet.Add(new Grid_Symbol("seven", "7"));
+		//	grid_alphabet.Add(new Grid_Symbol("eight", "8"));
+		//	grid_alphabet.Add(new Grid_Symbol("nine", "9"));
+		//	grid_alphabet.Add(new Grid_Symbol("zero", "0"));
+		//	grid_alphabet.Add(new Grid_Symbol("Comma", ","));
+		//	grid_alphabet.Add(new Grid_Symbol("Semicolon", ";"));
+		//	grid_alphabet.Add(new Grid_Symbol("Dot", "."));
+		//	grid_alphabet.Add(new Grid_Symbol("Quote", "'"));
+		//	grid_alphabet.Add(new Grid_Symbol("Slash", "/"));
+		//	grid_alphabet.Add(new Grid_Symbol("Backslash", "\\"));
+		//	grid_alphabet.Add(new Grid_Symbol("Minus", "-"));
+		//	grid_alphabet.Add(new Grid_Symbol("Open bracket", "["));
+		//	grid_alphabet.Add(new Grid_Symbol("Close bracket", "]"));
+		//	grid_alphabet.Add(new Grid_Symbol("Asterisk", "*"));
+		//	grid_alphabet.Add(new Grid_Symbol("Plus", "+"));
+		//	grid_alphabet.Add(new Grid_Symbol("Equal", "="));
+		//	grid_alphabet.Add(new Grid_Symbol("Colon", ":"));
+		//	grid_alphabet.Add(new Grid_Symbol("Double quote", "\""));
+		//	grid_alphabet.Add(new Grid_Symbol("Greater than", ">"));
+		//	grid_alphabet.Add(new Grid_Symbol("Less than", "<"));
+		//	grid_alphabet.Add(new Grid_Symbol("Tilde", "~"));
+		//	grid_alphabet.Add(new Grid_Symbol("At", "@"));
+		//	grid_alphabet.Add(new Grid_Symbol("Exclamation", "!"));
+		//	grid_alphabet.Add(new Grid_Symbol("Question", "?"));
+		//	grid_alphabet.Add(new Grid_Symbol("Hash", "#"));;
+		//	grid_alphabet.Add(new Grid_Symbol("Pound", "£"));
+		//	grid_alphabet.Add(new Grid_Symbol("Dollar", "$"));
+		//	grid_alphabet.Add(new Grid_Symbol("Percent", "%"));
+		//	grid_alphabet.Add(new Grid_Symbol("Caret", "^"));
+		//	grid_alphabet.Add(new Grid_Symbol("Open paren", "("));
+		//	grid_alphabet.Add(new Grid_Symbol("Close paren", ")"));
+		//	grid_alphabet.Add(new Grid_Symbol("Underscore", "_"));
+		//	grid_alphabet.Add(new Grid_Symbol("Open brace", "{"));
+		//	grid_alphabet.Add(new Grid_Symbol("Close brace", "}"));
+		//	grid_alphabet.Add(new Grid_Symbol("Vertical bar", "|"));
+		//	grid_alphabet.Add(new Grid_Symbol("Trademark", "™"));
+		//	grid_alphabet.Add(new Grid_Symbol("Three-quarter", "¾"));
+		//	grid_alphabet.Add(new Grid_Symbol("One-quarter", "¼"));
+		//	grid_alphabet.Add(new Grid_Symbol("One-half", "½"));
+		//	grid_alphabet.Add(new Grid_Symbol("Ampersand", "&"));
+		//	grid_alphabet.Add(new Grid_Symbol("Back quote", "`"));
+		//	grid_alphabet.Add(new Grid_Symbol("Plus or minus", "±"));
+		//	grid_alphabet.Add(new Grid_Symbol("Open angle quote", "«"));
+		//	grid_alphabet.Add(new Grid_Symbol("Close angle quote", "»"));
+		//	grid_alphabet.Add(new Grid_Symbol("Division", "÷"));
+		//	grid_alphabet.Add(new Grid_Symbol("Cent", "¢"));
+		//	grid_alphabet.Add(new Grid_Symbol("Yen", "¥"));
+		//	grid_alphabet.Add(new Grid_Symbol("Section", "§"));
+		//	grid_alphabet.Add(new Grid_Symbol("Copyright", "©"));
+		//	grid_alphabet.Add(new Grid_Symbol("Registered", "®"));
+		//	grid_alphabet.Add(new Grid_Symbol("Degree", "°"));
+		//	grid_alphabet.Add(new Grid_Symbol("Paragraph", "¶"));
+		//	grid_alphabet.Add(new Grid_Symbol("Function", "ƒ"));
+		//	grid_alphabet.Add(new Grid_Symbol("Micro", "µ"));
+		//}
 	}
 }
