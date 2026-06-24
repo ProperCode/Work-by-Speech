@@ -18,7 +18,7 @@ Work by Speech Features:
 - Fast and repeatable mouse control by speech with support for all mouse actions
 - Customizable and movable mousegrid which divides the screen into up to 2550 figures
 - Automatic mousegrid optimization for every used application
-- Very low processor and memory usage
+- Very low processor usage
 - Works with any microphone
 - Available for the English language only
 <br/><br/>
@@ -37,8 +37,6 @@ Who is Work by Speech for?
 - Users who want to increase their productivity by using voice commands like switch to Chrome, open Photoshop, close that, show desktop, paste x times, undo/redo x times, scroll left/right x times, custom voice commands and macro recording.
 - Anyone who just wants to control a computer by speech.
 <br/><br/>
-
-This program can recognize your speech with high accuracy only if you complete at least two voice trainings. One voice training takes about 7 minutes. You can find more information about voice training in point 4 of the user guide, which is located in the help section.
 
 ## Screenshots
 
