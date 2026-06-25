@@ -1073,11 +1073,7 @@ namespace Speech
             }
             catch (Exception ex)
             {
-                if (ex.Message.StartsWith("The trial version allows"))
-                    MessageBox.Show(ex.Message, "Trial version limit reached",
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
-                else
-                    MessageBox.Show(ex.Message, "Error WAEC011", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.Message, "Error WAEC011", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

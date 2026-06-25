@@ -3,7 +3,6 @@ using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -29,10 +28,10 @@ namespace Speech
 {
     public partial class MainWindow : Window
     {
-        const string prog_version = "2.3";
+        const string prog_version = "2.4";
               string latest_version = "";
         const string copyright_text = "Copyright © 2023 - 2026 Mikołaj Magowski. All rights reserved.";
-        const string filename_model = "vosk-model-en-us-daanzu-20200905"; //Vosk speech recogniton model
+        const string filename_model = "vosk-model-en-us-daanzu-20200905"; //Vosk speech recogniton model (7.08 (librispeech test-clean) 8.25 (tedlium))
         const string filename_settings = "settings.xml";
         const string filename_coords = "coords.txt"; //speech recognition window last location
         const string grids_foldername = "grids";
@@ -40,7 +39,7 @@ namespace Speech
         const int max_font_size = 400;
         const bool resized_grid = true; //when true, resizes mousegrid so screen is fully covered
         const bool movable_grid = true; //when true, mousegrid can be moved by speech
-        
+
         //Mode names in change mode button (in SpeechWindow) and notify icon (ni) context menu:
         const string mode_off = "OFF";
         const string mode_command = "Command";
@@ -65,16 +64,16 @@ namespace Speech
         Process prc;
 
         List<string> list_current; //most commands available in current mode
-                                   //(not apps switching and opening commands and not foreground app custom commands)
+                                   //(not apps switching and opening commands, not any app and foreground app custom commands, not mousegrid commands)
         List<string> list_switch_to_apps;
         List<string> list_open_apps;
         List<string> list_cc_foreground; //custom commands foreground program
+        List<string> list_cc_any; //custom commands any program
         List<string> list_mousegrid;
         //------------------------------
         List<string> list_off_mode;
-        List<string> list_dictation;        
-        List<string> list_builtin_commands;
-        List<string> list_cc_any; //custom commands any program
+        List<string> list_dictation; 
+        List<string> list_builtin_commands;        
 
         List<string> dictation_commands;
 
@@ -106,7 +105,6 @@ namespace Speech
         InputSimulator sim = new InputSimulator();
 
         Thread THRswitch_to, THRmouse, THRcommands, THRmonitor;
-        Thread THRrecognition;
         Thread THRholder; //for holding keys
         //bool thread_abort1 = false; //redeclaring and starting stopped thread doesn't work (weird)
         bool recognition_suspended = false;
@@ -596,7 +594,9 @@ namespace Speech
                     SW.Show();
                 }
 
-                single_app_list_update(true);
+                Middle_Man.force_updating_both_cc_lists = true;
+
+                single_app_lists_update();
 
                 get_installed_apps();
 
@@ -669,8 +669,6 @@ namespace Speech
             }
         }
 
-        string prev_installed_apps_str = "";
-
         bool get_installed_apps()
         {
             if (string.IsNullOrEmpty(start_menu_path))
@@ -684,20 +682,12 @@ namespace Speech
             string installed_app_path, s;
             int name_length;
             Installed_App installed_app;
-            string installed_apps_str = "";
 
             List<Installed_App> installed_apps2 = new List<Installed_App>();
 
             foreach (var file in allfiles)
             {
                 FileInfo info = new FileInfo(file);
-
-                installed_apps_str += info.Name;
-            }
-
-            if (installed_apps_str == prev_installed_apps_str)
-            {
-                return false;
             }
 
             foreach (var file in allfiles)
@@ -768,7 +758,6 @@ namespace Speech
             }
 
             installed_apps = installed_apps2;
-            prev_installed_apps_str = installed_apps_str;
 
             //dt1 = DateTime.Now;
             //dt2 = DateTime.Now;
@@ -824,9 +813,6 @@ namespace Speech
             list_current = new List<string>();
             add_to_list_current(list_type.list_off_mode);
 
-            //Debug only:
-            //display_grammars_status();
-
             Stream iconStream = System.Windows.Application.GetResourceStream(
                 new Uri(icon_off)).Stream;
 
@@ -868,7 +854,7 @@ namespace Speech
         }
 
         void load_turned_on(bool loaded_from_speech_recognized = false)
-        {   
+        {
             int i = 0;
             
             recognition_suspended = true;
@@ -893,9 +879,11 @@ namespace Speech
             {
                 list_current = new List<string>();
                 add_to_list_current(list_type.list_builtin_commands);
-                add_to_list_current(list_type.list_cc_any);
 
-                list_cc_foreground = new List<string>();
+                lock (lock_list_cc_foreground)
+                {
+                    list_cc_foreground = new List<string>();
+                }
 
                 Stream iconStream = System.Windows.Application.GetResourceStream(
                         new Uri(icon_command)).Stream;
@@ -993,19 +981,9 @@ namespace Speech
                 i++;
             }
 
-            //toggle_grammar(false, grammar_type.grammar_off_mode);
-            //toggle_grammar(true, grammar_type.grammar_mousegrid);
-            //toggle_grammar(false, grammar_type.grammar_dictation_commands);
-            //toggle_grammar(false, grammar_type.grammar_dictation);
-            //toggle_grammar(false, grammar_type.grammar_builtin_commands);
-            //toggle_grammar(false, grammar_type.grammar_custom_commands_any);
-            //toggle_grammar(false, grammar_type.grammar_custom_commands_foreground);
-            //toggle_grammar(false, grammar_type.grammar_apps_switching);
-            //toggle_grammar(false, grammar_type.grammar_apps_opening);
+            current_mode = mode.grid;
 
             recognition_suspended = false;
-
-            current_mode = mode.grid;
 
             SW.Bmode.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
             {
@@ -1020,11 +998,9 @@ namespace Speech
             {
                 try
                 {
-                    //is_command_mode_active() is not enough, because all grammars are temporarily
-                    //enabled when load_grammars() is executed
-                    if (current_mode == mode.command && inside_speech_recognized_event == false)
+                    if (current_mode == mode.command)
                     {
-                        single_app_list_update();
+                        single_app_lists_update();
                     }
                 }
                 catch (Exception ex)
@@ -1037,14 +1013,13 @@ namespace Speech
         }
 
         string last_foreground_window_process = "";
-        bool inside_app_list_update = false;
+        bool inside_app_lists_update = false;
 
-        void single_app_list_update(bool first_execute = false)
+        void single_app_lists_update()
         {
-            inside_app_list_update = true;
+            inside_app_lists_update = true;
 
-            bool changes_detected = false;
-            string s = "", w, s_ch = "";
+            string s = "", w;
 
             DateTime dt1 = DateTime.Now, dt2 = DateTime.Now;
             TimeSpan ts;
@@ -1068,12 +1043,19 @@ namespace Speech
             }
 
             process_name = process_name.ToLower();
-            List<string> new_grammar_custom_commands_foreground = create_custom_commands_list(process_name);
+            List<string> new_list_cc_foreground = create_custom_commands_list(process_name);
 
             if (Middle_Man.force_updating_both_cc_lists)
             {
-                list_cc_foreground = new_grammar_custom_commands_foreground;
-                list_cc_any = create_custom_commands_list(Middle_Man.any_program_name);
+                lock (lock_list_cc_foreground)
+                {
+                    list_cc_foreground = new_list_cc_foreground;
+                }
+
+                lock (lock_list_cc_any)
+                {
+                    list_cc_any = create_custom_commands_list(Middle_Man.any_program_name);
+                }
 
                 last_foreground_window_process = process_name;
 
@@ -1081,68 +1063,63 @@ namespace Speech
             }
             else if (last_foreground_window_process != process_name)
             {
-                list_cc_foreground = new_grammar_custom_commands_foreground;
+                lock (lock_list_cc_foreground)
+                {
+                    list_cc_foreground = new_list_cc_foreground;
+                }
 
                 last_foreground_window_process = process_name;
             }
 
             if (apps_switching)
             {
-                list_switch_to_apps = new List<string>();
-
-                s = switch_to_app_str;
-
-                //around 150ms on my CPU (Q9550)
-                foreach (Process p in arr)
+                lock (lock_list_switch_to_apps)
                 {
-                    name = p.MainWindowTitle.Replace("\\\"", "").Replace("\"", "");
-                    name = name.Trim();
+                    list_switch_to_apps = new List<string>();
 
-                    //is process window open in taskbar?
-                    if (name != null && name.Length > 0)
+                    s = switch_to_app_str;
+
+                    //around 150ms on my CPU (Q9550)
+                    foreach (Process p in arr)
                     {
-                        a = name.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                        name = p.MainWindowTitle.Replace("\\\"", "").Replace("\"", "");
+                        name = name.Trim();
 
-                        for (int i = 0; i < a.Length; i++)
+                        //is process window open in taskbar?
+                        if (name != null && name.Length > 0)
                         {
-                            a[i] = a[i].Trim();
+                            a = name.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
 
-                            if (a[i].Length > 1)
+                            for (int i = 0; i < a.Length; i++)
                             {
-                                list_switch_to_apps.Add(s + " " + a[i]);
-                                s_ch += a[i];
-                            }
-                        }
-                        for (int i = 0; i < a.Length - 1; i++)
-                        {
-                            a[i] = a[i].Trim();
-                            a[i + 1] = a[i + 1].Trim();
+                                a[i] = a[i].Trim();
 
-                            if (a[i].Length > 0 || a[i + 1].Length > 0)
-                            {
-                                w = a[i] + " " + a[i + 1];
-                                list_switch_to_apps.Add(s + " " + w);
-                                s_ch += w;
+                                if (a[i].Length > 1)
+                                {
+                                    list_switch_to_apps.Add(s + " " + a[i]);
+                                }
                             }
-                        }
-                        if (a.Length > 2)
-                        {
-                            list_switch_to_apps.Add(s + " " + name);
-                            s_ch += name;
+                            for (int i = 0; i < a.Length - 1; i++)
+                            {
+                                a[i] = a[i].Trim();
+                                a[i + 1] = a[i + 1].Trim();
+
+                                if (a[i].Length > 0 || a[i + 1].Length > 0)
+                                {
+                                    w = a[i] + " " + a[i + 1];
+                                    list_switch_to_apps.Add(s + " " + w);
+                                }
+                            }
+                            if (a.Length > 2)
+                            {
+                                list_switch_to_apps.Add(s + " " + name);
+                            }
                         }
                     }
                 }
-
-                //usually 30ms
-                if (s_last_ch != s_ch)
-                {
-                    changes_detected = true;
-
-                    s_last_ch = s_ch;
-                }
             }
 
-            inside_app_list_update = false;
+            inside_app_lists_update = false;
         }
 
         List<string> create_off_mode_list()
@@ -1749,9 +1726,9 @@ namespace Speech
                 int x = 0, y = 0;
 
                 //if (last_command == bic_type.drop && (r == drag_edges_str[0] 
-                if ((r == drag_edges_str[0] || r == drag_edges_str[1] 
-                    || r == drag_edges_str[2] || r == drag_edges_str[3]
-                    || r == drag_edges_str[4]))
+                if ((r == drag_edges_str[0].Replace(" ", "") || r == drag_edges_str[1].Replace(" ", "")
+                    || r == drag_edges_str[2].Replace(" ", "") || r == drag_edges_str[3].Replace(" ", "")
+                    || r == drag_edges_str[4].Replace(" ", "")))
                 {
                     f = true;
 
@@ -1767,27 +1744,27 @@ namespace Speech
                             key_down(VirtualKeyCode.LWIN);
                     }
 
-                    if (r == drag_edges_str[0])
+                    if (r == drag_edges_str[0].Replace(" ", ""))
                     {
                         x = (int)(screen_width / 2);
                         y = 0;
                     }
-                    else if (r == drag_edges_str[1])
+                    else if (r == drag_edges_str[1].Replace(" ", ""))
                     {
                         x = (int)(screen_width / 2);
                         y = screen_height - 1;
                     }
-                    else if (r == drag_edges_str[2])
+                    else if (r == drag_edges_str[2].Replace(" ", ""))
                     {
                         y = (int)(screen_height / 2);
                         x = 0;
                     }
-                    else if (r == drag_edges_str[3])
+                    else if (r == drag_edges_str[3].Replace(" ", ""))
                     {
                         y = (int)(screen_height / 2);
                         x = screen_width - 1;
                     }
-                    else if (r == drag_edges_str[4])
+                    else if (r == drag_edges_str[4].Replace(" ", ""))
                     {
                         y = (int)(screen_height / 2);
                         x = (int)(screen_width / 2);
@@ -2090,6 +2067,10 @@ namespace Speech
         string r, r_lowercase; //r = recognized speech
         bool speech_recognized = false;
 
+        private readonly object lock_list_cc_any = new object();
+        private readonly object lock_list_cc_foreground = new object();
+        private readonly object lock_list_switch_to_apps = new object();
+
         // Handle the SpeechRecognized event
         void WaveIn_DataAvailable(object sender, WaveInEventArgs e)
         {
@@ -2147,9 +2128,10 @@ namespace Speech
                                 r = r.Replace("axe three", "xray");
                                 r = r.Replace("lb", "pound");
                                 r = r.Replace("juliet", "juliett");
-
-                                int ind = -1; //indexes of highest confidence words
-                                int c_curr;
+                                r = r.Replace("nov twice", "november twice");
+                                r = r.Replace("column", "colon");
+                                r = r.Replace("colin", "colon");
+                                r = r.Replace("cullen", "colon");
 
                                 //List<string> list = new List<string>();
 
@@ -2171,6 +2153,9 @@ namespace Speech
                                 //        int x = 5;
                                 //    }
                                 //}
+
+                                int ind = -1; //indexes of highest confidence words
+                                int c_curr;
 
                                 for (int i = 0; i < list_mousegrid.Count; i++)
                                 {
@@ -2233,6 +2218,8 @@ namespace Speech
                                         MW.Top = offset_y;
                                         MW.Left = offset_x;
                                     }));
+
+                                    if (read_recognized_speech) ss.SpeakAsync(r);
                                 }
                                 //perform a mousegrid action
                                 else if (grid_visible && c >= confidence_other_commands)
@@ -2310,6 +2297,10 @@ namespace Speech
                                 r = r.Replace("julian", "juliett");
                                 r = r.Replace("good back", "quebec");
                                 r = r.Replace("axe three", "xray");
+                                r = r.Replace("bug", "back");
+                                r = r.Replace("buck", "back");
+                                r = r.Replace("hush", "hash");
+                                r = r.Replace("nov twice", "november twice");
                                 //r = r.Replace("", "");
 
                                 int ind1 = 0, ind2 = 0, ind3 = 0, ind4 = 0, ind5 = 0; //indexes of highest confidence words
@@ -2319,25 +2310,31 @@ namespace Speech
 
                                 if (current_mode == mode.command)
                                 {
-                                    for (int i = 0; i < list_cc_foreground.Count; i++)
+                                    lock (lock_list_cc_foreground)
                                     {
-                                        c_curr = (int)get_similarity(r, list_cc_foreground[i]);
-
-                                        if (c_curr > c1)
+                                        for (int i = 0; i < list_cc_foreground.Count; i++)
                                         {
-                                            c1 = c_curr;
-                                            ind1 = i;
+                                            c_curr = (int)get_similarity(r, list_cc_foreground[i]);
+
+                                            if (c_curr > c1)
+                                            {
+                                                c1 = c_curr;
+                                                ind1 = i;
+                                            }
                                         }
                                     }
 
-                                    for (int i = 0; i < list_cc_any.Count; i++)
+                                    lock (lock_list_cc_any)
                                     {
-                                        c_curr = (int)get_similarity(r, list_cc_any[i]);
-
-                                        if (c_curr > c2)
+                                        for (int i = 0; i < list_cc_any.Count; i++)
                                         {
-                                            c2 = c_curr;
-                                            ind2 = i;
+                                            c_curr = (int)get_similarity(r, list_cc_any[i]);
+
+                                            if (c_curr > c2)
+                                            {
+                                                c2 = c_curr;
+                                                ind2 = i;
+                                            }
                                         }
                                     }
 
@@ -2357,22 +2354,20 @@ namespace Speech
 
                                     if (apps_switching)
                                     {
-                                        while (inside_app_list_update)
+                                        lock (lock_list_switch_to_apps)
                                         {
-                                            Thread.Sleep(10);
-                                        }
-
-                                        for (int i = 0; i < list_switch_to_apps.Count; i++)
-                                        {
-                                            c_curr = (int)get_similarity(r, list_switch_to_apps[i]);
-
-                                            if (c_curr > c4)
+                                            for (int i = 0; i < list_switch_to_apps.Count; i++)
                                             {
-                                                c4 = c_curr;
-                                                ind4 = i;
+                                                c_curr = (int)get_similarity(r, list_switch_to_apps[i]);
+
+                                                if (c_curr > c4)
+                                                {
+                                                    c4 = c_curr;
+                                                    ind4 = i;
+                                                }
                                             }
                                         }
-                                    }                                                                       
+                                    }
                                 }
 
                                 for (int i = 0; i < list_current.Count; i++)
@@ -2388,21 +2383,27 @@ namespace Speech
 
                                 if (current_mode == mode.command)
                                 {
-                                    if (list_cc_foreground.Count > 0)
+                                    lock (lock_list_cc_foreground)
                                     {
-                                        if (c1 > c)
+                                        if (list_cc_foreground.Count > 0)
                                         {
-                                            c = c1;
-                                            r = list_cc_foreground[ind1];
+                                            if (c1 > c)
+                                            {
+                                                c = c1;
+                                                r = list_cc_foreground[ind1];
+                                            }
                                         }
                                     }
 
-                                    if (list_cc_any.Count > 0)
+                                    lock (lock_list_cc_any)
                                     {
-                                        if (c2 > c)
+                                        if (list_cc_any.Count > 0)
                                         {
-                                            c = c2;
-                                            r = list_cc_any[ind2];
+                                            if (c2 > c)
+                                            {
+                                                c = c2;
+                                                r = list_cc_any[ind2];
+                                            }
                                         }
                                     }
 
@@ -2415,14 +2416,17 @@ namespace Speech
                                         }
                                     }
 
-                                    if (apps_switching && list_switch_to_apps.Count > 0)
+                                    lock (lock_list_switch_to_apps)
                                     {
-                                        if (c4 > c)
+                                        if (apps_switching && list_switch_to_apps.Count > 0)
                                         {
-                                            c = c4;
-                                            r = list_switch_to_apps[ind4];
+                                            if (c4 > c)
+                                            {
+                                                c = c4;
+                                                r = list_switch_to_apps[ind4];
+                                            }
                                         }
-                                    }                                    
+                                    }
                                 }
 
                                 if (list_current.Count > 0)
@@ -2499,7 +2503,7 @@ namespace Speech
                                         }
                                     }));
                                 }
-                                else if (current_mode == mode.command || dictation_command)
+                                else if ((current_mode == mode.command || dictation_command) && c > 0)
                                 {
                                     SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
                                     {
@@ -3259,9 +3263,31 @@ namespace Speech
                         {
                             found = true;
                             if (executions == 1)
-                                key_press(list_bic_keys_pressing[i].vkc);
+                            {
+                                if (list_bic_keys_pressing[i].vkc == VirtualKeyCode.LMENU)
+                                {
+                                    keybd_event(VK_MENU, 0, KEYEVENTF_KEYDOWN, 0);
+                                    Thread.Sleep(50);
+                                    keybd_event(VK_MENU, 0, KEYEVENTF_KEYUP, 0);
+                                }
+                                else
+                                {
+                                    key_press(list_bic_keys_pressing[i].vkc);
+                                }
+                            }
                             else
-                                key_press(list_bic_keys_pressing[i].vkc, 1);
+                            {
+                                if (list_bic_keys_pressing[i].vkc == VirtualKeyCode.LMENU)
+                                {
+                                    keybd_event(VK_MENU, 0, KEYEVENTF_KEYDOWN, 0);
+                                    Thread.Sleep(1);
+                                    keybd_event(VK_MENU, 0, KEYEVENTF_KEYUP, 0);
+                                }
+                                else
+                                {
+                                    key_press(list_bic_keys_pressing[i].vkc, 1);
+                                }
+                            }
                         }
                     }
                     //MessageBox.Show(found.ToString());

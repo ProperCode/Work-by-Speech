@@ -184,9 +184,12 @@ namespace Speech
 
             int nr = holder_loop_nr;
 
-            foreach (VirtualKeyCode vkc in list)
+            lock (lock_keys_to_hold)
             {
-                keys_to_hold.Add(vkc);
+                foreach (VirtualKeyCode vkc in list)
+                {
+                    keys_to_hold.Add(vkc);
+                }
             }
 
             pause_holder = false;
@@ -208,17 +211,20 @@ namespace Speech
 
             int nr = holder_loop_nr;
 
-            foreach (VirtualKeyCode vkc in list)
+            lock (lock_keys_to_hold)
             {
-                keys_to_hold.Remove(vkc);
-
-                if (vkc == VirtualKeyCode.LBUTTON)
-                    left_up();
-                else if (vkc == VirtualKeyCode.RBUTTON)
-                    right_up();
-                else
+                foreach (VirtualKeyCode vkc in list)
                 {
-                    key_up(vkc);
+                    keys_to_hold.Remove(vkc);
+
+                    if (vkc == VirtualKeyCode.LBUTTON)
+                        left_up();
+                    else if (vkc == VirtualKeyCode.RBUTTON)
+                        right_up();
+                    else
+                    {
+                        key_up(vkc);
+                    }
                 }
             }
 
@@ -228,6 +234,7 @@ namespace Speech
         bool pause_holder = false;
         bool holder_paused = false;
         int holder_loop_nr = 0;
+        private readonly object lock_keys_to_hold = new object();
 
         //This holding method is better than normal method, because it continues to hold even if
         //user accidently presses held key (and releases it in this way)
@@ -239,18 +246,21 @@ namespace Speech
                 {
                     //the only way to hold keys in word and notepad in the same way as
                     //physical keys is to press them every 50ms
-                    foreach (VirtualKeyCode vkc in keys_to_hold)
+                    lock (lock_keys_to_hold)
                     {
-                        if (vkc == VirtualKeyCode.LBUTTON)
+                        foreach (VirtualKeyCode vkc in keys_to_hold)
                         {
-                            left_down();
+                            if (vkc == VirtualKeyCode.LBUTTON)
+                            {
+                                left_down();
+                            }
+                            else if (vkc == VirtualKeyCode.RBUTTON)
+                            {
+                                right_down();
+                            }
+                            else
+                                key_down(vkc);
                         }
-                        else if (vkc == VirtualKeyCode.RBUTTON)
-                        {
-                            right_down();
-                        }
-                        else
-                            key_down(vkc);
                     }
 
                     holder_loop_nr++;

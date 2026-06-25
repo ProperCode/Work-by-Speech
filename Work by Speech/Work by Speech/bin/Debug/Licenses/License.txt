@@ -1,6 +1,6 @@
 ﻿Work by Speech
 
-Copyright © 2023-2026 Mikołaj Magowski
+Copyright © 2023 - 2026 Mikołaj Magowski
 
 GNU AFFERO GENERAL PUBLIC LICENSE
 

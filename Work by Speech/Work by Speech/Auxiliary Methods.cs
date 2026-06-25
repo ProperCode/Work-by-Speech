@@ -140,22 +140,6 @@ namespace Speech
             CHBsmart_mousegrid.IsChecked = default_smart_grid;
         }
 
-        void toggle_better_dictation()
-        {
-            key_down(WindowsInput.Native.VirtualKeyCode.LWIN);
-            key_down(WindowsInput.Native.VirtualKeyCode.VK_H);
-            Thread.Sleep(75);
-            key_up(WindowsInput.Native.VirtualKeyCode.VK_H);
-            key_up(WindowsInput.Native.VirtualKeyCode.LWIN);
-        }
-
-        void restart_better_dictation()
-        {
-            toggle_better_dictation();
-            Thread.Sleep(100);
-            toggle_better_dictation();
-        }
-
         void CenterWindowOnScreen()
         {
             double screenWidth = (int)Math.Round(System.Windows.SystemParameters.PrimaryScreenWidth);
@@ -913,25 +897,12 @@ namespace Speech
             {
                 if (are_all_bic_dictation_disabled() == false)
                     list_dictation = create_dictation_commands_list();
-
-                //if(current_mode == mode.dictation)
-                //{
-                //    toggle_grammar(true, grammar_type.grammar_dictation_commands);
-                //}
             }
 
             //only needed if grid was already created //we don't want this executed when settings
             //are being loaded
             if (grid_width != 0)
             {
-                //bad idea:
-                //if (auto_grid_font_size)
-                //{
-                //    if (grid_type == GridType.hexagonal)
-                //        font_size = (int)(Math.Floor(figure_width * 14 / 35.555555555555557));
-                //    else
-                //        font_size = (int)(Math.Floor(figure_width * 14 / 25.098039215686274));
-                //}
                 if (MW != null)
                 {
                     //need to close mousegrid window or there will be 1 more window every time you change

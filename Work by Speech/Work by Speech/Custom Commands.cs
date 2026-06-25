@@ -710,6 +710,8 @@ namespace Speech
                     LVcommands.ItemsSource = null;
 
                     LVprofiles.Focus();
+
+                    Middle_Man.force_updating_both_cc_lists = true;
                 }
             }
             catch (Exception ex)
@@ -833,6 +835,8 @@ namespace Speech
                         refresh_and_save_all(null, ind1);
 
                         LVcommands.Focus();
+
+                        Middle_Man.force_updating_both_cc_lists = true;
                     }
                 }
             }
@@ -1837,7 +1841,18 @@ namespace Speech
                                     {
                                         VirtualKeyCode vkc = Middle_Man.get_virtual_key_code_by_key_name(key);
 
-                                        if (sim.InputDeviceState.IsKeyDown(vkc))
+                                        bool found = false;
+
+                                        lock (lock_keys_to_hold)
+                                        {
+                                            for (int k = 0; k < keys_to_hold.Count; k++)
+                                            {
+                                                if (keys_to_hold[k] == vkc)
+                                                    found = true;
+                                            }
+                                        }
+
+                                        if (found == false)
                                         {
                                             down_keys.Add(vkc);
                                         }
@@ -1848,10 +1863,10 @@ namespace Speech
                                     }
 
                                     if (down_keys.Count > 0)
-                                        remove_keys_from_keys_to_hold(down_keys);
+                                        add_keys_to_keys_to_hold(down_keys);
 
                                     if (up_keys.Count > 0)
-                                        add_keys_to_keys_to_hold(up_keys);
+                                        remove_keys_from_keys_to_hold(up_keys);
                                 }                                
 
                                 if (am.left)
@@ -1961,7 +1976,18 @@ namespace Speech
                                 {
                                     VirtualKeyCode vkc = Middle_Man.get_virtual_key_code_by_key_name(key);
 
-                                    if (sim.InputDeviceState.IsKeyDown(vkc))
+                                    bool found = false;
+
+                                    lock (lock_keys_to_hold)
+                                    {
+                                        for (int k = 0; k < keys_to_hold.Count; k++)
+                                        {
+                                            if (keys_to_hold[k] == vkc)
+                                                found = true;
+                                        }
+                                    }
+
+                                    if (found == false)
                                     {
                                         down_keys.Add(vkc);
                                     }
@@ -1972,10 +1998,11 @@ namespace Speech
                                 }
 
                                 if (down_keys.Count > 0)
-                                    remove_keys_from_keys_to_hold(down_keys);
+                                    add_keys_to_keys_to_hold(down_keys);
 
                                 if (up_keys.Count > 0)
-                                    add_keys_to_keys_to_hold(up_keys);
+                                    remove_keys_from_keys_to_hold(up_keys);
+
                             }
                             else if (ak.option == 2) //hold down
                             {

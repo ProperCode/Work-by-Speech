@@ -77,8 +77,6 @@ namespace Speech
             switch_to_dictation, //mode
             show_speech_recognition,
             hide_speech_recognition,
-            start_better_dictation_listening,
-            toggle_better_dictation,
             close_that,
             minimize_that,
             maximize_that,

@@ -17,7 +17,10 @@ namespace Speech
                 TB.IsReadOnly = true;
 
                 TB.Text = ""
-                + "[2.3] - June 24, 2026:"
+                + "[2.4] - June 26, 2026:"
+                + "\n- Fixed keys and mouse buttons toggling in custom commands."
+                + "\n- Fixed minor bugs."
+                + "\n\n[2.3] - June 24, 2026:"
                 + "\n- Changed speech recognition engine."
                 + "\n\n[2.2] - August 10, 2024:"
                 + "\n- Fixed access denied error which was ocurring on non-US Windows 11 installations."

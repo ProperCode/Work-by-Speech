@@ -137,7 +137,6 @@ namespace Speech
                 {
                     list_current = new List<string>();
                     add_to_list_current(list_type.list_builtin_commands);
-                    add_to_list_current(list_type.list_cc_any);
                 }
                 else if (current_mode == mode.dictation)
                 {
@@ -359,7 +358,7 @@ namespace Speech
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + 7 (in web browser)",
                     bic_type.key_combination, "seventh tab", "control 7", "No", 1, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + 8 (in web browser)",
-                    bic_type.key_combination, "eight tab", "control 8", "No", 1, false));
+                    bic_type.key_combination, "eighth tab", "control 8", "No", 1, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + 9 (in web browser)",
                     bic_type.key_combination, "last tab", "control 9", "No", 1, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Browser back key",
@@ -405,8 +404,6 @@ namespace Speech
                     bic_type.key_pressing, "caps lock", VirtualKeyCode.CAPITAL, "Yes", 1));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Backspace",
                     bic_type.key_pressing, "backspace", VirtualKeyCode.BACK, "Yes", 50));
-                list_bic_keys_pressing.Add(new BuiltInCommand("Backspace",
-                    bic_type.key_pressing, "back space", VirtualKeyCode.BACK, "Yes", 50));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Enter",
                     bic_type.key_pressing, "enter", VirtualKeyCode.RETURN, "Yes", 50));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Insert",
@@ -568,7 +565,7 @@ namespace Speech
                 list_bic_char_inserting.Add(new BuiltInCommand("=",
                     bic_type.character_ins, "equal", 3));
                 list_bic_char_inserting.Add(new BuiltInCommand(":",
-                    bic_type.character_ins, "column", 1));
+                    bic_type.character_ins, "colon", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("\"",
                     bic_type.character_ins, "double quote", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand(">",
@@ -1100,7 +1097,7 @@ namespace Speech
 
                             if (i > 1)
                             {
-                                toggle_bic_always(enabled, name);
+                                toggle_bic_dictation(enabled, name);
                             }
                         }
 
@@ -1324,7 +1321,7 @@ namespace Speech
             }
         }
 
-        void toggle_bic_always(bool enabled, string name_firstupper)
+        void toggle_bic_dictation(bool enabled, string name_firstupper)
         {
             try
             {
@@ -1622,7 +1619,7 @@ namespace Speech
                 {
                     foreach (BuiltInCommand bic in LVbic_dict.SelectedItems)
                     {
-                        toggle_bic_always(true, bic.name_firstupper);
+                        toggle_bic_dictation(true, bic.name_firstupper);
                     }
 
                     cv_bic_dict.Refresh();
@@ -1768,7 +1765,7 @@ namespace Speech
                 {
                     foreach (BuiltInCommand bic in LVbic_dict.SelectedItems)
                     {
-                        toggle_bic_always(false, bic.name_firstupper);
+                        toggle_bic_dictation(false, bic.name_firstupper);
                     }
 
                     cv_bic_dict.Refresh();
@@ -2110,9 +2107,9 @@ namespace Speech
                 BuiltInCommand bic = (BuiltInCommand)LVbic_dict.SelectedItem;
 
                 if (bic.enabled)
-                    toggle_bic_always(false, bic.name_firstupper);
+                    toggle_bic_dictation(false, bic.name_firstupper);
                 else
-                    toggle_bic_always(true, bic.name_firstupper);
+                    toggle_bic_dictation(true, bic.name_firstupper);
 
                 cv_bic_dict.Refresh();
 
