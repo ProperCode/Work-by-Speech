@@ -54,7 +54,7 @@ Who is Work by Speech for?
 
 ## Bug Report and Feedback
 If you wish to report a bug or send feedback use this links:<br/>
-[Report a bug](https://github.com/ProperCode/Work-by-Speech/issues)<br/>
+[Report a bug](https://github.com/ProperCode/Work-by-Speech/issues)<br/><br/>
 [Send feedback](https://github.com/ProperCode/Work-by-Speech/discussions)
 
 ## My Other Open Source Projects
