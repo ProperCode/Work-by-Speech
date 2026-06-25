@@ -53,8 +53,9 @@ Who is Work by Speech for?
 ![Download Astro Best App Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/Best-App-Award-2-min.jpg)
 
 ## Bug Report and Feedback
-If you wish to report a bug or send feedback, you can do so by sending me an e-mail: ![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/images/email.jpg) .
-Please include as much information as possible and provide screenshot(s) if applicable.
+If you wish to report a bug or send feedback use this links:
+[Report a bug](https://github.com/ProperCode/Work-by-Speech/issues)<br/>
+[Send feedback](https://github.com/ProperCode/Work-by-Speech/discussions)
 
 ## My Other Open Source Projects
 [Aspiring Keyboard](https://github.com/ProperCode/Aspiring-Keyboard)<br/><br/>
