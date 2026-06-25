@@ -53,7 +53,7 @@ Who is Work by Speech for?
 ![Download Astro Best App Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/Best-App-Award-2-min.jpg)
 
 ## Bug Report and Feedback
-If you wish to report a bug or send feedback use this links:<br/><br/>
+If you wish to report a bug or send feedback use these links:<br/><br/>
 [Report a bug](https://github.com/ProperCode/Work-by-Speech/issues)<br/><br/>
 [Send feedback](https://github.com/ProperCode/Work-by-Speech/discussions)
 
