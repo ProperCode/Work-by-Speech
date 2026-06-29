@@ -536,11 +536,9 @@ namespace Speech
                 list_bic_keys_pressing.Add(new BuiltInCommand("/",
                     bic_type.key_pressing, "slash", VirtualKeyCode.DIVIDE, "Yes", 2));
                 list_bic_keys_pressing.Add(new BuiltInCommand("-",
-                    bic_type.key_pressing, "dash", VirtualKeyCode.OEM_MINUS, "Yes", 2));
+                    bic_type.key_pressing, "hyphen", VirtualKeyCode.OEM_MINUS, "Yes", 2));
                 list_bic_keys_pressing.Add(new BuiltInCommand("-",
                     bic_type.key_pressing, "minus", VirtualKeyCode.OEM_MINUS, "Yes", 2));
-                list_bic_keys_pressing.Add(new BuiltInCommand("-",
-                    bic_type.key_pressing, "hyphen", VirtualKeyCode.OEM_MINUS, "Yes", 2));
                 list_bic_keys_pressing.Add(new BuiltInCommand("*",
                     bic_type.key_pressing, "multiply", VirtualKeyCode.MULTIPLY, "Yes", 1));
                 list_bic_keys_pressing.Add(new BuiltInCommand("*",
@@ -548,30 +546,26 @@ namespace Speech
 
                 list_bic_char_inserting = new List<BuiltInCommand>();
 
-                list_bic_char_inserting.Add(new BuiltInCommand(";",
-                    bic_type.character_ins, "semicolon", 1));
-                list_bic_char_inserting.Add(new BuiltInCommand("'",
-                    bic_type.character_ins, "quote", 1));
-                list_bic_char_inserting.Add(new BuiltInCommand("'",
-                    bic_type.character_ins, "apostrophe", 1));
-                list_bic_char_inserting.Add(new BuiltInCommand("\\",
-                    bic_type.character_ins, "backslash", 2));
-                list_bic_char_inserting.Add(new BuiltInCommand("[",
-                    bic_type.character_ins, "open bracket", 1));
-                list_bic_char_inserting.Add(new BuiltInCommand("]",
-                    bic_type.character_ins, "close bracket", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("+",
                     bic_type.character_ins, "plus", 2));
                 list_bic_char_inserting.Add(new BuiltInCommand("=",
                     bic_type.character_ins, "equal", 3));
+                list_bic_char_inserting.Add(new BuiltInCommand(";",
+                    bic_type.character_ins, "semicolon", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand(":",
                     bic_type.character_ins, "colon", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("\"",
                     bic_type.character_ins, "double quote", 1));
+                list_bic_char_inserting.Add(new BuiltInCommand("'",
+                    bic_type.character_ins, "quote", 1));
+                list_bic_char_inserting.Add(new BuiltInCommand("'",
+                    bic_type.character_ins, "apostrophe", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand(">",
                     bic_type.character_ins, "greater than", 3));
                 list_bic_char_inserting.Add(new BuiltInCommand("<",
                     bic_type.character_ins, "less than", 3));
+                list_bic_char_inserting.Add(new BuiltInCommand("\\",
+                    bic_type.character_ins, "backslash", 2));
                 list_bic_char_inserting.Add(new BuiltInCommand("@",
                     bic_type.character_ins, "at", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("!",
@@ -585,13 +579,13 @@ namespace Speech
                 list_bic_char_inserting.Add(new BuiltInCommand("#",
                     bic_type.character_ins, "sharp", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("£",
-                    bic_type.character_ins, "pound", 1));                
+                    bic_type.character_ins, "pound", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("$",
                     bic_type.character_ins, "dollar", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("%",
                     bic_type.character_ins, "percent", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("^",
-                    bic_type.character_ins, "caret", 1));                
+                    bic_type.character_ins, "caret", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("(",
                     bic_type.character_ins, "open parenthesis", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand(")",
@@ -602,6 +596,10 @@ namespace Speech
                     bic_type.character_ins, "open brace", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("}",
                     bic_type.character_ins, "close brace", 1));
+                list_bic_char_inserting.Add(new BuiltInCommand("[",
+                    bic_type.character_ins, "open bracket", 1));
+                list_bic_char_inserting.Add(new BuiltInCommand("]",
+                    bic_type.character_ins, "close bracket", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("|",
                     bic_type.character_ins, "vertical bar", 2));
                 list_bic_char_inserting.Add(new BuiltInCommand("&",
@@ -639,6 +637,54 @@ namespace Speech
                     bic_type.turn_off, turn_off, 1));
                 list_bic_dictation.Add(new BuiltInCommand("Switch to command mode",
                     bic_type.switch_to_command, switch_to_command_mode, 1));
+                list_bic_dictation.Add(new BuiltInCommand("Next dictation text begins with an uppercase letter.",
+                    bic_type.key_pressing, "uppercase", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Next dictation text begins with an lowercase letter.",
+                    bic_type.key_pressing, "lowercase", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Press Ctrl + Z",
+                    bic_type.key_pressing, "undo", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Press Ctrl + Y",
+                    bic_type.key_pressing, "redo", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Delete previous word",
+                    bic_type.key_pressing, "delete word", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Delete current line",
+                    bic_type.key_pressing, "delete line", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Press Space",
+                    bic_type.key_pressing, "space", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Press left arrow",
+                    bic_type.key_pressing, "left", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Press right arrow",
+                    bic_type.key_pressing, "right", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Press Enter",
+                    bic_type.key_pressing, "enter", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Press Tab",
+                    bic_type.key_pressing, "tab", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Press Backspace",
+                    bic_type.key_pressing, "backspace", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Insert , and space",
+                    bic_type.character_ins, "comma", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Insert . and space",
+                    bic_type.character_ins, "dot", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Insert . and space",
+                    bic_type.character_ins, "period", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Insert -",
+                    bic_type.character_ins, "hyphen", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Insert ; and space",
+                    bic_type.character_ins, "semicolon", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Insert : and space",
+                    bic_type.character_ins, "colon", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Insert \"",
+                    bic_type.character_ins, "double quote", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Insert '",
+                    bic_type.character_ins, "quote", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Insert ! and space",
+                    bic_type.character_ins, "exclamation", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Insert ? and space",
+                    bic_type.character_ins, "question", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Insert (",
+                    bic_type.character_ins, "open parenthesis", 1));
+                list_bic_dictation.Add(new BuiltInCommand("Insert )",
+                    bic_type.character_ins, "close parenthesis", 1));
 
                 LVbic_off.ItemsSource = list_bic_off;
                 LVbic_general.ItemsSource = list_bic_general;

@@ -7,6 +7,14 @@
       "RelativeMoniker": "D:0:0:{65A56C47-FF03-4145-9427-84E6876EAA7F}|Work by Speech\\Work by Speech.csproj|solutionrelative:work by speech\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{65A56C47-FF03-4145-9427-84E6876EAA7F}|Work by Speech\\Work by Speech.csproj|C:\\Users\\mikol\\Documents\\Visual Studio 2022\\Projects\\Work by Speech\\work by speech\\windowchangelog.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A56C47-FF03-4145-9427-84E6876EAA7F}|Work by Speech\\Work by Speech.csproj|solutionrelative:work by speech\\windowchangelog.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{65A56C47-FF03-4145-9427-84E6876EAA7F}|Work by Speech\\Work by Speech.csproj|C:\\Users\\mikol\\Documents\\Visual Studio 2022\\Projects\\Work by Speech\\work by speech\\built-in commands.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65A56C47-FF03-4145-9427-84E6876EAA7F}|Work by Speech\\Work by Speech.csproj|solutionrelative:work by speech\\built-in commands.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{65A56C47-FF03-4145-9427-84E6876EAA7F}|Work by Speech\\Work by Speech.csproj|C:\\Users\\mikol\\Documents\\Visual Studio 2022\\Projects\\Work by Speech\\work by speech\\middle man.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{65A56C47-FF03-4145-9427-84E6876EAA7F}|Work by Speech\\Work by Speech.csproj|solutionrelative:work by speech\\middle man.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
@@ -18,7 +26,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -27,15 +35,38 @@
             {
               "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "WindowChangelog.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\mikol\\Documents\\Visual Studio 2022\\Projects\\Work by Speech\\Work by Speech\\WindowChangelog.xaml.cs",
+              "RelativeDocumentMoniker": "Work by Speech\\WindowChangelog.xaml.cs",
+              "ToolTip": "C:\\Users\\mikol\\Documents\\Visual Studio 2022\\Projects\\Work by Speech\\Work by Speech\\WindowChangelog.xaml.cs",
+              "RelativeToolTip": "Work by Speech\\WindowChangelog.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-26T13:57:12.544Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "Middle Man.cs",
               "DocumentMoniker": "C:\\Users\\mikol\\Documents\\Visual Studio 2022\\Projects\\Work by Speech\\Work by Speech\\Middle Man.cs",
               "RelativeDocumentMoniker": "Work by Speech\\Middle Man.cs",
               "ToolTip": "C:\\Users\\mikol\\Documents\\Visual Studio 2022\\Projects\\Work by Speech\\Work by Speech\\Middle Man.cs",
               "RelativeToolTip": "Work by Speech\\Middle Man.cs",
-              "ViewState": "AgIAADMAAAAAAAAAAAAAAD0AAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAAAoAAAAAAAAAAAAiwD0AAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-09T22:16:33.256Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-09T22:16:33.256Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Built-in Commands.cs",
+              "DocumentMoniker": "C:\\Users\\mikol\\Documents\\Visual Studio 2022\\Projects\\Work by Speech\\Work by Speech\\Built-in Commands.cs",
+              "RelativeDocumentMoniker": "Work by Speech\\Built-in Commands.cs",
+              "ToolTip": "C:\\Users\\mikol\\Documents\\Visual Studio 2022\\Projects\\Work by Speech\\Work by Speech\\Built-in Commands.cs",
+              "RelativeToolTip": "Work by Speech\\Built-in Commands.cs",
+              "ViewState": "AgIAAG8CAAAAAAAAAAAMwIUCAABJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-29T11:12:03.446Z"
             },
             {
               "$type": "Document",
@@ -45,7 +76,7 @@
               "RelativeDocumentMoniker": "Work by Speech\\MainWindow.xaml.cs",
               "ToolTip": "C:\\Users\\mikol\\Documents\\Visual Studio 2022\\Projects\\Work by Speech\\Work by Speech\\MainWindow.xaml.cs",
               "RelativeToolTip": "Work by Speech\\MainWindow.xaml.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAALAAAAAAAAAA==",
+              "ViewState": "AgIAAEUKAAAAAAAAAAAAAFkKAAA3AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-06-22T22:11:23.802Z",
               "EditorCaption": ""

@@ -596,11 +596,6 @@ namespace Speech
         {
             try
             {
-                while (recognition_suspended)
-                {
-                    Thread.Sleep(10);
-                }
-
                 bool prev_check_for_updates_status = auto_updates;
 
                 recognition_suspended = true;
