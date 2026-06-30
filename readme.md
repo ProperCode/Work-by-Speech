@@ -1,7 +1,7 @@
 # Work by Speech
 
 ## Download
-[Download latest version - 2.5](https://github.com/ProperCode/Work-by-Speech/releases)<br/>
+[Download latest version](https://github.com/ProperCode/Work-by-Speech/releases)<br/>
 
 ## Description
 
