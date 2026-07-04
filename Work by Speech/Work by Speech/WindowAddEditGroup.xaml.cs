@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace Speech
@@ -63,6 +64,8 @@ namespace Speech
 
                 if (name == "")
                     throw new Exception("Group name cannot be empty.");
+                else if (name.Length > 60)
+                    throw new Exception("Group name cannot be longer than 60 characters.");
 
                 if (edit == false)
                 {
@@ -138,13 +141,16 @@ namespace Speech
                     }
                 }
 
-                foreach(Profile p in Middle_Man.profiles)
+                if (edit)
                 {
-                    foreach(CustomCommand cc in p.custom_commands)
+                    foreach (Profile p in Middle_Man.profiles)
                     {
-                        if(cc.group == prev_name)
+                        foreach (CustomCommand cc in p.custom_commands)
                         {
-                            cc.group = name;
+                            if (cc.group == prev_name)
+                            {
+                                cc.group = name;
+                            }
                         }
                     }
                 }

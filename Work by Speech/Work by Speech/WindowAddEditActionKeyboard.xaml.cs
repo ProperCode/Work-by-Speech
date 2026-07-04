@@ -570,7 +570,7 @@ namespace Speech
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error WAEAK00", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.Message, "Error WAEAK007", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -582,7 +582,7 @@ namespace Speech
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error WAEAK00", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.Message, "Error WAEAK008", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -594,7 +594,7 @@ namespace Speech
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error WAEAK00", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.Message, "Error WAEAK009", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -606,7 +606,19 @@ namespace Speech
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error WAEAK00", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.Message, "Error WAEAK010", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void MIselect_all_keys_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                LVkeys.SelectAll();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error WAEAK011", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

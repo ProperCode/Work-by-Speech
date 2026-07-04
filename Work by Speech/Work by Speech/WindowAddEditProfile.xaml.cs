@@ -90,8 +90,10 @@ namespace Speech
                 else if (Middle_Man.contains_illegal_characers_or_names(name))
                 {
                     throw new Exception("The following characters cannot be used in the profile name: " +
-                        "<, >, :, \\, \", /, |, ?, *.");
+                        "<, >, :, \\, \", /, |, ?, *, CON, PRN, AUX, NUL, COM, LPT.");
                 }
+                else if (name.Length > 60)
+                    throw new Exception("Profile name cannot be longer than 60 characters.");
 
                 //Add new profile
                 if (edit == false)

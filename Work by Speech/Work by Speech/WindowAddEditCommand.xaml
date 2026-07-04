@@ -78,7 +78,11 @@
                                       Click="MImove_up_actions_Click"/>
                             <MenuItem x:Name="MImove_down_actions" 
                                       Header="Move down      Ctrl + down"
-                                      Click="MImove_down_actions_Click"/>                            
+                                      Click="MImove_down_actions_Click"/>
+                            <Separator/>
+                            <MenuItem x:Name="MIselect_all_actions" 
+                              Header="Select all     Ctrl + A" 
+                              Click="MIselect_all_actions_Click"/>
                         </ContextMenu>
                     </ListView.ContextMenu>
                     <ListView.Resources>
@@ -88,7 +92,7 @@
                     </ListView.Resources>
                     <ListView.View>
                         <GridView AllowsColumnReorder="False">
-                            <GridViewColumn Header="Action" Width="563">
+                            <GridViewColumn Header="Action" Width="567">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
@@ -188,7 +192,7 @@
                     </ListView.Resources>
                     <ListView.View>
                         <GridView AllowsColumnReorder="True">
-                            <GridViewColumn Header="New Action" Width="188" DisplayMemberBinding="{Binding action}" />
+                            <GridViewColumn Header="New Action" Width="191" DisplayMemberBinding="{Binding action}" />
                         </GridView>
                     </ListView.View>
                 </ListView>

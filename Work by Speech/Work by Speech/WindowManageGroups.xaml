@@ -23,8 +23,12 @@
                                       Header="Edit"
                                       Click="MIedit_Click"/>
                             <MenuItem x:Name="MIdelete" 
-                                      Header="Delete      Del"
+                                      Header="Delete         Del"
                                       Click="MIdelete_Click"/>
+                            <Separator/>
+                            <MenuItem x:Name="MIselect_all_groups" 
+                              Header="Select all     Ctrl + A" 
+                              Click="MIselect_all_groups_Click"/>
                         </ContextMenu>
                     </ListView.ContextMenu>
                     <ListView.Resources>
@@ -34,7 +38,7 @@
                     </ListView.Resources>
                     <ListView.View>
                         <GridView AllowsColumnReorder="True">
-                            <GridViewColumn Header="Name" Width="481" DisplayMemberBinding="{Binding name}" />
+                            <GridViewColumn Header="Name" Width="484" DisplayMemberBinding="{Binding name}" />
                         </GridView>
                     </ListView.View>
                 </ListView>

@@ -164,7 +164,7 @@ namespace Speech
                 MessageBox.Show(ex.Message, "Error BIC001", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
+        //ALL BUILT-IN COMMANDS SHOULD BE LOWERCASE
         void create_bic_lists() //bic = built-in command
         {
             try
@@ -316,8 +316,6 @@ namespace Speech
                     bic_type.key_combination, "cut", "control xray", "No", 1, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + V",
                     bic_type.key_combination, "paste", "control victor", "No", 20, false));
-                list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + Z",
-                    bic_type.key_combination, "based", "control victor", "No", 20, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + Z",
                     bic_type.key_combination, "undo", "control zulu", "No", 20, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + Y",

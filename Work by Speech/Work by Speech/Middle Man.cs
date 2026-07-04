@@ -465,24 +465,8 @@ namespace Speech
                 || str == "PRN"
                 || str == "AUX"
                 || str == "NUL"
-                || str == "COM1"
-                || str == "COM2"
-                || str == "COM3"
-                || str == "COM4"
-                || str == "COM5"
-                || str == "COM6"
-                || str == "COM7"
-                || str == "COM8"
-                || str == "COM9"
-                || str == "LPT1"
-                || str == "LPT2"
-                || str == "LPT3"
-                || str == "LPT4"
-                || str == "LPT5"
-                || str == "LPT6"
-                || str == "LPT7"
-                || str == "LPT8"
-                || str == "LPT9")
+                || str == "COM"
+                || str == "LPT")
             {
                 return true;
             }

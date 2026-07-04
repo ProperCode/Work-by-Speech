@@ -665,7 +665,7 @@ namespace Speech
         {
             try
             {
-                Process.Start("User Guide.pdf");
+                Process.Start("Help\\User Guide.pdf");
             }
             catch (Exception ex)
             {
@@ -677,7 +677,7 @@ namespace Speech
         {
             try
             {
-                Process.Start("Built-in Commands.pdf");
+                Process.Start("Help\\Built-in Commands.pdf");
             }
             catch (Exception ex)
             {
@@ -689,7 +689,7 @@ namespace Speech
         {
             try
             {
-                Process.Start("Mousegrid Alphabet.pdf");
+                Process.Start("Help\\Mousegrid Alphabet.pdf");
             }
             catch (Exception ex)
             {
@@ -701,7 +701,7 @@ namespace Speech
         {
             try
             {
-                Process.Start("Useful Windows Key Combinations.pdf");
+                Process.Start("Help\\Useful Windows Key Combinations.pdf");
             }
             catch (Exception ex)
             {
@@ -1279,7 +1279,7 @@ namespace Speech
             }
         }
 
-        void load_profiles()
+        public void load_profiles()
         {
             Middle_Man.profiles = new List<Profile>();
 

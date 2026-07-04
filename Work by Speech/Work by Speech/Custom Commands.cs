@@ -587,7 +587,7 @@ namespace Speech
         public CollectionView cv_LVcommands;
         public CollectionView cv_LVprofiles;
 
-        void refresh_and_save_all(string selected_command_name, int selected_profile_ind = -1)
+        public void refresh_and_save_all(string selected_command_name, int selected_profile_ind = -1)
         {
             string selected_profile_name = null;
 
@@ -1050,7 +1050,7 @@ namespace Speech
             }
         }
 
-        private void LVprofiles_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        public void LVprofiles_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             try
             {
@@ -1068,6 +1068,7 @@ namespace Speech
                     MIedit_profiles.IsEnabled = true;
                     MIdelete_profiles.IsEnabled = true;
                     MIduplicate_profiles.IsEnabled = true;
+                    MIselect_all_commands.IsEnabled = true;
 
                     LVactions.ItemsSource = null;
 
@@ -1075,6 +1076,8 @@ namespace Speech
 
                     cv_LVcommands = (CollectionView)CollectionViewSource.GetDefaultView(
                                 LVcommands.ItemsSource);
+
+                    cv_LVcommands.Refresh();
 
                     if (cv_LVcommands.GroupDescriptions.Count == 0)
                     {
@@ -1098,6 +1101,7 @@ namespace Speech
                     MIedit_profiles.IsEnabled = false;
                     MIdelete_profiles.IsEnabled = false;
                     MIduplicate_profiles.IsEnabled = false;
+                    MIselect_all_commands.IsEnabled = false;
                 }
             }
             catch (Exception ex)
@@ -1106,7 +1110,7 @@ namespace Speech
             }
         }
 
-        private void LVcommands_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        public void LVcommands_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             try
             {
@@ -1505,6 +1509,18 @@ namespace Speech
             }
         }
 
+        private void MIselect_all_profiles_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                LVprofiles.SelectAll();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error CC016a", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void MIedit_commands_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -1646,13 +1662,26 @@ namespace Speech
             }
             catch (Exception ex)
             {
-                if (ex.Message.StartsWith("The trial version allows"))
-                    MessageBox.Show(ex.Message, "Trial version limit reached",
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
-                else
-                    MessageBox.Show(ex.Message, "Error CC020", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.Message, "Error CC020", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        private void MIselect_all_commands_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                int ind = LVprofiles.SelectedIndex;
+
+                if (ind != -1)
+                {
+                    LVcommands.SelectAll();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error CC020a", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+}
 
         private void LVprofiles_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {

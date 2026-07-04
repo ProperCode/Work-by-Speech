@@ -28,7 +28,7 @@ namespace Speech
 {
     public partial class MainWindow : Window
     {
-        const string prog_version = "2.5";
+        const string prog_version = "2.6";
               string latest_version = "";
         const string copyright_text = "Copyright © 2023 - 2026 Mikołaj Magowski. All rights reserved.";
         const string filename_model = "vosk-model-en-us-daanzu-20200905"; //Vosk speech recogniton model (7.08 (librispeech test-clean) 8.25 (tedlium))
@@ -377,7 +377,7 @@ namespace Speech
 
                 InitializeComponent();
 
-                this.Title = Middle_Man.prog_name + " " + prog_version;
+                this.Title = Middle_Man.prog_name; //it's better not to show version in title
                 Lprogram_name.Content = Middle_Man.prog_name;
                 Linstalled_version.Content = "Installed version: " + prog_version;
                 Lhomepage.Content = Middle_Man.url_homepage;
@@ -403,6 +403,7 @@ namespace Speech
                 MIcopy_commands.IsEnabled = false;
                 MIpaste_commands.IsEnabled = false;
                 MIedit_actions.IsEnabled = false;
+                MIselect_all_commands.IsEnabled = false;
 
                 Benable_bic_off.IsEnabled = false;
                 Bdisable_bic_off.IsEnabled = false;
@@ -2068,6 +2069,7 @@ namespace Speech
         bool control = false, shift = false, alt = false, windows = false;
 
         string r, r_lowercase; //r = recognized speech
+
         bool speech_recognized = false;
 
         private readonly object lock_list_cc_any = new object();
@@ -2107,10 +2109,11 @@ namespace Speech
                             {
                                 int ind = -1; //index of highest confidence word
                                 int c_curr;
+                                string str;
 
-                                for (int i = 0; i < list_off_mode.Count; i++)
+                                for (int i = 0; i < list_current.Count; i++)
                                 {
-                                    c_curr = (int)get_similarity(r, list_off_mode[i]);
+                                    c_curr = (int)get_similarity(r, list_current[i]);
 
                                     if (c_curr > c)
                                     {
@@ -2120,7 +2123,7 @@ namespace Speech
                                 }
 
                                 if (ind != -1)
-                                    r = list_off_mode[ind];
+                                    r = list_current[ind];
                                 else
                                     r = "";
 
@@ -2142,7 +2145,7 @@ namespace Speech
                                             = new SolidColorBrush(Color.FromRgb(0, 128, 0));
                                     }));
                                 }
-                                else
+                                else if(list_current.Count > 0)
                                 {
                                     SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
                                     {
@@ -2236,12 +2239,14 @@ namespace Speech
                                 int c1 = 0, c2 = 0, c3 = 0, c4 = 0, c5 = 0; //confidences for each list
                                 int c_curr;
                                 c = 0;
+                                string str;
 
                                 lock (lock_list_cc_foreground)
                                 {
                                     for (int i = 0; i < list_cc_foreground.Count; i++)
                                     {
-                                        c_curr = (int)get_similarity(r, list_cc_foreground[i]);
+                                        str = list_cc_foreground[i].ToLower();
+                                        c_curr = (int)get_similarity(r, str);
 
                                         if (c_curr > c1)
                                         {
@@ -2255,7 +2260,8 @@ namespace Speech
                                 {
                                     for (int i = 0; i < list_cc_any.Count; i++)
                                     {
-                                        c_curr = (int)get_similarity(r, list_cc_any[i]);
+                                        str = list_cc_any[i].ToLower();
+                                        c_curr = (int)get_similarity(r, str);
 
                                         if (c_curr > c2)
                                         {
@@ -2269,7 +2275,8 @@ namespace Speech
                                 {
                                     for (int i = 0; i < list_open_apps.Count; i++)
                                     {
-                                        c_curr = (int)get_similarity(r, list_open_apps[i]);
+                                        str = list_open_apps[i].ToLower();
+                                        c_curr = (int)get_similarity(r, str);
 
                                         if (c_curr > c3)
                                         {
@@ -2285,7 +2292,8 @@ namespace Speech
                                     {
                                         for (int i = 0; i < list_switch_to_apps.Count; i++)
                                         {
-                                            c_curr = (int)get_similarity(r, list_switch_to_apps[i]);
+                                            str = list_switch_to_apps[i].ToLower();
+                                            c_curr = (int)get_similarity(r, str);
 
                                             if (c_curr > c4)
                                             {
@@ -2381,9 +2389,6 @@ namespace Speech
                                         }
                                     }));
                                 }
-
-                                //B.Content = r + " | " + c + " | " + e.Result.ReplacementWordUnits.Count;
-                                //B.Content = r + " | " + c + " | " + sem;
 
                                 if (r_lowercase == "open computer")
                                     r = r_lowercase = "open computer";
@@ -2546,6 +2551,7 @@ namespace Speech
 
                                 int ind = -1; //indexes of highest confidence words
                                 int c_curr;
+                                string str;
 
                                 for (int i = 0; i < list_mousegrid.Count; i++)
                                 {
@@ -2685,6 +2691,7 @@ namespace Speech
                                 int ind1 = 0; //index of highest confidence words
                                 int c1 = 0; //confidences for each list
                                 int c_curr;
+                                string str;
 
                                 for (int i = 0; i < list_current.Count; i++)
                                 {
@@ -2764,11 +2771,11 @@ namespace Speech
 
                                     if (r == "uppercase")
                                     {
-                                        uppercase_sentence = true;
+                                        uppercase_text = true;
                                     }
                                     else if (r == "lowercase")
                                     {
-                                        uppercase_sentence = false;
+                                        uppercase_text = false;
                                     }
                                     else if (r == "undo")
                                     {
@@ -2810,7 +2817,7 @@ namespace Speech
 
                                         sim.Keyboard.KeyPress(VirtualKeyCode.BACK);
 
-                                        uppercase_sentence = true;
+                                        uppercase_text = true;
                                     }
                                     else if (r == "space")
                                     {
@@ -2839,57 +2846,57 @@ namespace Speech
                                     else if (r == "comma")
                                     {
                                         sim.Keyboard.TextEntry(", ");
-                                        uppercase_sentence = false;
+                                        uppercase_text = false;
                                     }
                                     else if (r == "dot")
                                     {
                                         sim.Keyboard.TextEntry(". ");
-                                        uppercase_sentence = true;
+                                        uppercase_text = true;
                                     }
                                     else if (r == "period")
                                     {
                                         sim.Keyboard.TextEntry(". ");
-                                        uppercase_sentence = true;
+                                        uppercase_text = true;
                                     }
                                     else if (r == "hyphen")
                                     {
                                         sim.Keyboard.TextEntry("-");
-                                        uppercase_sentence = false;
+                                        uppercase_text = false;
                                     }
                                     else if (r == "semicolon")
                                     {
                                         sim.Keyboard.TextEntry("; ");
-                                        uppercase_sentence = false;
+                                        uppercase_text = false;
                                     }
                                     else if (r == "colon")
                                     {
                                         sim.Keyboard.TextEntry(": ");
-                                        uppercase_sentence = false;
+                                        uppercase_text = false;
                                     }
                                     else if (r == "double quote")
                                     {
                                         sim.Keyboard.TextEntry("\"");
-                                        uppercase_sentence = false;
+                                        uppercase_text = false;
                                     }
                                     else if (r == "quote")
                                     {
                                         sim.Keyboard.TextEntry("'");
-                                        uppercase_sentence = false;
+                                        uppercase_text = false;
                                     }
                                     else if (r == "exclamation")
                                     {
                                         sim.Keyboard.TextEntry("! ");
-                                        uppercase_sentence = true;
+                                        uppercase_text = true;
                                     }
                                     else if (r == "question")
                                     {
                                         sim.Keyboard.TextEntry("? ");
-                                        uppercase_sentence = true;
+                                        uppercase_text = true;
                                     }
                                     else if (r == "open parenthesis")
                                     {
                                         sim.Keyboard.TextEntry("(");
-                                        uppercase_sentence = false;
+                                        uppercase_text = false;
                                     }
                                     else if (r == "close parenthesis")
                                     {
@@ -2902,10 +2909,10 @@ namespace Speech
                                 {
                                     if (read_recognized_speech) ss.SpeakAsync(r);
 
-                                    if (uppercase_sentence)
+                                    if (uppercase_text)
                                     {
                                         r = r.FirstCharToUpper();
-                                        uppercase_sentence = false;
+                                        uppercase_text = false;
                                     }
 
                                     sim.Keyboard.TextEntry(r);
@@ -2936,7 +2943,7 @@ namespace Speech
             }
         }
 
-        bool uppercase_sentence = true;
+        bool uppercase_text = true;
 
         void execute_commands()
         {

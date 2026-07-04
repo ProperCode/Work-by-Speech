@@ -40,6 +40,10 @@
                             <MenuItem x:Name="MImove_down_keys" 
                                       Header="Move down      Ctrl + Down"
                                       Click="MImove_down_keys_Click"/>
+                            <Separator/>
+                            <MenuItem x:Name="MIselect_all_keys" 
+                                      Header="Select all     Ctrl + A" 
+                                      Click="MIselect_all_keys_Click"/>
                         </ContextMenu>
                     </ListView.ContextMenu>
                     <ListView.Resources>
@@ -49,7 +53,7 @@
                     </ListView.Resources>
                     <ListView.View>
                         <GridView AllowsColumnReorder="True">
-                            <GridViewColumn Header="Key" Width="182" DisplayMemberBinding="{Binding name}" />
+                            <GridViewColumn Header="Key" Width="185" DisplayMemberBinding="{Binding name}" />
                         </GridView>
                     </ListView.View>
                 </ListView>
@@ -96,7 +100,7 @@
                     </ListView.Resources>
                     <ListView.View>
                         <GridView AllowsColumnReorder="True">
-                            <GridViewColumn Header="New Key" Width="182" DisplayMemberBinding="{Binding name}" />
+                            <GridViewColumn Header="New Key" Width="185" DisplayMemberBinding="{Binding name}" />
                         </GridView>
                     </ListView.View>
                 </ListView>

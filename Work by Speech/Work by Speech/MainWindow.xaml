@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Speech"
         mc:Ignorable="d" x:Name="W"
-        Title="Speech" Height="680" Width="1366" FontSize="14"
+        Title="Speech" Height="680" Width="1508" FontSize="14"
         WindowStartupLocation="CenterScreen" Closing="Window_Closing" 
         ResizeMode="CanMinimize" Loaded="Window_Loaded" Icon="Work by Speech multi.ico" 
         StateChanged="W_StateChanged">
@@ -17,9 +17,9 @@
             </LinearGradientBrush>
         </Grid.Background>
         <TabControl HorizontalAlignment="Left" Height="620" Margin="10,10,0,0" VerticalAlignment="Top"
-                    Width="1330" TabStripPlacement="Left" FontSize="18" BorderBrush="#FFACACAC" 
+                    Width="1471" TabStripPlacement="Left" FontSize="18" BorderBrush="#FFACACAC" 
                     Background="White">
-            <TabItem Foreground="Black" Height="50" Width="230" Background="{x:Null}" BorderBrush="{x:Null}" 
+            <TabItem Foreground="Black" Height="50" Width="216" Background="{x:Null}" BorderBrush="{x:Null}" 
                      Margin="-1,0,1,0">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
@@ -30,16 +30,16 @@
                 <Canvas>
                     <Label Content="Profiles:" Canvas.Left="5" Canvas.Top="0" FontSize="20"
                            Foreground="Black"/>
-                    <Label Content="Commands:" Canvas.Left="331" Canvas.Top="0" FontSize="20"
+                    <Label Content="Commands:" Canvas.Left="481" Canvas.Top="1" FontSize="20"
                            Foreground="Black"/>
-                    <Label Content="Actions:" Canvas.Left="854" Canvas.Top="0" FontSize="20"
+                    <Label Content="Actions:" Canvas.Left="1008" Canvas.Top="1" FontSize="20"
                            Foreground="Black"/>
-                    <ListView Margin="10,38,10,10" Name="LVprofiles" FontSize="14" Height="450" Width="315"
+                    <ListView Name="LVprofiles" FontSize="14" Height="450" Width="453"
                               SelectionChanged="LVprofiles_SelectionChanged" 
                               PreviewKeyUp="LVprofiles_PreviewKeyUp" 
                               PreviewMouseDoubleClick="LVprofiles_PreviewMouseDoubleClick"
                               ScrollViewer.VerticalScrollBarVisibility="Visible"
-                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" Canvas.Left="10" Canvas.Top="38">
                         <ListView.ContextMenu>
                             <ContextMenu FontFamily="Consolas" FontSize="14">
                                 <MenuItem x:Name="MIenable_profiles"
@@ -57,6 +57,10 @@
                                 <MenuItem x:Name="MIdelete_profiles" 
                                           Header="Delete         Del"
                                           Click="MIdelete_profiles_Click"/>
+                                <Separator/>
+                                <MenuItem x:Name="MIselect_all_profiles" 
+                                  Header="Select all     Ctrl + A" 
+                                  Click="MIselect_all_profiles_Click"/>
                             </ContextMenu>
                         </ListView.ContextMenu>
                         <ListView.Resources>
@@ -76,8 +80,8 @@
                         </ListView.Resources>
                         <ListView.View>
                             <GridView AllowsColumnReorder="True">
-                                <GridViewColumn Header="Name" Width="182" DisplayMemberBinding="{Binding name}" />
-                                <GridViewColumn Header="Program" Width="106" DisplayMemberBinding="{Binding program}" />
+                                <GridViewColumn Header="Name" Width="265" DisplayMemberBinding="{Binding name}" />
+                                <GridViewColumn Header="Program" Width="164" DisplayMemberBinding="{Binding program}" />
                             </GridView>
                         </ListView.View>
                     </ListView>
@@ -114,33 +118,37 @@
                             </LinearGradientBrush>
                         </Button.Background>
                     </Button>
-                    <ListView Margin="335,38,10,10" Name="LVcommands" FontSize="14" Height="450" Width="509"
+                    <ListView Name="LVcommands" FontSize="14" Height="450" Width="510"
                               SelectionChanged="LVcommands_SelectionChanged"
                               PreviewKeyUp="LVcommands_PreviewKeyUp" 
                               PreviewMouseDoubleClick="LVcommands_PreviewMouseDoubleClick"
                               ScrollViewer.VerticalScrollBarVisibility="Visible"
-                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" Canvas.Left="481" Canvas.Top="37">
                         <ListView.ContextMenu>
                             <ContextMenu FontFamily="Consolas" FontSize="14">
                                 <MenuItem x:Name="MIenable_commands" 
-                                          Header="Enable       Ctrl + +"
+                                          Header="Enable         Ctrl + +"
                                           Click="MIenable_commands_Click"/>
                                 <MenuItem x:Name="MIdisable_commands" 
-                                          Header="Disable      Ctrl + -"
+                                          Header="Disable        Ctrl + -"
                                           Click="MIdisable_commands_Click"/>
                                 <Separator/>
                                 <MenuItem x:Name="MIedit_commands" 
-                                          Header="Edit         "
+                                          Header="Edit           "
                                           Click="MIedit_commands_Click"/>
                                 <MenuItem x:Name="MIcopy_commands" 
-                                          Header="Copy         Ctrl + C"
+                                          Header="Copy           Ctrl + C"
                                           Click="MIcopy_commands_Click"/>
                                 <MenuItem x:Name="MIpaste_commands" 
-                                          Header="Paste        Ctrl + V"
+                                          Header="Paste          Ctrl + V"
                                           Click="MIpaste_commands_Click"/>
                                 <MenuItem x:Name="MIdelete_commands" 
-                                          Header="Delete       Del"
+                                          Header="Delete         Del"
                                           Click="MIdelete_commands_Click"/>
+                                <Separator/>
+                                <MenuItem x:Name="MIselect_all_commands" 
+                                  Header="Select all     Ctrl + A" 
+                                  Click="MIselect_all_commands_Click"/>
                             </ContextMenu>
                         </ListView.ContextMenu>
                         <ListView.Resources>
@@ -162,7 +170,7 @@
                             <GridView>
                                 <GridViewColumn Header="Name" Width="200" 
                                                 DisplayMemberBinding="{Binding name}" />
-                                <GridViewColumn Header="Description" Width="182" 
+                                <GridViewColumn Header="Description" Width="186" 
                                                 DisplayMemberBinding="{Binding description}" />
                                 <GridViewColumn Header="Max Executions" Width="100" 
                                                 DisplayMemberBinding="{Binding max_executions}" />
@@ -181,8 +189,8 @@
                         </ListView.GroupStyle>
                     </ListView>
                     <Button Foreground="Black" BorderBrush="Black" x:Name="Badd_command" Content="Add" 
-                            Canvas.Left="335" Canvas.Top="495" Width="66"
-                            FontSize="16" Height="40" Click="Badd_command_Click">
+                            Canvas.Left="481" Canvas.Top="495" Width="66"
+                            FontSize="16" Height="40" Click="Badd_command_Click" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <Button.Background>
                             <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
                                                  StartPoint="0.5,0">
@@ -192,8 +200,8 @@
                         </Button.Background>
                     </Button>
                     <Button Foreground="Black" BorderBrush="Black" x:Name="Bedit_command" 
-                            Content="Edit" Canvas.Left="407" Canvas.Top="495" Width="66" 
-                            FontSize="16" Height="40" Click="Bedit_command_Click" HorizontalAlignment="Left" 
+                            Content="Edit" Canvas.Left="552" Canvas.Top="495" Width="66" 
+                            FontSize="16" Height="40" Click="Bedit_command_Click" HorizontalAlignment="Center" 
                             VerticalAlignment="Center">
                         <Button.Background>
                             <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
@@ -204,7 +212,7 @@
                         </Button.Background>
                     </Button>
                     <Button Foreground="Black" BorderBrush="Black" x:Name="Bdelete_command" 
-                            Content="Delete" Canvas.Left="479" Canvas.Top="495" 
+                            Content="Delete" Canvas.Left="623" Canvas.Top="495" 
                             Width="66" FontSize="16" Height="40" Click="Bdelete_command_Click">
                         <Button.Background>
                             <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox"
@@ -214,10 +222,10 @@
                             </LinearGradientBrush>
                         </Button.Background>
                     </Button>
-                    <ListView Foreground="Navy" Margin="854,38,10,10" Name="LVactions" FontSize="14"
+                    <ListView Foreground="Navy" Name="LVactions" FontSize="14"
                               PreviewMouseDoubleClick="LVactions_PreviewMouseDoubleClick"
                               ScrollViewer.VerticalScrollBarVisibility="Visible" Height="450" Width="229"
-                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="LVactions_SelectionChanged">
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="LVactions_SelectionChanged" Canvas.Left="1008" Canvas.Top="38">
                         <ListView.ContextMenu>
                             <ContextMenu FontFamily="Consolas" FontSize="14">
                                 <MenuItem x:Name="MIedit_actions" 
@@ -232,13 +240,13 @@
                         </ListView.Resources>
                         <ListView.View>
                             <GridView AllowsColumnReorder="True">
-                                <GridViewColumn Header="Action" Width="202" DisplayMemberBinding="{Binding action}" />
+                                <GridViewColumn Header="Action" Width="205" DisplayMemberBinding="{Binding action}" />
                             </GridView>
                         </ListView.View>
                     </ListView>
                     <Button Foreground="Black" BorderBrush="Black" x:Name="Bedit_action" Content="Edit" 
-                            Canvas.Left="854" Canvas.Top="495" Width="66" 
-                            FontSize="16" Height="40" HorizontalAlignment="Center" VerticalAlignment="Top" 
+                            Canvas.Left="1008" Canvas.Top="493" Width="66" 
+                            FontSize="16" Height="40" HorizontalAlignment="Left" VerticalAlignment="Top" 
                             Click="Bedit_action_Click">
                         <Button.Background>
                             <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
@@ -249,9 +257,9 @@
                         </Button.Background>
                     </Button>
                     <Button Foreground="Black" BorderBrush="Black" x:Name="Bexport_profiles" 
-                            Content="Export Profiles" Canvas.Left="775" 
-                            Canvas.Top="563" Width="150" FontSize="16" Height="40" 
-                            Click="Bexport_profiles_Click">
+                            Content="Export Profiles" Canvas.Left="932" 
+                            Canvas.Top="564" Width="150" FontSize="16" Height="40" 
+                            Click="Bexport_profiles_Click" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <Button.Background>
                             <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
                                                  StartPoint="0.5,0">
@@ -261,9 +269,9 @@
                         </Button.Background>
                     </Button>
                     <Button Foreground="Black" BorderBrush="Black" x:Name="Bimport_profiles" 
-                            Content="Import Profiles" Canvas.Left="931"
-                            Canvas.Top="563" Width="150" FontSize="16" Height="40" 
-                            Click="Bimport_profiles_Click">
+                            Content="Import Profiles" Canvas.Left="1087"
+                            Canvas.Top="564" Width="150" FontSize="16" Height="40" 
+                            Click="Bimport_profiles_Click" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <Button.Background>
                             <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" 
                                                  StartPoint="0.5,0">
@@ -274,7 +282,7 @@
                     </Button>
                 </Canvas>
             </TabItem>
-            <TabItem Foreground="Black" Height="50" Width="230" Background="{x:Null}" BorderBrush="{x:Null}" 
+            <TabItem Foreground="Black" Height="50" Width="216" Background="{x:Null}" BorderBrush="{x:Null}" 
                      Margin="-1,0,1,0">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
@@ -283,7 +291,7 @@
                     </StackPanel>
                 </TabItem.Header>
                 <Canvas>
-                    <TabControl Width="1081" Height="604" Margin="5,5,0,0">
+                    <TabControl Width="1232" Height="604" Canvas.Left="5" Canvas.Top="5" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <TabItem Header="OFF Mode" FontSize="16">
                             <Canvas>
                                 <ListView Margin="10,10,10,10" Name="LVbic_off" FontSize="14" 
@@ -372,7 +380,7 @@
                         </TabItem>
                         <TabItem Header="Command Mode" FontSize="16" Margin="-2,-2,-2,0">
                             <Canvas>
-                                <TabControl Width="1065" Height="566" Margin="5,5,0,0">
+                                <TabControl Width="738" Height="566" Canvas.Left="5" Canvas.Top="5" HorizontalAlignment="Left" VerticalAlignment="Center">
                                     <TabItem Header="General" FontSize="16">
                                         <Canvas>
                                             <ListView Margin="10,10,10,10" Name="LVbic_general" FontSize="14"
@@ -831,7 +839,7 @@
                     </TabControl>
                 </Canvas>
             </TabItem>
-            <TabItem Foreground="Black" Height="50" Width="230" Background="{x:Null}" BorderBrush="{x:Null}">
+            <TabItem Foreground="Black" Height="50" Width="216" Background="{x:Null}" BorderBrush="{x:Null}">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <Image Source="images/1process.png" Width="32" Height="32" />
@@ -992,7 +1000,7 @@
                     </Button>
                 </Canvas>
             </TabItem>
-            <TabItem Foreground="Black" Height="50" Width="230" Background="{x:Null}" BorderBrush="{x:Null}"
+            <TabItem Foreground="Black" Height="50" Width="216" Background="{x:Null}" BorderBrush="{x:Null}"
                      Margin="-1,0,1,0">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
@@ -1047,7 +1055,7 @@
                     </Button>
                 </Canvas>
             </TabItem>
-            <TabItem Foreground="Black" Height="50" Width="230" Background="{x:Null}" BorderBrush="{x:Null}"
+            <TabItem Foreground="Black" Height="50" Width="216" Background="{x:Null}" BorderBrush="{x:Null}"
                      Margin="-1,0,1,0">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">

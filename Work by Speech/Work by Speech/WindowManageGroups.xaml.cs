@@ -131,6 +131,17 @@ namespace Speech
 
                 if (ind != -1)
                 {
+                    foreach (Group g in LVgroups.SelectedItems)
+                    {
+                        for (int i = 0; i < Middle_Man.groups.Count; i++)
+                        {
+                            if (g.name == Middle_Man.general_group_name)
+                            {
+                                throw new Exception("General group cannot be deleted.");
+                            }
+                        }
+                    }
+
                     MessageBoxResult dialogResult;
 
                     if (LVgroups.SelectedItems.Count == 1)
@@ -270,6 +281,18 @@ namespace Speech
         {
             if (LVgroups.SelectedIndex != -1)
                 Bdelete_Click(null, null);
+        }
+
+        private void MIselect_all_groups_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                LVgroups.SelectAll();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error WMG010", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

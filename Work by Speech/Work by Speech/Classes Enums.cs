@@ -128,6 +128,7 @@ namespace Speech
             square_combined_precision
         }
 
+        //ALL WORDS SHOULD BE LOWERCASE
         void create_optimized_grid_alphabet()
 		{
 			grid_alphabet = new List<Grid_Symbol>();

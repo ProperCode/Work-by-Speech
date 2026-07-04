@@ -138,6 +138,11 @@ namespace Speech
             }
         }
 
+        private void LVprograms_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            Bok_Click(null, null);
+        }
+
         private void Bcancel_Click(object sender, RoutedEventArgs e)
         {
             try

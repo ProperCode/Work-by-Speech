@@ -14,7 +14,7 @@
                 <ListView Foreground="Navy" Margin="10,10,10,10" Name="LVprograms" FontSize="14" Height="486" 
                           VerticalAlignment="Top" PreviewKeyUp="LVprograms_PreviewKeyUp" Width="675"
                           ScrollViewer.VerticalScrollBarVisibility="Visible"
-                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled" PreviewMouseDoubleClick="LVprograms_PreviewMouseDoubleClick">
                     <ListView.Resources>
                         <Style TargetType="{x:Type GridViewColumnHeader}">
                             <Setter Property="HorizontalContentAlignment" Value="Left" />

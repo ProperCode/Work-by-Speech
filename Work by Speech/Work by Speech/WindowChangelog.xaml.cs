@@ -17,7 +17,10 @@ namespace Speech
                 TB.IsReadOnly = true;
 
                 TB.Text = ""
-                + "[2.5] - June 30, 2026:"
+                + "[2.6] - July 4, 2026:"
+                + "\n- Improved user interface."
+                + "\n- Fixed minor bugs."
+                + "\n\n[2.5] - June 30, 2026:"
                 + "\n- Added new commands to dictation mode."
                 + "\n- Fixed a minor bug."
                 + "\n\n[2.4] - June 26, 2026:"

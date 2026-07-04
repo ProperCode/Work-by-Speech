@@ -953,6 +953,8 @@ namespace Speech
 
                 if (name == "")
                     throw new Exception("Command name cannot be empty.");
+                else if (name.Length > 60)
+                    throw new Exception("Command name cannot be longer than 60 characters.");
 
                 foreach (CustomCommand cc in Middle_Man.profiles[ind].custom_commands)
                 {
@@ -1045,18 +1047,34 @@ namespace Speech
 
                         w.cv_LVcommands.Refresh();
 
+                        w.LVprofiles_SelectionChanged(null, null);
+                        
                         //sorting may changed index
-                        command_ind = Middle_Man.get_command_ind_by_name(ind, name);
+                        //command_ind = Middle_Man.get_command_ind_by_name(ind, name); (not working properyly because of groups)
+                        command_ind = 0;
+
+                        //This method is needed, because commands are sorted alphabetically by groups first
+                        foreach (CustomCommand CC in w.LVcommands.Items)
+                        {
+                            if (CC.name == name)
+                                break;
+                            else
+                                command_ind++;
+                        }
 
                         w.LVcommands.SelectedIndex = command_ind;
 
                         w.LVcommands.ScrollIntoView(w.LVcommands.SelectedItem);
 
-                        w.LVactions.ItemsSource = Middle_Man.profiles[ind].custom_commands[command_ind].actions;
+                        w.LVcommands_SelectionChanged(null, null);
 
-                        CollectionView cv = (CollectionView)CollectionViewSource.GetDefaultView(
-                                    w.LVactions.ItemsSource);
-                        cv.Refresh();
+                        //w.LVcommands.ScrollIntoView(w.LVcommands.SelectedItem);
+
+                        //w.LVactions.ItemsSource = Middle_Man.profiles[ind].custom_commands[command_ind].actions;
+
+                        //CollectionView cv = (CollectionView)CollectionViewSource.GetDefaultView(
+                        //            w.LVactions.ItemsSource);
+                        //cv.Refresh();
 
                         if (edit)
                             w.LVcommands.Focus();
@@ -1289,6 +1307,18 @@ namespace Speech
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error WAEC020", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void MIselect_all_actions_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                LVactions.SelectAll();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error WAEC020a", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
