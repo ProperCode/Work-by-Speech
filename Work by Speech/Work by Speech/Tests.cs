@@ -8,7 +8,7 @@ namespace Speech
     public partial class MainWindow
     {
         short test_mode = 0;
-        short test1_on = 1;
+        short test1_on = 0;
         short test2_on = 0;
         short test3_on = 0;
         short test4_on = 0;

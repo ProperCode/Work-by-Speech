@@ -17,7 +17,15 @@ namespace Speech
                 TB.IsReadOnly = true;
 
                 TB.Text = ""
-                + "[2.6] - July 4, 2026:"
+                + "[2.7] - July 10, 2026:"
+                + "\n- Added euro to character inserting commands."
+                + "\n- Changed the \"Delete word\" command to \"Control backspace\" in dictation mode."
+                + "\n- Fixed a loading error that could occur after updating from version 2.4 or earlier to version 2.5 or 2.6."
+                + "\n- Fixed minor bugs."
+                + "\n- Improved error handling."
+                + "\n- Improved speech recognition."
+                + "\n- Removed yen from Mousegrid alphabet."
+                + "\n\n[2.6] - July 4, 2026:"
                 + "\n- Improved user interface."
                 + "\n- Fixed minor bugs."
                 + "\n\n[2.5] - June 30, 2026:"

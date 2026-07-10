@@ -68,76 +68,83 @@ namespace Speech
 
         void restore_default_settings()
         {
-            TBconfidence_start.Text = default_confidence_turning_on.ToString();
-            TBconfidence_commands.Text = default_confidence_other_commands.ToString();
-
-            bool found = false;
-            for (int i = 0; i < ss_voices_priority_list.Count && found == false; i++)
+            try
             {
-                foreach (InstalledVoice iv in installed_voices)
+                TBconfidence_start.Text = default_confidence_turning_on.ToString();
+                TBconfidence_commands.Text = default_confidence_other_commands.ToString();
+
+                bool found = false;
+                for (int i = 0; i < ss_voices_priority_list.Count && found == false; i++)
                 {
-                    if (iv.VoiceInfo.Name.Contains(ss_voices_priority_list[i]))
+                    foreach (InstalledVoice iv in installed_voices)
                     {
-                        default_ss_voice = iv.VoiceInfo.Name;
-                        found = true;
-                        break;
+                        if (iv.VoiceInfo.Name.Contains(ss_voices_priority_list[i]))
+                        {
+                            default_ss_voice = iv.VoiceInfo.Name;
+                            found = true;
+                            break;
+                        }
                     }
                 }
-            }
 
-            if (CBss_voices.Items.Count > 0)
+                if (CBss_voices.Items.Count > 0)
+                {
+                    if (default_ss_voice == "")
+                    {
+                        CBss_voices.SelectedIndex = 0;
+                        default_ss_voice = CBss_voices.SelectedItem.ToString();
+                    }
+                    else
+                    {
+                        CBss_voices.SelectedItem = default_ss_voice;
+                    }
+                }
+                ss_voice = default_ss_voice;
+
+                TBss_volume.Text = default_ss_volume.ToString();
+                CHBread_recognized_speech.IsChecked = default_read_recognized_speech;
+
+                CHBstart_with_hidden.IsChecked = default_start_with_hidden;
+                CHBrun_at_startup.IsChecked = default_run_at_startup;
+                CHBstart_minimized.IsChecked = default_start_minimized;
+                CHBminimize_to_tray.IsChecked = default_minimize_to_tray;
+                CHBauto_updates.IsChecked = default_auto_updates;
+
+                CBtype.SelectedItem = default_grid_type.ToString().Replace("_", " ").FirstCharToUpper();
+                CBlines.SelectedIndex = default_grid_lines;
+                TBdesired_figures_nr.Text = default_desired_figures_nr.ToString();
+                color_bg_str = default_color_bg_str;
+                color_font_str = default_color_font_str;
+
+                int argb = Convert.ToInt32(color_bg_str);
+
+                byte[] values = BitConverter.GetBytes(argb);
+
+                byte a = values[3];
+                byte r = values[2];
+                byte g = values[1];
+                byte b = values[0];
+
+                TBbackground_color.Background = new SolidColorBrush(Color.FromArgb(a, r, g, b));
+
+                argb = Convert.ToInt32(color_font_str);
+
+                values = BitConverter.GetBytes(argb);
+
+                a = values[3];
+                r = values[2];
+                g = values[1];
+                b = values[0];
+
+                TBfont_color.Background = new SolidColorBrush(Color.FromArgb(a, r, g, b));
+
+                TBfont_size.Text = default_font_size.ToString();
+                CHBsmart_mousegrid.IsChecked = default_smart_grid;
+            }
+            catch (Exception ex)
             {
-                if (default_ss_voice == "")
-                {
-                    CBss_voices.SelectedIndex = 0;
-                    default_ss_voice = CBss_voices.SelectedItem.ToString();
-                }
-                else
-                {
-                    CBss_voices.SelectedItem = default_ss_voice;
-                }
+                MessageBox.Show(ex.Message, "Error AM001a", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            ss_voice = default_ss_voice;
-            
-            TBss_volume.Text = default_ss_volume.ToString();
-            CHBread_recognized_speech.IsChecked = default_read_recognized_speech;
-
-            CHBstart_with_hidden.IsChecked = default_start_with_hidden;
-            CHBrun_at_startup.IsChecked = default_run_at_startup;
-            CHBstart_minimized.IsChecked = default_start_minimized;
-            CHBminimize_to_tray.IsChecked = default_minimize_to_tray;
-            CHBauto_updates.IsChecked = default_auto_updates;
-
-            CBtype.SelectedItem = default_grid_type.ToString().Replace("_", " ").FirstCharToUpper();
-            CBlines.SelectedIndex = default_grid_lines;
-            TBdesired_figures_nr.Text = default_desired_figures_nr.ToString();
-            color_bg_str = default_color_bg_str;
-            color_font_str = default_color_font_str;
-
-            int argb = Convert.ToInt32(color_bg_str);
-
-            byte[] values = BitConverter.GetBytes(argb);
-
-            byte a = values[3];
-            byte r = values[2];
-            byte g = values[1];
-            byte b = values[0];
-
-            TBbackground_color.Background = new SolidColorBrush(Color.FromArgb(a, r, g, b));
-
-            argb = Convert.ToInt32(color_font_str);
-
-            values = BitConverter.GetBytes(argb);
-
-            a = values[3];
-            r = values[2];
-            g = values[1];
-            b = values[0];
-
-            TBfont_color.Background = new SolidColorBrush(Color.FromArgb(a, r, g, b));
-
-            TBfont_size.Text = default_font_size.ToString();
-            CHBsmart_mousegrid.IsChecked = default_smart_grid;
         }
 
         void CenterWindowOnScreen()
@@ -747,167 +754,181 @@ namespace Speech
 
         void update_mousegrid_preview(int font_size_temp = 0)
         {
-            if (font_size_temp == 0)
-                font_size_temp = font_size;
+            try
+            {
+                if (font_size_temp == 0)
+                    font_size_temp = font_size;
 
-            TBmousegrid_preview.Background = TBbackground_color.Background;
-            TBmousegrid_preview.Foreground = TBfont_color.Background;
-            TBmousegrid_preview.FontSize = font_size_temp;
+                TBmousegrid_preview.Background = TBbackground_color.Background;
+                TBmousegrid_preview.Foreground = TBfont_color.Background;
+                TBmousegrid_preview.FontSize = font_size_temp;
 
-            Size size = MeasureString(TBmousegrid_preview.Text, TBmousegrid_preview);
-            TBmousegrid_preview.Width = size.Width + 2;
-            TBmousegrid_preview.Height = size.Height + 2;
+                Size size = MeasureString(TBmousegrid_preview.Text, TBmousegrid_preview);
+                TBmousegrid_preview.Width = size.Width + 2;
+                TBmousegrid_preview.Height = size.Height + 2;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error AM024a", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         void set_values()
         {
-            if (saving_enabled)
+            try
             {
-                if (smart_grid && desired_figures_nr >= 5)
-                    save_grids();
-            }
-
-            bool grid_size_changed = false;
-            GridType prev_grid_type = grid_type;
-
-            confidence_turning_on = int.Parse(TBconfidence_start.Text);
-            confidence_other_commands = int.Parse(TBconfidence_commands.Text);
-
-            if(CBss_voices.Items.Count > 0)
-                ss_voice = CBss_voices.SelectedItem.ToString();
-            if (ss_voice != "")
-                ss.SelectVoice(ss_voice);
-
-            ss_volume = int.Parse(TBss_volume.Text);
-            read_recognized_speech = (bool)CHBread_recognized_speech.IsChecked;
-            
-            start_with_hidden = (bool)CHBstart_with_hidden.IsChecked;
-            run_at_startup = (bool)CHBrun_at_startup.IsChecked;
-            start_minimized = (bool)CHBstart_minimized.IsChecked;
-            minimize_to_tray = (bool)CHBminimize_to_tray.IsChecked;
-            auto_updates = (bool)CHBauto_updates.IsChecked;
-
-            if (CBtype.SelectedIndex == 0)
-                grid_type = GridType.hexagonal;
-            else if (CBtype.SelectedIndex == 1)
-                grid_type = GridType.square;
-            else if (CBtype.SelectedIndex == 2)
-                grid_type = GridType.square_horizontal_precision;
-            else if (CBtype.SelectedIndex == 3)
-                grid_type = GridType.square_vertical_precision;
-            else if (CBtype.SelectedIndex == 4)
-                grid_type = GridType.square_combined_precision;
-
-            grid_lines = CBlines.SelectedIndex;
-
-            //if grid size changed whole grid must be generated again
-            if (desired_figures_nr != int.Parse(TBdesired_figures_nr.Text)
-                || grid_type != prev_grid_type)
-            {
-                grid_size_changed = true;
-            }
-
-            desired_figures_nr = int.Parse(TBdesired_figures_nr.Text);
-
-            if (saving_enabled == false)
-            {
-                int argb = Convert.ToInt32(color_bg_str);
-
-                byte[] values = BitConverter.GetBytes(argb);
-
-                byte a = values[3];
-                byte r = values[2];
-                byte g = values[1];
-                byte b = values[0];
-
-                TBbackground_color.Background = new SolidColorBrush(Color.FromArgb(a, r, g, b));
-                color_bg = Color.FromArgb(a, r, g, b);
-
-                argb = Convert.ToInt32(color_font_str);
-
-                values = BitConverter.GetBytes(argb);
-
-                a = values[3];
-                r = values[2];
-                g = values[1];
-                b = values[0];
-
-                TBfont_color.Background = new SolidColorBrush(Color.FromArgb(a, r, g, b));
-                color_font = Color.FromArgb(a, r, g, b);
-            }
-            else
-            {
-                SolidColorBrush scb = (SolidColorBrush)TBbackground_color.Background;
-                System.Drawing.Color color =
-                    System.Drawing.Color.FromArgb(scb.Color.A, scb.Color.R, scb.Color.G, scb.Color.B);
-                color_bg_str = color.ToArgb().ToString();
-                color_bg = Color.FromArgb(scb.Color.A, scb.Color.R, scb.Color.G, scb.Color.B);
-
-                scb = (SolidColorBrush)TBfont_color.Background;
-                color =
-                    System.Drawing.Color.FromArgb(scb.Color.A, scb.Color.R, scb.Color.G, scb.Color.B);
-                color_font_str = color.ToArgb().ToString();
-                color_font = Color.FromArgb(scb.Color.A, scb.Color.R, scb.Color.G, scb.Color.B);
-            }
-
-            font_size = int.Parse(TBfont_size.Text);
-
-            update_mousegrid_preview();
-
-            bool prev_smart_grid = smart_grid;
-            smart_grid = (bool)CHBsmart_mousegrid.IsChecked;
-
-            //need a .bat file to start an .exe file for some reasons
-            Microsoft.Win32.RegistryKey rkApp = Microsoft.Win32.Registry.CurrentUser
-                .OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            if (CHBrun_at_startup.IsChecked == true)
-            {
-                if (rkApp.GetValue(Middle_Man.prog_name) == null)
+                if (saving_enabled)
                 {
-                    rkApp.SetValue(Middle_Man.prog_name,
-                        System.Reflection.Assembly.GetExecutingAssembly().Location.
-                        Replace(".exe", ".vbs"));
+                    if (smart_grid && desired_figures_nr >= 5)
+                        save_grids();
                 }
-                generate_bat_file();
-            }
-            else if (rkApp.GetValue(Middle_Man.prog_name) != null)
-            {
-                rkApp.DeleteValue(Middle_Man.prog_name, false);
-            }
 
-            if ((grid_size_changed || prev_smart_grid != smart_grid)
-                && THRswitch_to != null && THRmonitor != null) //we don't want this executed when settings are being loaded
-            {
-                list_mousegrid = create_grid_list(true);
+                bool grid_size_changed = false;
+                GridType prev_grid_type = grid_type;
 
-                //if(current_mode == mode.grid)
+                confidence_turning_on = int.Parse(TBconfidence_start.Text);
+                confidence_other_commands = int.Parse(TBconfidence_commands.Text);
 
-                if ((smart_grid && prev_smart_grid == false) || grid_size_changed)
+                if (CBss_voices.Items.Count > 0)
+                    ss_voice = CBss_voices.SelectedItem.ToString();
+                if (ss_voice != "")
+                    ss.SelectVoice(ss_voice);
+
+                ss_volume = int.Parse(TBss_volume.Text);
+                read_recognized_speech = (bool)CHBread_recognized_speech.IsChecked;
+
+                start_with_hidden = (bool)CHBstart_with_hidden.IsChecked;
+                run_at_startup = (bool)CHBrun_at_startup.IsChecked;
+                start_minimized = (bool)CHBstart_minimized.IsChecked;
+                minimize_to_tray = (bool)CHBminimize_to_tray.IsChecked;
+                auto_updates = (bool)CHBauto_updates.IsChecked;
+
+                if (CBtype.SelectedIndex == 0)
+                    grid_type = GridType.hexagonal;
+                else if (CBtype.SelectedIndex == 1)
+                    grid_type = GridType.square;
+                else if (CBtype.SelectedIndex == 2)
+                    grid_type = GridType.square_horizontal_precision;
+                else if (CBtype.SelectedIndex == 3)
+                    grid_type = GridType.square_vertical_precision;
+                else if (CBtype.SelectedIndex == 4)
+                    grid_type = GridType.square_combined_precision;
+
+                grid_lines = CBlines.SelectedIndex;
+
+                //if grid size changed whole grid must be generated again
+                if (desired_figures_nr != int.Parse(TBdesired_figures_nr.Text)
+                    || grid_type != prev_grid_type)
                 {
-                    load_grids();
+                    grid_size_changed = true;
                 }
-            }
 
-            if (THRswitch_to != null && THRmonitor != null) //we don't want this executed when settings are being loaded
-            {
-                if (are_all_bic_dictation_disabled() == false)
-                    list_dictation = create_dictation_commands_list();
-            }
+                desired_figures_nr = int.Parse(TBdesired_figures_nr.Text);
 
-            //only needed if grid was already created //we don't want this executed when settings
-            //are being loaded
-            if (grid_width != 0)
-            {
-                if (MW != null)
+                if (saving_enabled == false)
                 {
-                    //need to close mousegrid window or there will be 1 more window every time you change
-                    //mousegrid settings that require mousegrid regeneration
-                    //you can easily see this windows by pressing  windows key + tab
-                    MW.Close();
+                    int argb = Convert.ToInt32(color_bg_str);
+
+                    byte[] values = BitConverter.GetBytes(argb);
+
+                    byte a = values[3];
+                    byte r = values[2];
+                    byte g = values[1];
+                    byte b = values[0];
+
+                    TBbackground_color.Background = new SolidColorBrush(Color.FromArgb(a, r, g, b));
+                    color_bg = Color.FromArgb(a, r, g, b);
+
+                    argb = Convert.ToInt32(color_font_str);
+
+                    values = BitConverter.GetBytes(argb);
+
+                    a = values[3];
+                    r = values[2];
+                    g = values[1];
+                    b = values[0];
+
+                    TBfont_color.Background = new SolidColorBrush(Color.FromArgb(a, r, g, b));
+                    color_font = Color.FromArgb(a, r, g, b);
                 }
-                MW = new MouseGrid(grid_width, grid_height, grid_lines, grid_type, font_family,
-                    font_size, color_bg, color_font, rows_nr, cols_nr, figure_width, figure_height,
-                    grids[0].elements);
+                else
+                {
+                    SolidColorBrush scb = (SolidColorBrush)TBbackground_color.Background;
+                    System.Drawing.Color color =
+                        System.Drawing.Color.FromArgb(scb.Color.A, scb.Color.R, scb.Color.G, scb.Color.B);
+                    color_bg_str = color.ToArgb().ToString();
+                    color_bg = Color.FromArgb(scb.Color.A, scb.Color.R, scb.Color.G, scb.Color.B);
+
+                    scb = (SolidColorBrush)TBfont_color.Background;
+                    color =
+                        System.Drawing.Color.FromArgb(scb.Color.A, scb.Color.R, scb.Color.G, scb.Color.B);
+                    color_font_str = color.ToArgb().ToString();
+                    color_font = Color.FromArgb(scb.Color.A, scb.Color.R, scb.Color.G, scb.Color.B);
+                }
+
+                font_size = int.Parse(TBfont_size.Text);
+
+                update_mousegrid_preview();
+
+                bool prev_smart_grid = smart_grid;
+                smart_grid = (bool)CHBsmart_mousegrid.IsChecked;
+
+                //need a .bat file to start an .exe file for some reasons
+                Microsoft.Win32.RegistryKey rkApp = Microsoft.Win32.Registry.CurrentUser
+                    .OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                if (CHBrun_at_startup.IsChecked == true)
+                {
+                    if (rkApp.GetValue(Middle_Man.prog_name) == null)
+                    {
+                        rkApp.SetValue(Middle_Man.prog_name,
+                            System.Reflection.Assembly.GetExecutingAssembly().Location.
+                            Replace(".exe", ".vbs"));
+                    }
+                    generate_bat_file();
+                }
+                else if (rkApp.GetValue(Middle_Man.prog_name) != null)
+                {
+                    rkApp.DeleteValue(Middle_Man.prog_name, false);
+                }
+
+                if ((grid_size_changed || prev_smart_grid != smart_grid)
+                    && THRswitch_to != null && THRmonitor != null) //we don't want this executed when settings are being loaded
+                {
+                    list_mousegrid = create_grid_list(true);
+
+                    //if(current_mode == mode.grid)
+
+                    if ((smart_grid && prev_smart_grid == false) || grid_size_changed)
+                    {
+                        load_grids();
+                    }
+                }
+
+                if (THRswitch_to != null && THRmonitor != null) //we don't want this executed when settings are being loaded
+                {
+                    if (are_all_bic_dictation_disabled() == false)
+                        list_dictation = create_dictation_commands_list();
+                }
+
+                //only needed if grid was already created //we don't want this executed when settings
+                //are being loaded
+                if (grid_width != 0)
+                {
+                    if (MW != null)
+                    {
+                        //need to close mousegrid window or there will be 1 more window every time you change
+                        //mousegrid settings that require mousegrid regeneration
+                        //you can easily see this windows by pressing  windows key + tab
+                        MW.Close();
+                    }
+                    MW = new MouseGrid(grid_width, grid_height, grid_lines, grid_type, font_family,
+                        font_size, color_bg, color_font, rows_nr, cols_nr, figure_width, figure_height,
+                        grids[0].elements);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error AM024a", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1281,114 +1302,128 @@ namespace Speech
 
         public void load_profiles()
         {
-            Middle_Man.profiles = new List<Profile>();
-
-            if (Directory.Exists(Middle_Man.profiles_path))
+            try
             {
-                DirectoryInfo di = new DirectoryInfo(Middle_Man.profiles_path);
+                Middle_Man.profiles = new List<Profile>();
 
-                FileInfo[] files = di.GetFiles("*.xml", SearchOption.TopDirectoryOnly);
-
-                foreach (FileInfo file in files)
+                if (Directory.Exists(Middle_Man.profiles_path))
                 {
-                    load_profile(file.FullName);
+                    DirectoryInfo di = new DirectoryInfo(Middle_Man.profiles_path);
+
+                    FileInfo[] files = di.GetFiles("*.xml", SearchOption.TopDirectoryOnly);
+
+                    foreach (FileInfo file in files)
+                    {
+                        load_profile(file.FullName);
+                    }
+
+                    Middle_Man.sort_profiles_by_name_asc();
+
+                    LVprofiles.Refresh();
                 }
-
-                Middle_Man.sort_profiles_by_name_asc();
-
-                LVprofiles.Refresh();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error AM018a", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         void load_profile(string path)
         {
-            XmlDocument xml_doc = new XmlDocument();
-            xml_doc.Load(path);
-
-            XmlNodeList profile_tag = xml_doc.SelectNodes("//profile");
-
-            int version = -1;
-            bool parsing_v = false;
-
-            if (profile_tag[0].Attributes["version"] != null)
-                parsing_v = int.TryParse(profile_tag[0].Attributes["version"].Value, out version);
-
-            //Work by Speech v. 1.5 and earlier had no version attribute (so we treat profiles made by these
-            //versions as as version 1 of xml saving method for profiles and custom commands)
-
-            if (version == -1 || (parsing_v && version == 1))
+            try
             {
-                XmlNodeList nodes = xml_doc.SelectNodes("//profile")[0].ChildNodes;
+                XmlDocument xml_doc = new XmlDocument();
+                xml_doc.Load(path);
 
-                Profile p = new Profile();
+                XmlNodeList profile_tag = xml_doc.SelectNodes("//profile");
 
-                foreach (XmlNode node in nodes)
+                int version = -1;
+                bool parsing_v = false;
+
+                if (profile_tag[0].Attributes["version"] != null)
+                    parsing_v = int.TryParse(profile_tag[0].Attributes["version"].Value, out version);
+
+                //Work by Speech v. 1.5 and earlier had no version attribute (so we treat profiles made by these
+                //versions as as version 1 of xml saving method for profiles and custom commands)
+
+                if (version == -1 || (parsing_v && version == 1))
                 {
-                    if (node.Name == "name")
-                        p.name = node.InnerText;
-                    else if (node.Name == "program")
-                        p.program = node.InnerText;
-                    else if (node.Name == "enabled")
-                        p.enabled = bool.Parse(node.InnerText);
-                }
+                    XmlNodeList nodes = xml_doc.SelectNodes("//profile")[0].ChildNodes;
 
-                p.custom_commands = new List<CustomCommand>();
+                    Profile p = new Profile();
 
-                nodes = xml_doc.SelectNodes("//profile/custom_commands")[0].ChildNodes;
-
-                int new_commands_nr = 0;
-
-                foreach (XmlNode node in nodes)
-                {
-                    XmlNodeList nodes2 = node.ChildNodes;
-
-                    CustomCommand cc = new CustomCommand();
-
-                    foreach (XmlNode node2 in nodes2)
+                    foreach (XmlNode node in nodes)
                     {
-                        if (node2.Name == "name")
-                            cc.name = node2.InnerText;
-                        else if (node2.Name == "description")
-                            cc.description = node2.InnerText;
-                        else if (node2.Name == "group")
-                            cc.group = node2.InnerText;
-                        else if (node2.Name == "max_executions")
-                            cc.max_executions = short.Parse(node2.InnerText);
-                        else if (node2.Name == "enabled")
-                            cc.enabled = bool.Parse(node2.InnerText);
-                        else if (node2.Name == "actions")
+                        if (node.Name == "name")
+                            p.name = node.InnerText;
+                        else if (node.Name == "program")
+                            p.program = node.InnerText;
+                        else if (node.Name == "enabled")
+                            p.enabled = bool.Parse(node.InnerText);
+                    }
+
+                    p.custom_commands = new List<CustomCommand>();
+
+                    nodes = xml_doc.SelectNodes("//profile/custom_commands")[0].ChildNodes;
+
+                    int new_commands_nr = 0;
+
+                    foreach (XmlNode node in nodes)
+                    {
+                        XmlNodeList nodes2 = node.ChildNodes;
+
+                        CustomCommand cc = new CustomCommand();
+
+                        foreach (XmlNode node2 in nodes2)
                         {
-                            cc.actions = new List<CC_Action>();
-
-                            XmlNodeList actions_nodes = node2.ChildNodes;
-
-                            foreach (XmlNode action in actions_nodes)
+                            if (node2.Name == "name")
+                                cc.name = node2.InnerText;
+                            else if (node2.Name == "description")
+                                cc.description = node2.InnerText;
+                            else if (node2.Name == "group")
+                                cc.group = node2.InnerText;
+                            else if (node2.Name == "max_executions")
+                                cc.max_executions = short.Parse(node2.InnerText);
+                            else if (node2.Name == "enabled")
+                                cc.enabled = bool.Parse(node2.InnerText);
+                            else if (node2.Name == "actions")
                             {
-                                cc.actions.Add(new CC_Action()
+                                cc.actions = new List<CC_Action>();
+
+                                XmlNodeList actions_nodes = node2.ChildNodes;
+
+                                foreach (XmlNode action in actions_nodes)
                                 {
-                                    action = action.InnerText
-                                });
+                                    cc.actions.Add(new CC_Action()
+                                    {
+                                        action = action.InnerText
+                                    });
+                                }
                             }
+                        }
+
+                        p.custom_commands.Add(cc);
+                        new_commands_nr++;
+                    }
+
+                    bool found = false;
+
+                    foreach (Profile profile in Middle_Man.profiles)
+                    {
+                        if (profile.name == p.name)
+                        {
+                            found = true;
+                            break;
                         }
                     }
 
-                    p.custom_commands.Add(cc);
-                    new_commands_nr++;
+                    if (found == false)
+                        Middle_Man.profiles.Add(p);
                 }
-
-                bool found = false;
-
-                foreach (Profile profile in Middle_Man.profiles)
-                {
-                    if (profile.name == p.name)
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if(found == false)
-                    Middle_Man.profiles.Add(p);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error AM018b", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1492,16 +1527,23 @@ namespace Speech
 
         void register_first_run()
         {
-            Microsoft.Win32.RegistryKey reg_key_easy = Microsoft.Win32.Registry.CurrentUser
-                                    .OpenSubKey(Middle_Man.registry_path_easy, true);
-
-            if (reg_key_easy == null)
+            try
             {
-                reg_key_easy = Microsoft.Win32.Registry.CurrentUser.
-                    CreateSubKey(Middle_Man.registry_path_easy, true);
-                first_run = true;
+                Microsoft.Win32.RegistryKey reg_key_easy = Microsoft.Win32.Registry.CurrentUser
+                                        .OpenSubKey(Middle_Man.registry_path_easy, true);
+
+                if (reg_key_easy == null)
+                {
+                    reg_key_easy = Microsoft.Win32.Registry.CurrentUser.
+                        CreateSubKey(Middle_Man.registry_path_easy, true);
+                    first_run = true;
+                }
+                reg_key_easy.SetValue(Middle_Man.registry_key_first_run, "yes");
             }
-            reg_key_easy.SetValue(Middle_Man.registry_key_first_run, "yes");
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error AM022a", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         string get_grid_folder_name_by_type(GridType gt)
@@ -1687,6 +1729,11 @@ namespace Speech
 
         string replace_number_words(string text)
         {
+            if (text == "zero")
+                return "0";
+            else if (text == "null")
+                return "0";
+
             // Replace "one hundred" first
             text = Regex.Replace(
                 text,

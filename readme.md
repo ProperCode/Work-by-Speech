@@ -16,7 +16,7 @@ Work by Speech Features:
 - Macro recording
 - Separate dictation mode
 - Fast and repeatable mouse control by speech with support for all mouse actions
-- Customizable and movable mousegrid which divides the screen into up to 2550 figures
+- Customizable and movable mousegrid which divides the screen into up to 2450 figures
 - Automatic mousegrid optimization for every used application
 - Very low processor usage
 - Works with any microphone

@@ -23,19 +23,23 @@ using WindowsInput.Native;
 //WaveIn_DataAvailable handles speech recognition
 //ThreadPriority.Highest isn't really needed anywhere
 //Fix cut window: x = -15px, y = -23px
+//The lower the desired figures number, the larger the font size should be
+//for Mousegrid to work properly when square horizontal, vertical or combined precision is used.
+//If the desired figures number is 1500, the font size should be set to 16
+//If the desired figures number is 500, the font size should be set to 24.
 
 namespace Speech
 {
     public partial class MainWindow : Window
     {
-        const string prog_version = "2.6";
+        const string prog_version = "2.7";
               string latest_version = "";
         const string copyright_text = "Copyright © 2023 - 2026 Mikołaj Magowski. All rights reserved.";
         const string filename_model = "vosk-model-en-us-daanzu-20200905"; //Vosk speech recogniton model (7.08 (librispeech test-clean) 8.25 (tedlium))
         const string filename_settings = "settings.xml";
         const string filename_coords = "coords.txt"; //speech recognition window last location
         const string grids_foldername = "grids";
-        const int grid_symbols_limit = 50;//50-58 recommended
+        const int grid_symbols_limit = 49;//50-58 recommended
         const int max_font_size = 400;
         const bool resized_grid = true; //when true, resizes mousegrid so screen is fully covered
         const bool movable_grid = true; //when true, mousegrid can be moved by speech
@@ -136,7 +140,7 @@ namespace Speech
 
         const GridType default_grid_type = GridType.square_horizontal_precision;
         const int default_grid_lines = 0; //0-2 (0 - no lines, 1 - dotted lines, 2 - normal lines)
-        const int default_desired_figures_nr = 2550;
+        const int default_desired_figures_nr = 2450; //until version 2.7 it was 2550 (50*50+50)
         const string default_color_bg_str = "-1973791"; //light grey
         const string default_color_font_str = "-16777216"; //black
         const int default_font_size = 12;
@@ -431,17 +435,25 @@ namespace Speech
                 MIenable_bic_dictation.IsEnabled = false;
                 MIdisable_bic_dictation.IsEnabled = false;
 
-                installed_voices = ss.GetInstalledVoices();
-
-                foreach (InstalledVoice iv in installed_voices)
+                try
                 {
-                    CBss_voices.Items.Add(iv.VoiceInfo.Name);
+                    installed_voices = ss.GetInstalledVoices();
+
+                    foreach (InstalledVoice iv in installed_voices)
+                    {
+                        CBss_voices.Items.Add(iv.VoiceInfo.Name);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error MW001a", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
 
                 foreach (GridType type in (GridType[])Enum.GetValues(typeof(GridType)))
                 {
                     CBtype.Items.Add(type.ToString().Replace("_", " ").FirstCharToUpper());
                 }
+                
 
                 CBlines.Items.Add("None");
                 CBlines.Items.Add("Dotted");
@@ -531,24 +543,31 @@ namespace Speech
                     }
                 }
 
-                // Configure speech recognizer.
-                Vosk.Vosk.SetLogLevel(-1); // You can set to -1 to disable logging messages
-
-                string modelPath = @"vosk-model-en-us-daanzu-20200905"; //ma potencjał (zdobył 197 punktów)
-
-                Model model = new Model(modelPath);
-
-                recognizer = new VoskRecognizer(model, 16000.0f);
-
-                waveIn = new WaveInEvent
+                try
                 {
-                    DeviceNumber = 0,
-                    WaveFormat = new WaveFormat(16000, 1),
-                    BufferMilliseconds = 250
-                };
+                    // Configure speech recognizer.
+                    Vosk.Vosk.SetLogLevel(-1); // You can set to -1 to disable logging messages
 
-                waveIn.DataAvailable += WaveIn_DataAvailable;
-                
+                    string modelPath = @"vosk-model-en-us-daanzu-20200905"; //ma potencjał (zdobył 197 punktów)
+
+                    Model model = new Model(modelPath);
+
+                    recognizer = new VoskRecognizer(model, 16000.0f);
+
+                    waveIn = new WaveInEvent
+                    {
+                        DeviceNumber = 0,
+                        WaveFormat = new WaveFormat(16000, 1),
+                        BufferMilliseconds = 250
+                    };
+
+                    waveIn.DataAvailable += WaveIn_DataAvailable;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error MW001b", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+
                 try
                 {
                     waveIn.StartRecording();
@@ -624,28 +643,35 @@ namespace Speech
 
         void create_lists()
         {
-            list_off_mode = new List<string>();
-            list_builtin_commands = new List<string>();
-            list_dictation = new List<string>();
-
-            if (are_all_bic_off_disabled() == false)
+            try
             {
-                list_off_mode = create_off_mode_list();
-            }
+                list_off_mode = new List<string>();
+                list_builtin_commands = new List<string>();
+                list_dictation = new List<string>();
 
-            if (are_all_bic_general_and_mouse_disabled() == false)
+                if (are_all_bic_off_disabled() == false)
+                {
+                    list_off_mode = create_off_mode_list();
+                }
+
+                if (are_all_bic_general_and_mouse_disabled() == false)
+                {
+                    list_builtin_commands = create_builtin_commands_list();
+                }
+
+                if (are_all_bic_dictation_disabled() == false)
+                {
+                    list_dictation = create_dictation_commands_list();
+                }
+
+                list_mousegrid = create_grid_list(true);
+
+                list_cc_any = create_custom_commands_list(Middle_Man.any_program_name);
+            }
+            catch (Exception ex)
             {
-                list_builtin_commands = create_builtin_commands_list();
+                MessageBox.Show(ex.Message, "Error MW004abc", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-
-            if (are_all_bic_dictation_disabled() == false)
-            {
-                list_dictation = create_dictation_commands_list();
-            }
-            
-            list_mousegrid = create_grid_list(true);
-
-            list_cc_any = create_custom_commands_list(Middle_Man.any_program_name);
         }
 
         void is_program_already_running()
@@ -672,322 +698,352 @@ namespace Speech
 
         bool get_installed_apps()
         {
-            if (string.IsNullOrEmpty(start_menu_path))
-                return false;
-
-            string[] allfiles = Directory.GetFiles(start_menu_path, "*.*", SearchOption.AllDirectories);
-            
-            string[] a;
-            string str;
-            List<string> names;
-            string installed_app_path, s;
-            int name_length;
-            Installed_App installed_app;
-
-            List<Installed_App> installed_apps2 = new List<Installed_App>();
-
-            foreach (var file in allfiles)
+            try
             {
-                FileInfo info = new FileInfo(file);
-            }
+                if (string.IsNullOrEmpty(start_menu_path))
+                    return false;
 
-            foreach (var file in allfiles)
-            {
-                FileInfo info = new FileInfo(file);
-                if (info.Name.ToLower().Contains("install")
-                    || info.Name.ToLower().Contains("application") || info.Name.Length < 6
-                    || info.Name.ToLower().Substring(info.Name.Length - 4) != ".lnk")
-                    continue;
+                string[] allfiles = Directory.GetFiles(start_menu_path, "*.*", SearchOption.AllDirectories);
 
-                installed_app = new Installed_App();
-                installed_app.names = new List<string>();
+                string[] a;
+                string str;
+                List<string> names;
+                string installed_app_path, s;
+                int name_length;
+                Installed_App installed_app;
 
-                a = info.Name.Split(new string[] { "." }, StringSplitOptions.RemoveEmptyEntries);
-                s = a[0];
+                List<Installed_App> installed_apps2 = new List<Installed_App>();
 
-                for (int i = 1; i < a.Length - 1; i++)
+                foreach (var file in allfiles)
                 {
-                    s += "." + a[i];
+                    FileInfo info = new FileInfo(file);
                 }
 
-                s = s.Trim();
-                a = s.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var file in allfiles)
+                {
+                    FileInfo info = new FileInfo(file);
+                    if (info.Name.ToLower().Contains("install")
+                        || info.Name.ToLower().Contains("application") || info.Name.Length < 6
+                        || info.Name.ToLower().Substring(info.Name.Length - 4) != ".lnk")
+                        continue;
 
-                for (int i = 0; i < a.Length; i++)
-                {
-                    a[i] = a[i].Trim();
-                    if (a[i].Length > 1)
-                        installed_app.names.Add(a[i]);
-                }
-                for (int i = 0; i < a.Length - 1; i++)
-                {
-                    str = a[i].Trim() + " " + a[i + 1].Trim();
-                    if (str.Length > 3)
+                    installed_app = new Installed_App();
+                    installed_app.names = new List<string>();
+
+                    a = info.Name.Split(new string[] { "." }, StringSplitOptions.RemoveEmptyEntries);
+                    s = a[0];
+
+                    for (int i = 1; i < a.Length - 1; i++)
                     {
-                        installed_app.names.Add(a[i].Trim() + " " + a[i + 1].Trim());
+                        s += "." + a[i];
                     }
-                }
-                if (a.Length > 2)
-                {
-                    if(s.Length > 3)
-                        installed_app.names.Add(s);
-                }
 
-                installed_app.name_length = info.Name.Length;
-                installed_app.path = info.FullName;
-                installed_apps2.Add(installed_app);
-            }
+                    s = s.Trim();
+                    a = s.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
 
-            //sort apps by app name length ascending
-            for (int i = 0; i < installed_apps2.Count; i++)
-            {
-                for (int j = 0; j < installed_apps2.Count; j++)
-                {
-                    if (installed_apps2[j].name_length > installed_apps2[i].name_length)
+                    for (int i = 0; i < a.Length; i++)
                     {
-                        names = installed_apps2[j].names;
-                        installed_app_path = installed_apps2[j].path;
-                        name_length = installed_apps2[j].name_length;
-                        installed_apps2[j].names = installed_apps2[i].names;
-                        installed_apps2[j].path = installed_apps2[i].path;
-                        installed_apps2[j].name_length = installed_apps2[i].name_length;
-                        installed_apps2[i].names = names;
-                        installed_apps2[i].path = installed_app_path;
-                        installed_apps2[i].name_length = name_length;
+                        a[i] = a[i].Trim();
+                        if (a[i].Length > 1)
+                            installed_app.names.Add(a[i]);
                     }
-                }
-            }
-
-            installed_apps = installed_apps2;
-
-            //dt1 = DateTime.Now;
-            //dt2 = DateTime.Now;
-            //ts = dt2 - dt1;
-            //MessageBox.Show("processes: " + ts.TotalMilliseconds.ToString());
-
-            //if get_installed_apps() == true means apps number has changed
-            list_open_apps = new List<string>();
-
-            s = open_app_str;
-
-            if (test_mode > 0 && test3_on > 0)
-            {
-                test3();
-            }
-            else
-            {
-                foreach (Installed_App app in installed_apps)
-                {
-                    foreach (string name2 in app.names)
+                    for (int i = 0; i < a.Length - 1; i++)
                     {
-                        if (name2 != null && name2 != "")
+                        str = a[i].Trim() + " " + a[i + 1].Trim();
+                        if (str.Length > 3)
                         {
-                            list_open_apps.Add(s + " " + name2);
+                            installed_app.names.Add(a[i].Trim() + " " + a[i + 1].Trim());
+                        }
+                    }
+                    if (a.Length > 2)
+                    {
+                        if (s.Length > 3)
+                            installed_app.names.Add(s);
+                    }
+
+                    installed_app.name_length = info.Name.Length;
+                    installed_app.path = info.FullName;
+                    installed_apps2.Add(installed_app);
+                }
+
+                //sort apps by app name length ascending
+                for (int i = 0; i < installed_apps2.Count; i++)
+                {
+                    for (int j = 0; j < installed_apps2.Count; j++)
+                    {
+                        if (installed_apps2[j].name_length > installed_apps2[i].name_length)
+                        {
+                            names = installed_apps2[j].names;
+                            installed_app_path = installed_apps2[j].path;
+                            name_length = installed_apps2[j].name_length;
+                            installed_apps2[j].names = installed_apps2[i].names;
+                            installed_apps2[j].path = installed_apps2[i].path;
+                            installed_apps2[j].name_length = installed_apps2[i].name_length;
+                            installed_apps2[i].names = names;
+                            installed_apps2[i].path = installed_app_path;
+                            installed_apps2[i].name_length = name_length;
                         }
                     }
                 }
+
+                installed_apps = installed_apps2;
+
+                //dt1 = DateTime.Now;
+                //dt2 = DateTime.Now;
+                //ts = dt2 - dt1;
+                //MessageBox.Show("processes: " + ts.TotalMilliseconds.ToString());
+
+                //if get_installed_apps() == true means apps number has changed
+                list_open_apps = new List<string>();
+
+                s = open_app_str;
+
+                if (test_mode > 0 && test3_on > 0)
+                {
+                    test3();
+                }
+                else
+                {
+                    foreach (Installed_App app in installed_apps)
+                    {
+                        foreach (string name2 in app.names)
+                        {
+                            if (name2 != null && name2 != "")
+                            {
+                                list_open_apps.Add(s + " " + name2);
+                            }
+                        }
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error MW004b", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
-            return true;
+            return false;
         }
 
         void load_turned_off(bool loaded_from_speech_recognized = false)
         {
-            int i = 0;
-            
-            recognition_suspended = true;
-
-            SW.Bmode.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+            try
             {
-                SW.Bmode.Visibility = Visibility.Hidden;
-            }));
+                int i = 0;
 
-            //THRswitch_to.Abort(); //abort only causes problems
+                recognition_suspended = true;
 
-            //wait for suspend:
-            while (inside_speech_recognized_event == true && loaded_from_speech_recognized == false)
-            {
-                Thread.Sleep(10);
-                i++;
+                SW.Bmode.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                {
+                    SW.Bmode.Visibility = Visibility.Hidden;
+                }));
+
+                //THRswitch_to.Abort(); //abort only causes problems
+
+                //wait for suspend:
+                while (inside_speech_recognized_event == true && loaded_from_speech_recognized == false)
+                {
+                    Thread.Sleep(10);
+                    i++;
+                }
+
+                list_current = new List<string>();
+                add_to_list_current(list_type.list_off_mode);
+
+                Stream iconStream = System.Windows.Application.GetResourceStream(
+                    new Uri(icon_off)).Stream;
+
+                //it's safer to keep recognition_suspended = false; here (to avoid possible
+                //freeze if a user would say "Recognition Off" while clicking save settings)
+                recognition_suspended = false;
+
+                SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                {
+                    SW.mode = 0;
+                    SW.Bmode.Content = mode_off;
+                    SW.Bmode.Foreground = new SolidColorBrush(Color.FromRgb(232, 4, 4));
+
+                    // Create a BitmapSource  
+                    BitmapImage bitmap = new BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.UriSource = new Uri(icon_off);
+                    bitmap.EndInit();
+
+                    SW.Icon = bitmap;
+                }));
+
+                ni.Icon = new System.Drawing.Icon(iconStream);
+                iconStream.Close();
+
+                mi_switch_to_off_mode.Visible = false;
+                mi_switch_to_dictation_mode.Visible = true;
+                mi_switch_to_command_mode.Visible = true;
+
+                current_mode = mode.off;
+
+                SW.Bmode.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                {
+                    SW.Bmode.Visibility = Visibility.Visible;
+                }));
             }
-
-            list_current = new List<string>();
-            add_to_list_current(list_type.list_off_mode);
-
-            Stream iconStream = System.Windows.Application.GetResourceStream(
-                new Uri(icon_off)).Stream;
-
-            //it's safer to keep recognition_suspended = false; here (to avoid possible
-            //freeze if a user would say "Recognition Off" while clicking save settings)
-            recognition_suspended = false;
-
-            SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+            catch (Exception ex)
             {
-                SW.mode = 0;
-                SW.Bmode.Content = mode_off;
-                SW.Bmode.Foreground = new SolidColorBrush(Color.FromRgb(232, 4, 4));
-
-                // Create a BitmapSource  
-                BitmapImage bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.UriSource = new Uri(icon_off);
-                bitmap.EndInit();
-
-                SW.Icon = bitmap;
-            }));
-
-            ni.Icon = new System.Drawing.Icon(iconStream);
-            iconStream.Close();
-
-            mi_switch_to_off_mode.Visible = false;
-            mi_switch_to_dictation_mode.Visible = true;
-            mi_switch_to_command_mode.Visible = true;
-
-            current_mode = mode.off;
-
-            SW.Bmode.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-            {
-                SW.Bmode.Visibility = Visibility.Visible;
-            }));
+                MessageBox.Show(ex.Message, "Error MW004c", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         void load_turned_on(bool loaded_from_speech_recognized = false)
         {
-            int i = 0;
-            
-            recognition_suspended = true;
-
-            /* Removing this solved freeze problem when using west command to save settings
-            SW.Bmode.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+            try
             {
-                SW.Bmode.Visibility = Visibility.Hidden;
-            }));
-            */
+                int i = 0;
 
-            //THRswitch_to.Abort(); //abort only causes problems
-            
-            //wait for suspend:
-            while (inside_speech_recognized_event == true && loaded_from_speech_recognized == false)
-            {
-                Thread.Sleep(10);
-                i++;
-            }
+                recognition_suspended = true;
 
-            if (current_mode == mode.command)
-            {
-                list_current = new List<string>();
-                add_to_list_current(list_type.list_builtin_commands);
-
-                lock (lock_list_cc_foreground)
+                /* Removing this solved freeze problem when using west command to save settings
+                SW.Bmode.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
                 {
-                    list_cc_foreground = new List<string>();
+                    SW.Bmode.Visibility = Visibility.Hidden;
+                }));
+                */
+
+                //THRswitch_to.Abort(); //abort only causes problems
+
+                //wait for suspend:
+                while (inside_speech_recognized_event == true && loaded_from_speech_recognized == false)
+                {
+                    Thread.Sleep(10);
+                    i++;
                 }
 
-                Stream iconStream = System.Windows.Application.GetResourceStream(
-                        new Uri(icon_command)).Stream;
+                if (current_mode == mode.command)
+                {
+                    list_current = new List<string>();
+                    add_to_list_current(list_type.list_builtin_commands);
 
-                //we must set recognition_suspended to false, before using invoke,
-                //otherwise using west command to save settings (or clicking save settings
-                //button while a speech recognition action is performed) would cause a freeze
-                //(save settings thread waits for recognition_suspended == false)
+                    lock (lock_list_cc_foreground)
+                    {
+                        list_cc_foreground = new List<string>();
+                    }
+
+                    Stream iconStream = System.Windows.Application.GetResourceStream(
+                            new Uri(icon_command)).Stream;
+
+                    //we must set recognition_suspended to false, before using invoke,
+                    //otherwise using west command to save settings (or clicking save settings
+                    //button while a speech recognition action is performed) would cause a freeze
+                    //(save settings thread waits for recognition_suspended == false)
+                    recognition_suspended = false;
+
+                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                    {
+                        SW.mode = 1;
+                        SW.Bmode.Content = mode_command;
+                        SW.Bmode.Foreground = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+
+                        // Create a BitmapSource  
+                        BitmapImage bitmap = new BitmapImage();
+                        bitmap.BeginInit();
+                        bitmap.UriSource = new Uri(icon_command);
+                        bitmap.EndInit();
+
+                        SW.Icon = bitmap;
+                    }));
+
+                    ni.Icon = new System.Drawing.Icon(iconStream);
+                    iconStream.Close();
+
+                    mi_switch_to_off_mode.Visible = true;
+                    mi_switch_to_dictation_mode.Visible = true;
+                    mi_switch_to_command_mode.Visible = false;
+
+                    current_mode = mode.command;
+                    last_mode = current_mode;
+                }
+                else if (current_mode == mode.dictation)
+                {
+                    list_current = new List<string>();
+                    add_to_list_current(list_type.list_dictation);
+
+                    Stream iconStream = System.Windows.Application.GetResourceStream(
+                    new Uri(icon_dictation)).Stream;
+
+                    //we must set recognition_suspended to false, before using invoke,
+                    //otherwise using west command to save settings (or clicking save settings
+                    //button while a speech recognition action is performed) would cause a freeze
+                    //(save settings thread waits for recognition_suspended == false)
+                    recognition_suspended = false;
+
+                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                    {
+                        SW.mode = 2;
+                        SW.Bmode.Content = mode_dictation;
+                        SW.Bmode.Foreground = new SolidColorBrush(Color.FromRgb(0, 88, 255));
+
+                        // Create a BitmapSource  
+                        BitmapImage bitmap = new BitmapImage();
+                        bitmap.BeginInit();
+                        bitmap.UriSource = new Uri(icon_dictation);
+                        bitmap.EndInit();
+
+                        SW.Icon = bitmap;
+                    }));
+
+                    ni.Icon = new System.Drawing.Icon(iconStream);
+                    iconStream.Close();
+
+                    mi_switch_to_off_mode.Visible = true;
+                    mi_switch_to_dictation_mode.Visible = false;
+                    mi_switch_to_command_mode.Visible = true;
+
+                    current_mode = mode.dictation;
+                    last_mode = current_mode;
+                }
+
                 recognition_suspended = false;
 
-                SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                SW.Bmode.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
                 {
-                    SW.mode = 1;
-                    SW.Bmode.Content = mode_command;
-                    SW.Bmode.Foreground = new SolidColorBrush(Color.FromRgb(0, 128, 0));
-                    
-                    // Create a BitmapSource  
-                    BitmapImage bitmap = new BitmapImage();
-                    bitmap.BeginInit();
-                    bitmap.UriSource = new Uri(icon_command);
-                    bitmap.EndInit();
-                    
-                    SW.Icon = bitmap;
+                    SW.Bmode.Visibility = Visibility.Visible;
                 }));
-
-                ni.Icon = new System.Drawing.Icon(iconStream);
-                iconStream.Close();
-
-                mi_switch_to_off_mode.Visible = true;
-                mi_switch_to_dictation_mode.Visible = true;
-                mi_switch_to_command_mode.Visible = false;
-
-                current_mode = mode.command;
-                last_mode = current_mode;
             }
-            else if(current_mode == mode.dictation)
+            catch (Exception ex)
             {
-                list_current = new List<string>();
-                add_to_list_current(list_type.list_dictation);
-
-                Stream iconStream = System.Windows.Application.GetResourceStream(
-                new Uri(icon_dictation)).Stream;
-
-                //we must set recognition_suspended to false, before using invoke,
-                //otherwise using west command to save settings (or clicking save settings
-                //button while a speech recognition action is performed) would cause a freeze
-                //(save settings thread waits for recognition_suspended == false)
-                recognition_suspended = false;
-
-                SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                {
-                    SW.mode = 2;
-                    SW.Bmode.Content = mode_dictation;
-                    SW.Bmode.Foreground = new SolidColorBrush(Color.FromRgb(0, 88, 255));
-
-                    // Create a BitmapSource  
-                    BitmapImage bitmap = new BitmapImage();
-                    bitmap.BeginInit();
-                    bitmap.UriSource = new Uri(icon_dictation);
-                    bitmap.EndInit();
-
-                    SW.Icon = bitmap;
-                }));
-
-                ni.Icon = new System.Drawing.Icon(iconStream);
-                iconStream.Close();
-
-                mi_switch_to_off_mode.Visible = true;
-                mi_switch_to_dictation_mode.Visible = false;
-                mi_switch_to_command_mode.Visible = true;
-
-                current_mode = mode.dictation;
-                last_mode = current_mode;
+                MessageBox.Show(ex.Message, "Error MW004d", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-
-            recognition_suspended = false;
-
-            SW.Bmode.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-            {
-                SW.Bmode.Visibility = Visibility.Visible;
-            }));
         }
 
         private void enable_grid()
         {
-            int i = 0;
-            
-            recognition_suspended = true;
-
-            SW.Bmode.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+            try
             {
-                SW.Bmode.Visibility = Visibility.Hidden;
-            }));
+                int i = 0;
 
-            //THRswitch_to.Abort(); //abort only causes problems
+                recognition_suspended = true;
 
-            //wait for suspend:
-            while (inside_speech_recognized_event == true)
-            {
-                Thread.Sleep(10);
-                i++;
+                SW.Bmode.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                {
+                    SW.Bmode.Visibility = Visibility.Hidden;
+                }));
+
+                //THRswitch_to.Abort(); //abort only causes problems
+
+                //wait for suspend:
+                while (inside_speech_recognized_event == true)
+                {
+                    Thread.Sleep(10);
+                    i++;
+                }
+
+                current_mode = mode.grid;
+
+                recognition_suspended = false;
             }
-
-            current_mode = mode.grid;
-
-            recognition_suspended = false;
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error MW004e", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         string s_last_ch = "";
@@ -1016,109 +1072,116 @@ namespace Speech
 
         void single_app_lists_update()
         {
-            inside_app_lists_update = true;
-
-            string s = "", w;
-
-            DateTime dt1 = DateTime.Now, dt2 = DateTime.Now;
-            TimeSpan ts;
-
-            Process[] arr = null;
-            string[] a;
-            string name;
-
-            arr = Process.GetProcesses();
-            
-            IntPtr handle = GetForegroundWindow();
-            string process_name = "";
-
-            foreach (Process p in arr)
+            try
             {
-                if (p.MainWindowHandle == handle)
+                inside_app_lists_update = true;
+
+                string s = "", w;
+
+                DateTime dt1 = DateTime.Now, dt2 = DateTime.Now;
+                TimeSpan ts;
+
+                Process[] arr = null;
+                string[] a;
+                string name;
+
+                arr = Process.GetProcesses();
+
+                IntPtr handle = GetForegroundWindow();
+                string process_name = "";
+
+                foreach (Process p in arr)
                 {
-                    process_name = p.ProcessName;
-                    break;
-                }
-            }
-
-            process_name = process_name.ToLower();
-            List<string> new_list_cc_foreground = create_custom_commands_list(process_name);
-
-            if (Middle_Man.force_updating_both_cc_lists)
-            {
-                lock (lock_list_cc_foreground)
-                {
-                    list_cc_foreground = new_list_cc_foreground;
-                }
-
-                lock (lock_list_cc_any)
-                {
-                    list_cc_any = create_custom_commands_list(Middle_Man.any_program_name);
-                }
-
-                last_foreground_window_process = process_name;
-
-                Middle_Man.force_updating_both_cc_lists = false;
-            }
-            else if (last_foreground_window_process != process_name)
-            {
-                lock (lock_list_cc_foreground)
-                {
-                    list_cc_foreground = new_list_cc_foreground;
-                }
-
-                last_foreground_window_process = process_name;
-            }
-
-            if (apps_switching)
-            {
-                lock (lock_list_switch_to_apps)
-                {
-                    list_switch_to_apps = new List<string>();
-
-                    s = switch_to_app_str;
-
-                    //around 150ms on my CPU (Q9550)
-                    foreach (Process p in arr)
+                    if (p.MainWindowHandle == handle)
                     {
-                        name = p.MainWindowTitle.Replace("\\\"", "").Replace("\"", "");
-                        name = name.Trim();
+                        process_name = p.ProcessName;
+                        break;
+                    }
+                }
 
-                        //is process window open in taskbar?
-                        if (name != null && name.Length > 0)
+                process_name = process_name.ToLower();
+                List<string> new_list_cc_foreground = create_custom_commands_list(process_name);
+
+                if (Middle_Man.force_updating_both_cc_lists)
+                {
+                    lock (lock_list_cc_foreground)
+                    {
+                        list_cc_foreground = new_list_cc_foreground;
+                    }
+
+                    lock (lock_list_cc_any)
+                    {
+                        list_cc_any = create_custom_commands_list(Middle_Man.any_program_name);
+                    }
+
+                    last_foreground_window_process = process_name;
+
+                    Middle_Man.force_updating_both_cc_lists = false;
+                }
+                else if (last_foreground_window_process != process_name)
+                {
+                    lock (lock_list_cc_foreground)
+                    {
+                        list_cc_foreground = new_list_cc_foreground;
+                    }
+
+                    last_foreground_window_process = process_name;
+                }
+
+                if (apps_switching)
+                {
+                    lock (lock_list_switch_to_apps)
+                    {
+                        list_switch_to_apps = new List<string>();
+
+                        s = switch_to_app_str;
+
+                        //around 150ms on my CPU (Q9550)
+                        foreach (Process p in arr)
                         {
-                            a = name.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                            name = p.MainWindowTitle.Replace("\\\"", "").Replace("\"", "");
+                            name = name.Trim();
 
-                            for (int i = 0; i < a.Length; i++)
+                            //is process window open in taskbar?
+                            if (name != null && name.Length > 0)
                             {
-                                a[i] = a[i].Trim();
+                                a = name.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
 
-                                if (a[i].Length > 1)
+                                for (int i = 0; i < a.Length; i++)
                                 {
-                                    list_switch_to_apps.Add(s + " " + a[i]);
-                                }
-                            }
-                            for (int i = 0; i < a.Length - 1; i++)
-                            {
-                                a[i] = a[i].Trim();
-                                a[i + 1] = a[i + 1].Trim();
+                                    a[i] = a[i].Trim();
 
-                                if (a[i].Length > 0 || a[i + 1].Length > 0)
-                                {
-                                    w = a[i] + " " + a[i + 1];
-                                    list_switch_to_apps.Add(s + " " + w);
+                                    if (a[i].Length > 1)
+                                    {
+                                        list_switch_to_apps.Add(s + " " + a[i]);
+                                    }
                                 }
-                            }
-                            if (a.Length > 2)
-                            {
-                                list_switch_to_apps.Add(s + " " + name);
+                                for (int i = 0; i < a.Length - 1; i++)
+                                {
+                                    a[i] = a[i].Trim();
+                                    a[i + 1] = a[i + 1].Trim();
+
+                                    if (a[i].Length > 0 || a[i + 1].Length > 0)
+                                    {
+                                        w = a[i] + " " + a[i + 1];
+                                        list_switch_to_apps.Add(s + " " + w);
+                                    }
+                                }
+                                if (a.Length > 2)
+                                {
+                                    list_switch_to_apps.Add(s + " " + name);
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            inside_app_lists_update = false;
+                inside_app_lists_update = false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error MW007a", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         List<string> create_off_mode_list()
@@ -1302,6 +1365,8 @@ namespace Speech
 
             grid_list = new List<string>();
 
+            int grid_list_count = 0;
+
             for (int i = 0; i < cancels_str.Length; i++)
             {
                 grid_list.Add(cancels_str[i]);
@@ -1320,31 +1385,28 @@ namespace Speech
             for (int i = 0; i < count; i++)
             {
                 grid_list.Add(grid_alphabet[i].word);
-            }
-
-            for (int i = 0; i < count; i++)
-            {
-                for (int j = 0; j < count; j++)
-                {
-                    grid_list.Add(grid_alphabet[i].word + " " + grid_alphabet[j].word);
-                }
-            }
-
-            for (int i = 0; i < count; i++)
-            {
-                grid_list.Add(grid_alphabet[i].word + " twice");
+                grid_list_count++;
             }
 
             int r1, r2;
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < count && grid_list_count < figures; i++)
             {
-                for (int j = 0; j < count; j++)
+                for (int j = 0; j < count && grid_list_count < figures; j++)
                 {
+                    grid_list.Add(grid_alphabet[i].word + " " + grid_alphabet[j].word);
+
+                    if(grid_alphabet[i].word == grid_alphabet[j].word)
+                    {
+                        grid_list.Add(grid_alphabet[i].word + " twice");
+                    }
+
                     if (int.TryParse(grid_alphabet[i].symbol, out r1)
                         && int.TryParse(grid_alphabet[j].symbol, out r2))
                     {
                         grid_list.Add(grid_alphabet[i].symbol + grid_alphabet[j].symbol);
                     }
+
+                    grid_list_count++;
                 }
             }
 
@@ -1587,42 +1649,48 @@ namespace Speech
         List<CC_Action> get_custom_command_actions(string str)
         {
             //custom commands for specific program have higher priority than for any program
-
-            str = str.ToLower();
-            string name;
-
-            foreach (string program in new string[] 
-                { 
-                    last_foreground_window_process.ToLower(), Middle_Man.any_program_name.ToLower() 
-                })
+            try
             {
-                foreach (Profile p in Middle_Man.profiles)
-                {
-                    string profile_program = p.program.ToLower();
+                str = str.ToLower();
+                string name;
 
-                    if (profile_program == program && p.enabled)
+                foreach (string program in new string[]
                     {
-                        foreach (CustomCommand cc in p.custom_commands)
+                    last_foreground_window_process.ToLower(), Middle_Man.any_program_name.ToLower()
+                    })
+                {
+                    foreach (Profile p in Middle_Man.profiles)
+                    {
+                        string profile_program = p.program.ToLower();
+
+                        if (profile_program == program && p.enabled)
                         {
-                            name = cc.name.ToLower();
-
-                            if (cc.enabled)
+                            foreach (CustomCommand cc in p.custom_commands)
                             {
-                                if (name == str)
-                                    return cc.actions;
+                                name = cc.name.ToLower();
 
-                                if (cc.max_executions >= 2 && str == name + " twice")
-                                    return cc.actions;
-
-                                for (int i = 2; i <= cc.max_executions; i++)
+                                if (cc.enabled)
                                 {
-                                    if (str == name + " " + i + " times")
+                                    if (name == str)
                                         return cc.actions;
+
+                                    if (cc.max_executions >= 2 && str == name + " twice")
+                                        return cc.actions;
+
+                                    for (int i = 2; i <= cc.max_executions; i++)
+                                    {
+                                        if (str == name + " " + i + " times")
+                                            return cc.actions;
+                                    }
                                 }
                             }
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error MW007b", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
             return null;
@@ -2016,6 +2084,7 @@ namespace Speech
                 {
                     MW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
                     {
+                        MW.regenerate_grid_symbols(); //needed for multiple clicks or moves by using mousegrid to work
                         MW.Hide(); //for TopMost
                         MW.Opacity = 1;
                         MW.Show();
@@ -2081,22 +2150,26 @@ namespace Speech
         {
             try
             {
-                if (recognition_suspended == false)
+                if (recognition_suspended == false && recognizer != null)
                 {
                     inside_speech_recognized_event = true;
 
-                    if (recognizer == null)
-                        return;
-
                     if (recognizer.AcceptWaveform(e.Buffer, e.BytesRecorded) && recognition_suspended == false)
                     {
-                        string json = recognizer.Result();
-
-                        JsonDocument doc = JsonDocument.Parse(json);
-
-                        r = doc.RootElement.GetProperty("text").GetString() ?? ""; //r = recognized speech
-                        
                         int c = 0; //speech recognition confidence
+
+                        try
+                        {
+                            string json = recognizer.Result();
+
+                            JsonDocument doc = JsonDocument.Parse(json);
+
+                            r = doc.RootElement.GetProperty("text").GetString() ?? ""; //r = recognized speech
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message, "Error MW008a", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
 
                         if (r != null && r != "")
                         {
@@ -2107,133 +2180,283 @@ namespace Speech
 
                             if (current_mode == mode.off)
                             {
-                                int ind = -1; //index of highest confidence word
-                                int c_curr;
-                                string str;
-
-                                for (int i = 0; i < list_current.Count; i++)
+                                try
                                 {
-                                    c_curr = (int)get_similarity(r, list_current[i]);
+                                    r = r.Replace("stat speech recognition", "start speech recognition");
+                                    r = r.Replace("started speech recognition", "start speech recognition");
 
-                                    if (c_curr > c)
+                                    int ind = -1; //index of highest confidence word
+                                    int c_curr;
+                                    string str;
+
+                                    try
                                     {
-                                        c = c_curr;
-                                        ind = i;
+                                        for (int i = 0; i < list_current.Count; i++)
+                                        {
+                                            c_curr = (int)get_similarity(r, list_current[i]);
+
+                                            if (c_curr > c)
+                                            {
+                                                c = c_curr;
+                                                ind = i;
+                                            }
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        MessageBox.Show(ex.Message, "Error MW009a1", MessageBoxButton.OK, MessageBoxImage.Error);
+                                    }
+
+                                    if (ind != -1)
+                                        r = list_current[ind];
+                                    else
+                                        r = "";
+
+                                    if (c >= confidence_turning_on)
+                                    {
+                                        try
+                                        {
+                                            if (read_recognized_speech) ss.SpeakAsync(r);
+
+                                            current_mode = last_mode;
+
+                                            load_turned_on(true);
+
+                                            SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                            {
+                                                if (r.Length > 0)
+                                                    SW.TBrecognized_speech.Text = r.FirstCharToUpper();
+                                                SW.TBconfidence.Text = c.ToString() + "/" + confidence_turning_on;
+
+                                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                                    = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                            }));
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            MessageBox.Show(ex.Message, "Error MW009a2", MessageBoxButton.OK, MessageBoxImage.Error);
+                                        }
+                                    }
+                                    else if (list_current.Count > 0)
+                                    {
+                                        try
+                                        {
+                                            SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                            {
+                                                if (r.Length > 0)
+                                                    SW.TBrecognized_speech.Text = r.FirstCharToUpper();
+                                                SW.TBconfidence.Text = c.ToString() + "/" + confidence_turning_on;
+
+                                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                                    = new SolidColorBrush(Color.FromRgb(232, 4, 4));
+                                            }));
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            MessageBox.Show(ex.Message, "Error MW009a3", MessageBoxButton.OK, MessageBoxImage.Error);
+                                        }
                                     }
                                 }
-
-                                if (ind != -1)
-                                    r = list_current[ind];
-                                else
-                                    r = "";
-
-                                if (c >= confidence_turning_on)
+                                catch (Exception ex)
                                 {
-                                    if (read_recognized_speech) ss.SpeakAsync(r);
-
-                                    current_mode = last_mode;
-
-                                    load_turned_on(true);
-
-                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                                    {
-                                        if (r.Length > 0)
-                                            SW.TBrecognized_speech.Text = r.FirstCharToUpper();
-                                        SW.TBconfidence.Text = c.ToString() + "/" + confidence_turning_on;
-
-                                        SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                            = new SolidColorBrush(Color.FromRgb(0, 128, 0));
-                                    }));
-                                }
-                                else if(list_current.Count > 0)
-                                {
-                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                                    {
-                                        if (r.Length > 0)
-                                            SW.TBrecognized_speech.Text = r.FirstCharToUpper();
-                                        SW.TBconfidence.Text = c.ToString() + "/" + confidence_turning_on;
-
-                                        SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                            = new SolidColorBrush(Color.FromRgb(232, 4, 4));
-                                    }));
+                                    MessageBox.Show(ex.Message, "Error MW009a", MessageBoxButton.OK, MessageBoxImage.Error);
                                 }
                             }
                             else if (current_mode == mode.command)
                             {
-                                r = replace_number_words(r);
+                                try
+                                {
+                                    r = r.Replace("far", "four");
+                                    r = r.Replace("farm", "four");
 
-                                r = r.Replace("juliet", "juliett");
-                                r = r.Replace("alpha", "alfa");
-                                r = r.Replace("pays", "paste");
-                                r = r.Replace("based", "paste");
-                                r = r.Replace("council", "cancel");
-                                r = r.Replace("back space", "backspace");
-                                r = r.Replace("tax space", "backspace");
-                                r = r.Replace("max base", "backspace");
-                                r = r.Replace("tax base", "backspace");
-                                r = r.Replace("killer", "kilo");
-                                r = r.Replace("lemme", "lima");
-                                r = r.Replace("column", "colon");
-                                r = r.Replace("colin", "colon");
-                                r = r.Replace("cullen", "colon");
-                                r = r.Replace("lb", "pound");
-                                r = r.Replace("carrot", "caret");
-                                r = r.Replace("clegg", "click");
-                                r = r.Replace("tremble", "triple");
-                                r = r.Replace("treble", "triple");
-                                r = r.Replace("tribble", "triple");
-                                r = r.Replace("evil", "ouble");
-                                r = r.Replace("oh then", "open");
-                                r = r.Replace("friend", "print");
-                                r = r.Replace("chap", "tab");
-                                r = r.Replace("you tube", "new tab");
-                                r = r.Replace("brad shaw", "bravo");
-                                r = r.Replace("fox trot", "foxtrot");
-                                r = r.Replace("x ray", "xray");
-                                r = r.Replace("hi fen", "hyphen");
-                                r = r.Replace("hi finn", "hyphen");
-                                r = r.Replace("carried", "carot");
-                                r = r.Replace("that quote", "back quote");
-                                r = r.Replace("amber's and", "ampersand");
-                                r = r.Replace("amber's end", "ampersand");
-                                r = r.Replace("am percent", "ampersand");
-                                r = r.Replace("sent", "cent");
-                                r = r.Replace("drug", "drag");
-                                r = r.Replace("offer", "alpha");
-                                r = r.Replace("alva", "alpha");
-                                r = r.Replace("cold", "hold");
-                                r = r.Replace("injured", "enter");
-                                r = r.Replace("answered", "enter");
-                                r = r.Replace("weiss", "twice");
-                                r = r.Replace("wise", "twice");
-                                r = r.Replace("pains", "paint");
-                                r = r.Replace("out", "alt");
-                                r = r.Replace("added", "alt");
-                                r = r.Replace("act three", "xray");
-                                r = r.Replace("hum", "home");
-                                r = r.Replace("palm", "home");
-                                r = r.Replace("pay job", "page up");
-                                r = r.Replace("algo", "echo");
-                                r = r.Replace("glove", "golf");
-                                r = r.Replace("julian", "juliett");
-                                r = r.Replace("good back", "quebec");
-                                r = r.Replace("axe three", "xray");
-                                r = r.Replace("bug", "back");
-                                r = r.Replace("buck", "back");
-                                r = r.Replace("hush", "hash");
-                                r = r.Replace("nov twice", "november twice");
-                                r = r.Replace("tumblr", "tab");
-                                r = r.Replace("tampa", "tab");
-                                r = r.Replace("thumper", "tab");
-                                r = r.Replace("andrew", "undo");
-                                r = r.Replace("i do", "undo");
-                                r = r.Replace("calmer", "comma");
-                                r = r.Replace("come on", "comma");
-                                r = r.Replace("tacoma", "comma");
-                                r = r.Replace("rhythm", "redo");
-                                r = r.Replace("riddle", "redo");
-                                r = r.Replace("read though", "redo");
-                                //r = r.Replace("", "");
+                                    r = replace_number_words(r);
+
+                                    //1st page
+                                    r = r.Replace("recongition of", "recongition off");
+                                    r = r.Replace("the recongition of", "recongition off");
+                                    r = r.Replace("recreation of", "recongition off");
+                                    r = r.Replace("i'd speech recongition", "hide speech recongition");
+                                    r = r.Replace("hate speech recongition", "hide speech recongition");
+                                    r = r.Replace("oh then", "open");
+                                    r = r.Replace("switch do", "switch to");
+                                    r = r.Replace("switched on", "switch to");
+                                    r = r.Replace("me mice", "minimize");
+                                    r = r.Replace("many mice", "minimize");
+                                    r = r.Replace("max mice", "maximize");
+                                    r = r.Replace("restorer", "restore");
+                                    r = r.Replace("rooster", "restore");
+                                    r = r.Replace("her sister", "restore");
+                                    r = r.Replace("gloves that", "close that");
+                                    r = r.Replace("close dot", "close that");
+                                    //2nd page
+                                    r = r.Replace("worst", "west");
+                                    r = r.Replace("taboo", "double");
+                                    r = r.Replace("evil", "ouble"); //for double
+                                    r = r.Replace("tremble", "triple");
+                                    r = r.Replace("treble", "triple");
+                                    r = r.Replace("tribble", "triple");
+                                    r = r.Replace("drug", "drag");
+                                    r = r.Replace("drunk", "drag");
+                                    r = r.Replace("clegg", "click");
+                                    r = r.Replace("cold", "hold");
+                                    r = r.Replace("holland", "hold");
+                                    r = r.Replace("halt", "hold");
+                                    r = r.Replace("hot east", "hold east");
+                                    r = r.Replace("out east", "hold east");
+                                    r = r.Replace("but a match", "bottom edge");
+                                    r = r.Replace("mata much", "bottom edge");
+                                    r = r.Replace("left it", "left edge");
+                                    r = r.Replace("loved it", "left edge");
+                                    r = r.Replace("skull", "scroll");
+                                    //3rd page
+                                    r = r.Replace("cancer", "cancel");
+                                    r = r.Replace("council", "cancel");
+                                    //4th page
+                                    r = r.Replace("stat", "start");
+                                    r = r.Replace("sewage", "switch");
+                                    r = r.Replace("obligation", "application");
+                                    r = r.Replace("open bar menu", "open power menu");
+                                    r = r.Replace("captured death", "capture that");
+                                    r = r.Replace("guppy", "copy");
+                                    r = r.Replace("cup", "cut");
+                                    r = r.Replace("pays", "paste");
+                                    r = r.Replace("based", "paste");
+                                    r = r.Replace("ando", "undo");
+                                    r = r.Replace("andrew", "undo");
+                                    r = r.Replace("i do", "undo");
+                                    r = r.Replace("rhythm", "redo");
+                                    r = r.Replace("riddle", "redo");
+                                    r = r.Replace("read though", "redo");
+                                    r = r.Replace("safe", "save");
+                                    r = r.Replace("parent", "print");
+                                    r = r.Replace("brent", "print");
+                                    r = r.Replace("friend", "print");
+                                    r = r.Replace("web others", "web address");
+                                    r = r.Replace("you tube", "new tab");
+                                    r = r.Replace("bug", "back");
+                                    r = r.Replace("buck", "back");
+                                    //5th page
+                                    r = r.Replace("play boss", "play pause");
+                                    r = r.Replace("player pos", "play pause");
+                                    r = r.Replace("play pos", "play pause");
+                                    r = r.Replace("play pass", "play pause");
+                                    r = r.Replace("play bass", "play pause");
+                                    r = r.Replace("out", "alt");
+                                    r = r.Replace("added", "alt");
+                                    r = r.Replace("tumblr", "tab");
+                                    r = r.Replace("tampa", "tab");
+                                    r = r.Replace("thumper", "tab");
+                                    r = r.Replace("dub", "tab");
+                                    r = r.Replace("dump", "tab");
+                                    r = r.Replace("dumber", "tab");
+                                    r = r.Replace("dumb", "tab");
+                                    r = r.Replace("tumble", "tab");
+                                    r = r.Replace("chap", "tab");
+                                    r = r.Replace("back space", "backspace");
+                                    r = r.Replace("tax space", "backspace");
+                                    r = r.Replace("max space", "backspace");
+                                    r = r.Replace("max base", "backspace");
+                                    r = r.Replace("tax base", "backspace");
+                                    r = r.Replace("box base", "backspace");
+                                    r = r.Replace("max place", "backspace");
+                                    r = r.Replace("injured", "enter");
+                                    r = r.Replace("answered", "enter");
+                                    r = r.Replace("is it", "insert");
+                                    r = r.Replace("he said", "insert");
+                                    r = r.Replace("there it", "delete");
+                                    r = r.Replace("the it", "delete");
+                                    r = r.Replace("hum", "home");
+                                    r = r.Replace("palm", "home");
+                                    r = r.Replace("pay job", "page up");
+                                    r = r.Replace("alpha", "alfa");
+                                    r = r.Replace("offer", "alfa");
+                                    r = r.Replace("alva", "alfa");
+                                    r = r.Replace("bever", "bravo");
+                                    r = r.Replace("bevel", "bravo");
+                                    r = r.Replace("brad shaw", "bravo");
+                                    r = r.Replace("jolly", "charlie");
+                                    r = r.Replace("algo", "echo");
+                                    r = r.Replace("tackle", "echo");
+                                    r = r.Replace("fox trot", "foxtrot");
+                                    r = r.Replace("glove", "golf");
+                                    r = r.Replace("hutton", "hotel");
+                                    r = r.Replace("huddle", "hotel");
+                                    r = r.Replace("houghton", "hotel");
+                                    //6th page
+                                    r = r.Replace("juliet", "juliett");
+                                    r = r.Replace("julian", "juliett");
+                                    r = r.Replace("killer", "kilo");
+                                    r = r.Replace("lemme", "lima");
+                                    r = r.Replace("luma", "lima");
+                                    r = r.Replace("nov twice", "november twice");
+                                    r = r.Replace("good back", "quebec");
+                                    r = r.Replace("dongle", "tango");
+                                    r = r.Replace("x ray", "xray");
+                                    r = r.Replace("act three", "xray");
+                                    r = r.Replace("axe three", "xray");
+                                    r = r.Replace("actually", "xray");
+                                    r = r.Replace("exactly", "xray");
+                                    r = r.Replace("taxi", "xray");
+                                    r = r.Replace("young", "yankee");
+                                    r = r.Replace("zola", "zulu");
+                                    r = r.Replace("calmer", "comma");
+                                    r = r.Replace("coma", "comma");
+                                    r = r.Replace("come on", "comma");
+                                    r = r.Replace("tacoma", "comma");
+                                    r = r.Replace("hi fen", "hyphen");
+                                    r = r.Replace("hi finn", "hyphen");
+                                    r = r.Replace("heighten", "hyphen");
+                                    r = r.Replace("tyson", "hyphen");
+                                    r = r.Replace("ivan", "hyphen");
+                                    r = r.Replace("more deeply", "multiply");                                    
+                                    //7th page
+                                    r = r.Replace("column", "colon");
+                                    r = r.Replace("colin", "colon");
+                                    r = r.Replace("cullen", "colon");
+                                    r = r.Replace("gollum", "colon");
+                                    r = r.Replace("golem", "colon");
+                                    r = r.Replace("level called", "double quote");
+                                    r = r.Replace("novel called", "double quote");
+                                    r = r.Replace("hush", "hash");
+                                    r = r.Replace("nolo", "dollar");
+                                    r = r.Replace("door", "dollar");
+                                    r = r.Replace("dahlin", "dollar");
+                                    r = r.Replace("lb", "pound");
+                                    r = r.Replace("you're", "euro");
+                                    r = r.Replace("yeah", "euro");
+                                    r = r.Replace("urine", "euro");
+                                    r = r.Replace("you know", "euro");
+                                    r = r.Replace("ula", "euro");
+                                    r = r.Replace("carrot", "caret");
+                                    r = r.Replace("carried", "caret");
+                                    r = r.Replace("on those car", "underscore");
+                                    r = r.Replace("open place", "open brace");
+                                    r = r.Replace("open race", "open brace");
+                                    r = r.Replace("close place", "close brace");
+                                    r = r.Replace("close race", "close brace");
+                                    r = r.Replace("open market", "open bracket");
+                                    r = r.Replace("close market", "close bracket");
+                                    r = r.Replace("amber's and", "ampersand");
+                                    r = r.Replace("amber's end", "ampersand");
+                                    r = r.Replace("am percent", "ampersand");
+                                    r = r.Replace("that quote", "back quote");
+                                    r = r.Replace("mark quote", "back quote");
+                                    r = r.Replace("bug quote", "back quote");
+                                    r = r.Replace("buck quote", "back quote");
+                                    r = r.Replace("the vision", "division");
+                                    r = r.Replace("sent", "cent");
+                                    r = r.Replace("the degree", "degree");
+                                    r = r.Replace("biography", "paragraph");
+                                    r = r.Replace("micah", "micro");
+                                    //-------------------------------
+                                    r = r.Replace("weiss", "twice");
+                                    r = r.Replace("wise", "twice");
+                                    r = r.Replace("pains", "paint");
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show(ex.Message, "Error MW009a4", MessageBoxButton.OK, MessageBoxImage.Error);
+                                }
 
                                 int ind1 = 0, ind2 = 0, ind3 = 0, ind4 = 0, ind5 = 0; //indexes of highest confidence words
                                 int c1 = 0, c2 = 0, c3 = 0, c4 = 0, c5 = 0; //confidences for each list
@@ -2241,292 +2464,438 @@ namespace Speech
                                 c = 0;
                                 string str;
 
-                                lock (lock_list_cc_foreground)
+                                try
                                 {
-                                    for (int i = 0; i < list_cc_foreground.Count; i++)
+                                    lock (lock_list_cc_foreground)
                                     {
-                                        str = list_cc_foreground[i].ToLower();
-                                        c_curr = (int)get_similarity(r, str);
-
-                                        if (c_curr > c1)
+                                        for (int i = 0; i < list_cc_foreground.Count; i++)
                                         {
-                                            c1 = c_curr;
-                                            ind1 = i;
-                                        }
-                                    }
-                                }
-
-                                lock (lock_list_cc_any)
-                                {
-                                    for (int i = 0; i < list_cc_any.Count; i++)
-                                    {
-                                        str = list_cc_any[i].ToLower();
-                                        c_curr = (int)get_similarity(r, str);
-
-                                        if (c_curr > c2)
-                                        {
-                                            c2 = c_curr;
-                                            ind2 = i;
-                                        }
-                                    }
-                                }
-
-                                if (apps_opening)
-                                {
-                                    for (int i = 0; i < list_open_apps.Count; i++)
-                                    {
-                                        str = list_open_apps[i].ToLower();
-                                        c_curr = (int)get_similarity(r, str);
-
-                                        if (c_curr > c3)
-                                        {
-                                            c3 = c_curr;
-                                            ind3 = i;
-                                        }
-                                    }
-                                }
-
-                                if (apps_switching)
-                                {
-                                    lock (lock_list_switch_to_apps)
-                                    {
-                                        for (int i = 0; i < list_switch_to_apps.Count; i++)
-                                        {
-                                            str = list_switch_to_apps[i].ToLower();
+                                            str = list_cc_foreground[i].ToLower();
                                             c_curr = (int)get_similarity(r, str);
 
-                                            if (c_curr > c4)
+                                            if (c_curr > c1)
                                             {
-                                                c4 = c_curr;
-                                                ind4 = i;
+                                                c1 = c_curr;
+                                                ind1 = i;
                                             }
                                         }
                                     }
                                 }
-
-                                for (int i = 0; i < list_current.Count; i++)
+                                catch (Exception ex)
                                 {
-                                    c_curr = (int)get_similarity(r, list_current[i]);
-
-                                    if (c_curr > c5)
-                                    {
-                                        c5 = c_curr;
-                                        ind5 = i;
-                                    }
+                                    MessageBox.Show(ex.Message, "Error MW009b", MessageBoxButton.OK, MessageBoxImage.Error);
                                 }
 
-                                lock (lock_list_cc_foreground)
+                                try
                                 {
-                                    if (list_cc_foreground.Count > 0)
+                                    lock (lock_list_cc_any)
                                     {
-                                        if (c1 > c)
+                                        for (int i = 0; i < list_cc_any.Count; i++)
                                         {
-                                            c = c1;
-                                            r = list_cc_foreground[ind1];
+                                            str = list_cc_any[i].ToLower();
+                                            c_curr = (int)get_similarity(r, str);
+
+                                            if (c_curr > c2)
+                                            {
+                                                c2 = c_curr;
+                                                ind2 = i;
+                                            }
                                         }
                                     }
                                 }
-
-                                lock (lock_list_cc_any)
+                                catch (Exception ex)
                                 {
-                                    if (list_cc_any.Count > 0)
+                                    MessageBox.Show(ex.Message, "Error MW009c", MessageBoxButton.OK, MessageBoxImage.Error);
+                                }
+
+                                try
+                                {
+                                    if (apps_opening)
                                     {
-                                        if (c2 > c)
+                                        for (int i = 0; i < list_open_apps.Count; i++)
                                         {
-                                            c = c2;
-                                            r = list_cc_any[ind2];
+                                            str = list_open_apps[i].ToLower();
+                                            c_curr = (int)get_similarity(r, str);
+
+                                            if (c_curr > c3)
+                                            {
+                                                c3 = c_curr;
+                                                ind3 = i;
+                                            }
                                         }
                                     }
                                 }
-
-                                if (apps_opening && list_open_apps.Count > 0)
+                                catch (Exception ex)
                                 {
-                                    if (c3 > c)
-                                    {
-                                        c = c3;
-                                        r = list_open_apps[ind3];
-                                    }
+                                    MessageBox.Show(ex.Message, "Error MW009d", MessageBoxButton.OK, MessageBoxImage.Error);
                                 }
 
-                                lock (lock_list_switch_to_apps)
+                                try
                                 {
-                                    if (apps_switching && list_switch_to_apps.Count > 0)
+                                    if (apps_switching)
                                     {
-                                        if (c4 > c)
+                                        lock (lock_list_switch_to_apps)
                                         {
-                                            c = c4;
-                                            r = list_switch_to_apps[ind4];
+                                            for (int i = 0; i < list_switch_to_apps.Count; i++)
+                                            {
+                                                str = list_switch_to_apps[i].ToLower();
+                                                c_curr = (int)get_similarity(r, str);
+
+                                                if (c_curr > c4)
+                                                {
+                                                    c4 = c_curr;
+                                                    ind4 = i;
+                                                }
+                                            }
                                         }
                                     }
                                 }
-
-                                if (list_current.Count > 0)
+                                catch (Exception ex)
                                 {
-                                    if (c5 > c)
+                                    MessageBox.Show(ex.Message, "Error MW009e", MessageBoxButton.OK, MessageBoxImage.Error);
+                                }
+
+                                try
+                                {
+                                    
+                                    
+                                    for (int i = 0; i < list_current.Count; i++)
                                     {
-                                        c = c5;
-                                        r = list_current[ind5];
+                                        str = list_current[i].ToLower();
+                                        c_curr = (int)get_similarity(r, str);
+
+                                        if (c_curr > c5)
+                                        {
+                                            c5 = c_curr;
+                                            ind5 = i;
+                                        }
                                     }
                                 }
-
-                                string r_lowercase = r.ToLower();
-
-                                if (c > 0)
+                                catch (Exception ex)
                                 {
-                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                    MessageBox.Show(ex.Message, "Error MW009f", MessageBoxButton.OK, MessageBoxImage.Error);
+                                }
+
+                                try
+                                {
+                                    lock (lock_list_cc_foreground)
                                     {
-                                        SW.TBrecognized_speech.Text = r.FirstCharToUpper();
-                                        SW.TBconfidence.Text = c.ToString() + "/" + confidence_other_commands;
-                                        if (c >= confidence_other_commands)
+                                        if (list_cc_foreground.Count > 0)
                                         {
-                                            SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                                = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                            if (c1 > c)
+                                            {
+                                                c = c1;
+                                                r = list_cc_foreground[ind1];
+                                            }
                                         }
-                                        else
-                                        {
-                                            SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                                = new SolidColorBrush(Color.FromRgb(232, 4, 4));
-                                        }
-                                    }));
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show(ex.Message, "Error MW009g", MessageBoxButton.OK, MessageBoxImage.Error);
                                 }
 
-                                if (r_lowercase == "open computer")
-                                    r = r_lowercase = "open computer";
-                                if (r_lowercase == "open task manager")
-                                    r = r_lowercase = "open task manager";
-                                if (r_lowercase == "open settings")
-                                    r = r_lowercase = "open settings";
-                                if (r_lowercase == "open power menu")
-                                    r = r_lowercase = "open power menu";
-
-                                List<CC_Action> actions = get_custom_command_actions(r);
-
-                                //Custom Command
-                                if (c >= confidence_other_commands && actions != null)
+                                try
                                 {
-                                    recognition_suspended = true;
-
-                                    THRcommands = new Thread(() => execute_custom_commands(actions));
-                                    THRcommands.Start();
-                                }
-                                //turn off speech recognition
-                                else if (r == turn_off && c >= confidence_other_commands && is_bic_in_general_and_mouse_enabled(bic_type.turn_off))
-                                {
-                                    if (read_recognized_speech) ss.SpeakAsync(r);
-
-                                    load_turned_off(true);
-
-                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                    lock (lock_list_cc_any)
                                     {
-                                        SW.TBrecognized_speech.Text = r.FirstCharToUpper();
-                                        SW.TBconfidence.Text = c.ToString() + "/" + confidence_other_commands;
-                                        SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                            = new SolidColorBrush(Color.FromRgb(0, 128, 0));
-                                    }));
-                                }
-                                //switch to dictation mode
-                                else if (r == switch_to_dictation_mode && c >= confidence_other_commands)
-                                {
-                                    if (read_recognized_speech) ss.SpeakAsync(r);
-
-                                    current_mode = mode.dictation;
-
-                                    load_turned_on(true);
-                                }
-                                //show speech recognition window
-                                else if (r == show_speech_recognition && c >= confidence_other_commands)
-                                {
-                                    if (read_recognized_speech) ss.SpeakAsync(r);
-                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                                    {
-                                        if (SW.IsLoaded)
+                                        if (list_cc_any.Count > 0)
                                         {
-                                            SW.Show();
+                                            if (c2 > c)
+                                            {
+                                                c = c2;
+                                                r = list_cc_any[ind2];
+                                            }
                                         }
-                                        else
-                                        {
-                                            SW = new SpeechWindow();
-                                            SW.Topmost = true;
-                                            SW.ShowInTaskbar = false;
-                                            load_coords();
-                                            SW.Show();
-                                        }
-                                    }));
-
-                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                                    {
-                                        SW.mode = 1;
-                                        SW.Bmode.Content = mode_command;
-                                        SW.Bmode.Foreground = new SolidColorBrush(Color.FromRgb(0, 128, 0));
-
-                                        // Create a BitmapSource  
-                                        BitmapImage bitmap = new BitmapImage();
-                                        bitmap.BeginInit();
-                                        bitmap.UriSource = new Uri(icon_command);
-                                        bitmap.EndInit();
-
-                                        SW.Icon = bitmap;
-
-                                        SW.TBrecognized_speech.Text = r.FirstCharToUpper();
-                                        SW.TBconfidence.Text = c.ToString() + "/" + confidence_other_commands;
-                                        SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                            = new SolidColorBrush(Color.FromRgb(0, 128, 0));
-                                    }));
+                                    }
                                 }
-                                //hide speech recognition window
-                                else if (r == hide_speech_recognition && c >= confidence_other_commands)
+                                catch (Exception ex)
                                 {
-                                    if (read_recognized_speech) ss.SpeakAsync(r);
-                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                                    {
-                                        if (SW.IsVisible)
-                                        {
-                                            SW.Hide();
-                                        }
-                                    }));
+                                    MessageBox.Show(ex.Message, "Error MW009h", MessageBoxButton.OK, MessageBoxImage.Error);
                                 }
-                                //execute a command
-                                else if (c >= confidence_other_commands)
-                                {
-                                    //if (r.Length >= 6 && r.Substring(0, 6).ToLower() != "press ")
-                                    //    r.Replace("press ", "");
-                                    recognition_suspended = true;
 
-                                    THRcommands = new Thread(new ThreadStart(execute_commands));
-                                    THRcommands.Start();
+                                try
+                                {
+                                    if (apps_opening && list_open_apps.Count > 0)
+                                    {
+                                        if (c3 > c)
+                                        {
+                                            c = c3;
+                                            r = list_open_apps[ind3];
+                                        }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show(ex.Message, "Error MW009i", MessageBoxButton.OK, MessageBoxImage.Error);
+                                }
+
+                                try
+                                {
+                                    lock (lock_list_switch_to_apps)
+                                    {
+                                        if (apps_switching && list_switch_to_apps.Count > 0)
+                                        {
+                                            if (c4 > c)
+                                            {
+                                                c = c4;
+                                                r = list_switch_to_apps[ind4];
+                                            }
+                                        }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show(ex.Message, "Error MW009j", MessageBoxButton.OK, MessageBoxImage.Error);
+                                }
+
+                                try
+                                {
+                                    if (list_current.Count > 0)
+                                    {
+                                        if (c5 > c)
+                                        {
+                                            c = c5;
+                                            r = list_current[ind5];
+                                        }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show(ex.Message, "Error MW009k", MessageBoxButton.OK, MessageBoxImage.Error);
+                                }
+
+                                try
+                                {
+                                    string r_lowercase = r.ToLower();
+
+                                    if (c > 0)
+                                    {
+                                        SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                        {
+                                            SW.TBrecognized_speech.Text = r.FirstCharToUpper();
+                                            SW.TBconfidence.Text = c.ToString() + "/" + confidence_other_commands;
+                                            if (c >= confidence_other_commands)
+                                            {
+                                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                                    = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                            }
+                                            else
+                                            {
+                                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                                    = new SolidColorBrush(Color.FromRgb(232, 4, 4));
+                                            }
+                                        }));
+                                    }
+
+                                    if (r_lowercase == "open computer")
+                                        r = r_lowercase = "open computer";
+                                    if (r_lowercase == "open task manager")
+                                        r = r_lowercase = "open task manager";
+                                    if (r_lowercase == "open settings")
+                                        r = r_lowercase = "open settings";
+                                    if (r_lowercase == "open power menu")
+                                        r = r_lowercase = "open power menu";
+
+                                    List<CC_Action> actions = get_custom_command_actions(r);
+
+                                    //Custom Command
+                                    if (c >= confidence_other_commands && actions != null)
+                                    {
+                                        recognition_suspended = true;
+
+                                        THRcommands = new Thread(() => execute_custom_commands(actions));
+                                        THRcommands.Start();
+                                    }
+                                    //turn off speech recognition
+                                    else if (r == turn_off && c >= confidence_other_commands)
+                                    {
+                                        try
+                                        {
+                                            if (read_recognized_speech) ss.SpeakAsync(r);
+
+                                            load_turned_off(true);
+
+                                            SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                            {
+                                                SW.TBrecognized_speech.Text = r.FirstCharToUpper();
+                                                SW.TBconfidence.Text = c.ToString() + "/" + confidence_other_commands;
+                                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                                    = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                            }));
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            MessageBox.Show(ex.Message, "Error MW009k1", MessageBoxButton.OK, MessageBoxImage.Error);
+                                        }
+                                    }
+                                    //switch to dictation mode
+                                    else if (r == switch_to_dictation_mode && c >= confidence_other_commands)
+                                    {
+                                        try
+                                        {
+                                            if (read_recognized_speech) ss.SpeakAsync(r);
+
+                                            current_mode = mode.dictation;
+
+                                            load_turned_on(true);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            MessageBox.Show(ex.Message, "Error MW009k2", MessageBoxButton.OK, MessageBoxImage.Error);
+                                        }
+                                    }
+                                    //show speech recognition window
+                                    else if (r == show_speech_recognition && c >= confidence_other_commands)
+                                    {
+                                        try
+                                        {
+                                            if (read_recognized_speech) ss.SpeakAsync(r);
+                                            SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                            {
+                                                if (SW.IsLoaded)
+                                                {
+                                                    SW.Show();
+                                                }
+                                                else
+                                                {
+                                                    SW = new SpeechWindow();
+                                                    SW.Topmost = true;
+                                                    SW.ShowInTaskbar = false;
+                                                    load_coords();
+                                                    SW.Show();
+                                                }
+                                            }));
+
+                                            SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                            {
+                                                SW.mode = 1;
+                                                SW.Bmode.Content = mode_command;
+                                                SW.Bmode.Foreground = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+
+                                                // Create a BitmapSource  
+                                                BitmapImage bitmap = new BitmapImage();
+                                                bitmap.BeginInit();
+                                                bitmap.UriSource = new Uri(icon_command);
+                                                bitmap.EndInit();
+
+                                                SW.Icon = bitmap;
+
+                                                SW.TBrecognized_speech.Text = r.FirstCharToUpper();
+                                                SW.TBconfidence.Text = c.ToString() + "/" + confidence_other_commands;
+                                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                                    = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                            }));
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            MessageBox.Show(ex.Message, "Error MW009k3", MessageBoxButton.OK, MessageBoxImage.Error);
+                                        }
+                                    }
+                                    //hide speech recognition window
+                                    else if (r == hide_speech_recognition && c >= confidence_other_commands)
+                                    {
+                                        try
+                                        {
+                                            if (read_recognized_speech) ss.SpeakAsync(r);
+                                            SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                            {
+                                                if (SW.IsVisible)
+                                                {
+                                                    SW.Hide();
+                                                }
+                                            }));
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            MessageBox.Show(ex.Message, "Error MW009k4", MessageBoxButton.OK, MessageBoxImage.Error);
+                                        }
+                                    }
+                                    //execute a command
+                                    else if (c >= confidence_other_commands)
+                                    {
+                                        //if (r.Length >= 6 && r.Substring(0, 6).ToLower() != "press ")
+                                        //    r.Replace("press ", "");
+                                        recognition_suspended = true;
+
+                                        THRcommands = new Thread(new ThreadStart(execute_commands));
+                                        THRcommands.Start();
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show(ex.Message, "Error MW009l", MessageBoxButton.OK, MessageBoxImage.Error);
                                 }
                             }
                             else if (current_mode == mode.grid)
                             {
-                                r = replace_number_words(r);
+                                try
+                                {
+                                    r = r.Replace("far", "four");
+                                    r = r.Replace("farm", "four");
 
-                                r = r.Replace("alpha", "alfa");
-                                r = r.Replace("council", "cancel");
-                                r = r.Replace("killer", "kilo");
-                                r = r.Replace("lemme", "lima");
-                                r = r.Replace("brad shaw", "bravo");
-                                r = r.Replace("fox trot", "foxtrot");
-                                r = r.Replace("x ray", "xray");
-                                r = r.Replace("amber's and", "ampersand");
-                                r = r.Replace("amber's end", "ampersand");
-                                r = r.Replace("am percent", "ampersand");
-                                r = r.Replace("drug", "drag");
-                                r = r.Replace("offer", "alpha");
-                                r = r.Replace("alva", "alpha");
-                                r = r.Replace("weiss", "twice");
-                                r = r.Replace("wise", "twice");
-                                r = r.Replace("act three", "xray");
-                                r = r.Replace("algo", "echo");
-                                r = r.Replace("glove", "golf");
-                                r = r.Replace("julian", "juliett");
-                                r = r.Replace("good back", "quebec");
-                                r = r.Replace("axe three", "xray");
-                                r = r.Replace("lb", "pound");
-                                r = r.Replace("juliet", "juliett");
-                                r = r.Replace("nov twice", "november twice");
-                                r = r.Replace("column", "colon");
-                                r = r.Replace("colin", "colon");
-                                r = r.Replace("cullen", "colon");
+                                    r = replace_number_words(r);
+
+                                    r = r.Replace("alpha", "alfa");
+                                    r = r.Replace("offer", "alfa");
+                                    r = r.Replace("alva", "alfa");
+                                    r = r.Replace("brad shaw", "bravo");
+                                    r = r.Replace("bever", "bravo");
+                                    r = r.Replace("bevel", "bravo");
+                                    r = r.Replace("jolly", "charlie");
+                                    r = r.Replace("algo", "echo");
+                                    r = r.Replace("tackle", "echo");
+                                    r = r.Replace("fox trot", "foxtrot");
+                                    r = r.Replace("glove", "golf");
+                                    r = r.Replace("hutton", "hotel");
+                                    r = r.Replace("huddle", "hotel");
+                                    r = r.Replace("houghton", "hotel");
+                                    r = r.Replace("julian", "juliett");
+                                    r = r.Replace("juliet", "juliett");
+                                    r = r.Replace("killer", "kilo");
+                                    r = r.Replace("lemme", "lima");
+                                    r = r.Replace("luma", "lima");
+                                    r = r.Replace("nov twice", "november twice");
+                                    r = r.Replace("good back", "quebec");
+                                    r = r.Replace("dongle", "tango");
+                                    r = r.Replace("x ray", "xray");
+                                    r = r.Replace("act three", "xray");
+                                    r = r.Replace("axe three", "xray");
+                                    r = r.Replace("actually", "xray");
+                                    r = r.Replace("exactly", "xray");
+                                    r = r.Replace("taxi", "xray");
+                                    r = r.Replace("young", "yankee");
+                                    r = r.Replace("zola", "zulu");
+                                    r = r.Replace("zero", "zulu");//conflict with zero
+                                    r = r.Replace("lb", "pound");
+                                    r = r.Replace("nolo", "dollar");
+                                    r = r.Replace("door", "dollar");
+                                    r = r.Replace("dahlin", "dollar");
+                                    r = r.Replace("you're", "euro");
+                                    r = r.Replace("yeah", "euro");
+                                    r = r.Replace("urine", "euro");
+                                    r = r.Replace("you know", "euro");
+                                    r = r.Replace("ula", "euro");
+                                    r = r.Replace("amber's and", "ampersand");
+                                    r = r.Replace("amber's end", "ampersand");
+                                    r = r.Replace("am percent", "ampersand");     
+                                    r = r.Replace("market", "bracket");
+                                    r = r.Replace("place", "brace");
+                                    r = r.Replace("bryce", "brace");
+                                    r = r.Replace("the degree", "degree");
+                                    r = r.Replace("column", "colon");
+                                    r = r.Replace("colin", "colon");
+                                    r = r.Replace("cullen", "colon");
+                                    r = r.Replace("gollum", "colon");
+                                    r = r.Replace("golem", "colon");
+                                    r = r.Replace("weiss", "twice");
+                                    r = r.Replace("wise", "twice");
+                                    r = r.Replace("council", "cancel");
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show(ex.Message, "Error MW009m", MessageBoxButton.OK, MessageBoxImage.Error);
+                                }
 
                                 //List<string> list = new List<string>();
 
@@ -2553,381 +2922,522 @@ namespace Speech
                                 int c_curr;
                                 string str;
 
-                                for (int i = 0; i < list_mousegrid.Count; i++)
+                                try
                                 {
-                                    c_curr = (int)get_similarity(r, list_mousegrid[i]);
-
-                                    if (c_curr > c)
+                                    for (int i = 0; i < list_mousegrid.Count; i++)
                                     {
-                                        c = c_curr;
-                                        ind = i;
+                                        c_curr = (int)get_similarity(r, list_mousegrid[i]);
+
+                                        if (c_curr > c)
+                                        {
+                                            c = c_curr;
+                                            ind = i;
+                                        }
                                     }
-                                }
 
-                                if (ind != -1)
-                                    r = list_mousegrid[ind];
-                                else
-                                    r = "";
-
-                                SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                                {
-                                    if (r.Length > 0)
-                                        SW.TBrecognized_speech.Text = r.FirstCharToUpper();
-                                    SW.TBconfidence.Text = c.ToString() + "/" + confidence_other_commands;
-
-                                    if (c >= confidence_other_commands)
-                                    {
-                                        SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                            = new SolidColorBrush(Color.FromRgb(0, 128, 0));
-                                    }
+                                    if (ind != -1)
+                                        r = list_mousegrid[ind];
                                     else
-                                    {
-                                        SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                            = new SolidColorBrush(Color.FromRgb(232, 4, 4));
-                                    }
-                                }));
-
-                                //move mouse grid
-                                if (c >= confidence_other_commands && grid_visible && movable_grid
-                                && (r == directions_str[0] || r == directions_str[1]
-                                || r == directions_str[2] || r == directions_str[3]))
-                                {
-                                    if (r == directions_str[0])
-                                    {
-                                        offset_y -= (int)Math.Round(offset * figure_height);
-                                    }
-                                    else if (r == directions_str[1])
-                                    {
-                                        offset_y += (int)Math.Round(offset * figure_height);
-                                    }
-                                    else if (r == directions_str[2])
-                                    {
-                                        offset_x -= (int)Math.Round(offset * figure_width);
-                                    }
-                                    else if (r == directions_str[3])
-                                    {
-                                        offset_x += (int)Math.Round(offset * figure_width);
-                                    }
-
-                                    MW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                                    {
-                                        MW.Top = offset_y;
-                                        MW.Left = offset_x;
-                                    }));
-
-                                    if (read_recognized_speech) ss.SpeakAsync(r);
+                                        r = "";
                                 }
-                                //perform a mousegrid action
-                                else if (grid_visible && c >= confidence_other_commands)
+                                catch (Exception ex)
                                 {
-                                    if (read_recognized_speech) ss.SpeakAsync(r);
+                                    MessageBox.Show(ex.Message, "Error MW009n", MessageBoxButton.OK, MessageBoxImage.Error);
+                                }
 
-                                    MW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                try
+                                {
+                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
                                     {
-                                        if (smart_grid)
-                                            MW.Opacity = 0; //hide is delayed until mousegrid content changes
+                                        if (r.Length > 0)
+                                            SW.TBrecognized_speech.Text = r.FirstCharToUpper();
+                                        SW.TBconfidence.Text = c.ToString() + "/" + confidence_other_commands;
+
+                                        if (c >= confidence_other_commands)
+                                        {
+                                            SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                                = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                        }
                                         else
-                                            MW.Hide();
+                                        {
+                                            SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                                = new SolidColorBrush(Color.FromRgb(232, 4, 4));
+                                        }
                                     }));
-                                    grid_visible = false;
 
-                                    r = r.Replace(" ", "");
+                                    //move mouse grid
+                                    if (c >= confidence_other_commands && grid_visible && movable_grid
+                                    && (r == directions_str[0] || r == directions_str[1]
+                                    || r == directions_str[2] || r == directions_str[3]))
+                                    {
+                                        try
+                                        {
+                                            if (r == directions_str[0])
+                                            {
+                                                offset_y -= (int)Math.Round(offset * figure_height);
+                                            }
+                                            else if (r == directions_str[1])
+                                            {
+                                                offset_y += (int)Math.Round(offset * figure_height);
+                                            }
+                                            else if (r == directions_str[2])
+                                            {
+                                                offset_x -= (int)Math.Round(offset * figure_width);
+                                            }
+                                            else if (r == directions_str[3])
+                                            {
+                                                offset_x += (int)Math.Round(offset * figure_width);
+                                            }
 
-                                    THRmouse = new Thread(new ThreadStart(adv_mouse));
-                                    THRmouse.Start();
+                                            MW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                            {
+                                                MW.Top = offset_y;
+                                                MW.Left = offset_x;
+                                            }));
+
+                                            if (read_recognized_speech) ss.SpeakAsync(r);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            MessageBox.Show(ex.Message, "Error MW009n1", MessageBoxButton.OK, MessageBoxImage.Error);
+                                        }
+                                    }
+                                    //perform a mousegrid action
+                                    else if (grid_visible && c >= confidence_other_commands)
+                                    {
+                                        try
+                                        {
+                                            if (read_recognized_speech) ss.SpeakAsync(r);
+
+                                            MW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                            {
+                                                if (smart_grid)
+                                                    MW.Opacity = 0; //hide is delayed until mousegrid content changes
+                                                else
+                                                    MW.Hide();
+                                            }));
+                                            grid_visible = false;
+
+                                            r = r.Replace(" ", "");
+
+                                            THRmouse = new Thread(new ThreadStart(adv_mouse));
+                                            THRmouse.Start();
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            MessageBox.Show(ex.Message, "Error MW009n2", MessageBoxButton.OK, MessageBoxImage.Error);
+                                        }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show(ex.Message, "Error MW009o", MessageBoxButton.OK, MessageBoxImage.Error);
                                 }
                             }
                             else if (current_mode == mode.dictation)
                             {
-                                if (r == "back space")
-                                    r = "backspace";
-                                else if (r == "tax space")
-                                    r = "backspace";
-                                else if (r == "max space")
-                                    r = "backspace";
-                                else if (r == "tax base")
-                                    r = "backspace";
-                                else if (r == "max base")
-                                    r = "backspace";
-                                else if (r == "column")
-                                    r = "colon";
-                                else if (r == "colin")
-                                    r = "colon";
-                                else if (r == "cullen")
-                                    r = "colon";
-                                else if (r == "chap")
-                                    r = "tab";
-                                else if (r == "hi fen")
-                                    r = "hyphen";
-                                else if (r == "hi finn")
-                                    r = "hyphen";
-                                else if (r == "tumblr")
-                                    r = "tab";
-                                else if (r == "tampa")
-                                    r = "tab";
-                                else if (r == "double")
-                                    r = "tab";
-                                else if (r == "thumper")
-                                    r = "tab";
-                                else if (r == "andrew")
-                                    r = "undo";
-                                else if (r == "i do")
-                                    r = "undo";
-                                else if (r == "calmer")
-                                    r = "comma";
-                                else if (r == "come on")
-                                    r = "comma";
-                                else if (r == "tacoma")
-                                    r = "comma";
-                                else if (r == "rhythm")
-                                    r = "redo";
-                                else if (r == "riddle")
-                                    r = "redo";
-                                else if (r == "read though")
-                                    r = "redo";
-                                else if (r == "the red line")
-                                    r = "delete line";
+                                try
+                                {
+                                    if (r == "andrew")
+                                        r = "undo";
+                                    else if (r == "i do")
+                                        r = "undo";
+                                    else if (r == "ando")
+                                        r = "undo";
+                                    else if (r == "rhythm")
+                                        r = "redo";
+                                    else if (r == "riddle")
+                                        r = "redo";
+                                    else if (r == "read though")
+                                        r = "redo";
+                                    else if (r == "control back space")
+                                        r = "control backspace";
+                                    else if (r == "the red line")
+                                        r = "delete line";
+                                    else if (r == "the lid line")
+                                        r = "delete line";
+                                    else if (r == "the it line")
+                                        r = "delete line";
+                                    else if (r == "then it line")
+                                        r = "delete line";
+                                    else if (r == "reddit line")
+                                        r = "delete line";
+                                    else if (r == "it line")
+                                        r = "delete line";
+                                    else if (r == "the lit line")
+                                        r = "delete line";
+                                    else if (r == "the lip line")
+                                        r = "delete line";
+                                    else if (r == "injured")
+                                        r = "enter";
+                                    else if (r == "answered")
+                                        r = "enter";
+                                    else if (r == "chap")
+                                        r = "tab";
+                                    else if (r == "tumblr")
+                                        r = "tab";
+                                    else if (r == "tampa")
+                                        r = "tab";
+                                    else if (r == "double")
+                                        r = "tab";
+                                    else if (r == "thumper")
+                                        r = "tab";
+                                    else if (r == "dub")
+                                        r = "tab";
+                                    else if (r == "dump")
+                                        r = "tab";
+                                    else if (r == "dumber")
+                                        r = "tab";
+                                    else if (r == "dumb")
+                                        r = "tab";
+                                    else if (r == "tumble")
+                                        r = "tab";
+                                    else if (r == "back space")
+                                        r = "backspace";
+                                    else if (r == "tax space")
+                                        r = "backspace";
+                                    else if (r == "max space")
+                                        r = "backspace";
+                                    else if (r == "tax base")
+                                        r = "backspace";
+                                    else if (r == "max base")
+                                        r = "backspace";
+                                    else if (r == "max place")
+                                        r = "backspace";
+                                    else if (r == "box base")
+                                        r = "backspace";
+                                    else if (r == "calmer")
+                                        r = "comma";
+                                    else if (r == "coma")
+                                        r = "comma";
+                                    else if (r == "come on")
+                                        r = "comma";
+                                    else if (r == "tacoma")
+                                        r = "comma";
+                                    else if (r == "hi fen")
+                                        r = "hyphen";
+                                    else if (r == "hi finn")
+                                        r = "hyphen";
+                                    else if (r == "heighten")
+                                        r = "hyphen";
+                                    else if (r == "tyson")
+                                        r = "hyphen";
+                                    else if (r == "ivan")
+                                        r = "hyphen";
+                                    else if (r == "column")
+                                        r = "colon";
+                                    else if (r == "colin")
+                                        r = "colon";
+                                    else if (r == "cullen")
+                                        r = "colon";
+                                    else if (r == "gollum")
+                                        r = "colon";
+                                    else if (r == "golem")
+                                        r = "colon";
+                                    else if (r == "level called")
+                                        r = "double quote";
+                                    else if (r == "novel called")
+                                        r = "double quote";
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show(ex.Message, "Error MW009p", MessageBoxButton.OK, MessageBoxImage.Error);
+                                }
 
                                 int ind1 = 0; //index of highest confidence words
                                 int c1 = 0; //confidences for each list
                                 int c_curr;
-                                string str;
 
-                                for (int i = 0; i < list_current.Count; i++)
+                                try
                                 {
-                                    c_curr = (int)get_similarity(r, list_current[i]);
-
-                                    if (c_curr > c1)
+                                    for (int i = 0; i < list_current.Count; i++)
                                     {
-                                        c1 = c_curr;
-                                        ind1 = i;
+                                        c_curr = (int)get_similarity(r, list_current[i]);
+
+                                        if (c_curr > c1)
+                                        {
+                                            c1 = c_curr;
+                                            ind1 = i;
+                                        }
                                     }
                                 }
-
-                                if (c1 >= confidence_other_commands)
+                                catch (Exception ex)
                                 {
-                                    r = list_current[ind1];
-                                    c = c1;
+                                    MessageBox.Show(ex.Message, "Error MW009r", MessageBoxButton.OK, MessageBoxImage.Error);
+                                }
+
+                                try
+                                {
+                                    if (c1 >= confidence_other_commands)
+                                    {
+                                        r = list_current[ind1];
+                                        c = c1;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show(ex.Message, "Error MW009s", MessageBoxButton.OK, MessageBoxImage.Error);
                                 }
 
                                 bool dictation_command = false;
 
-                                if (c >= confidence_other_commands)
+                                try
                                 {
-                                    foreach (BuiltInCommand bic in list_bic_dictation)
+                                    if (c >= confidence_other_commands)
                                     {
-                                        if (r == bic.name && bic.enabled)
+                                        foreach (BuiltInCommand bic in list_bic_dictation)
                                         {
-                                            dictation_command = true;
-                                            break;
+                                            if (r == bic.name && bic.enabled)
+                                            {
+                                                dictation_command = true;
+                                                break;
+                                            }
                                         }
                                     }
                                 }
-
-                                //turn off
-                                if (r == turn_off && c >= confidence_other_commands && is_bic_in_dictation_enabled(bic_type.turn_off))
+                                catch (Exception ex)
                                 {
-                                    if (read_recognized_speech) ss.SpeakAsync(r);
-
-                                    load_turned_off(true);
-
-                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                                    {
-                                        SW.TBrecognized_speech.Text = r.FirstCharToUpper();
-                                        SW.TBconfidence.Text = c.ToString() + "/" + confidence_other_commands;
-                                        SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                            = new SolidColorBrush(Color.FromRgb(0, 128, 0));
-                                    }));
+                                    MessageBox.Show(ex.Message, "Error MW009t", MessageBoxButton.OK, MessageBoxImage.Error);
                                 }
-                                //switch to command mode
-                                else if ((int)get_similarity(r, switch_to_command_mode) >= c
-                                    && (int)get_similarity(r, switch_to_command_mode) >= confidence_other_commands
-                                    && is_bic_in_dictation_enabled(bic_type.switch_to_command))
+
+                                try
                                 {
-                                    if (read_recognized_speech) ss.SpeakAsync(r);
-
-                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                    //turn off
+                                    if (r == turn_off && c >= confidence_other_commands)
                                     {
-                                        SW.TBrecognized_speech.Text = r.FirstCharToUpper();
-                                        SW.TBconfidence.Text = ((int)get_similarity(r, switch_to_command_mode)).ToString() + "/" + confidence_other_commands;
-                                        SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                            = new SolidColorBrush(Color.FromRgb(0, 128, 0));
-                                    }));
-
-                                    current_mode = mode.command;
-
-                                    load_turned_on(true);
-                                }
-                                else if(dictation_command)
-                                {
-                                    if (read_recognized_speech) ss.SpeakAsync(r);
-
-                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                                    {
-                                        SW.TBrecognized_speech.Text = r.FirstCharToUpper();
-                                        SW.TBconfidence.Text = c + "/" + confidence_other_commands;
-                                        SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground = new SolidColorBrush(Color.FromRgb(0, 128, 0));
-                                    }));
-
-                                    if (r == "uppercase")
-                                    {
-                                        uppercase_text = true;
-                                    }
-                                    else if (r == "lowercase")
-                                    {
-                                        uppercase_text = false;
-                                    }
-                                    else if (r == "undo")
-                                    {
-                                        sim.Keyboard.KeyDown(VirtualKeyCode.LCONTROL);
-                                        sim.Keyboard.KeyDown(VirtualKeyCode.VK_Z);
-                                        Thread.Sleep(50);
-                                        sim.Keyboard.KeyUp(VirtualKeyCode.VK_Z);
-                                        sim.Keyboard.KeyUp(VirtualKeyCode.LCONTROL);
-                                    }
-                                    else if (r == "redo")
-                                    {
-                                        sim.Keyboard.KeyDown(VirtualKeyCode.LCONTROL);
-                                        sim.Keyboard.KeyDown(VirtualKeyCode.VK_Y);
-                                        Thread.Sleep(50);
-                                        sim.Keyboard.KeyUp(VirtualKeyCode.VK_Y);
-                                        sim.Keyboard.KeyUp(VirtualKeyCode.LCONTROL);
-                                    }
-                                    else if (r == "delete word")
-                                    {
-                                        sim.Keyboard.KeyDown(VirtualKeyCode.LCONTROL);
-                                        sim.Keyboard.KeyDown(VirtualKeyCode.BACK);
-                                        Thread.Sleep(50);
-                                        sim.Keyboard.KeyUp(VirtualKeyCode.BACK);
-                                        sim.Keyboard.KeyUp(VirtualKeyCode.LCONTROL);
-                                    }
-                                    else if (r == "delete line")
-                                    {
-                                        sim.Keyboard.KeyPress(VirtualKeyCode.END);
-
-                                        Thread.Sleep(50);
-
-                                        sim.Keyboard.KeyDown(VirtualKeyCode.LSHIFT);
-                                        sim.Keyboard.KeyDown(VirtualKeyCode.HOME);
-                                        Thread.Sleep(50);
-                                        sim.Keyboard.KeyUp(VirtualKeyCode.HOME);
-                                        sim.Keyboard.KeyUp(VirtualKeyCode.LSHIFT);
-
-                                        Thread.Sleep(50);
-
-                                        sim.Keyboard.KeyPress(VirtualKeyCode.BACK);
-
-                                        uppercase_text = true;
-                                    }
-                                    else if (r == "space")
-                                    {
-                                        sim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
-                                    }
-                                    else if (r == "left")
-                                    {
-                                        sim.Keyboard.KeyPress(VirtualKeyCode.LEFT);
-                                    }
-                                    else if (r == "right")
-                                    {
-                                        sim.Keyboard.KeyPress(VirtualKeyCode.RIGHT);
-                                    }
-                                    else if (r == "enter")
-                                    {
-                                        sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-                                    }
-                                    else if (r == "tab")
-                                    {
-                                        sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
-                                    }
-                                    else if (r == "backspace")
-                                    {
-                                        sim.Keyboard.KeyPress(VirtualKeyCode.BACK);
-                                    }
-                                    else if (r == "comma")
-                                    {
-                                        sim.Keyboard.TextEntry(", ");
-                                        uppercase_text = false;
-                                    }
-                                    else if (r == "dot")
-                                    {
-                                        sim.Keyboard.TextEntry(". ");
-                                        uppercase_text = true;
-                                    }
-                                    else if (r == "period")
-                                    {
-                                        sim.Keyboard.TextEntry(". ");
-                                        uppercase_text = true;
-                                    }
-                                    else if (r == "hyphen")
-                                    {
-                                        sim.Keyboard.TextEntry("-");
-                                        uppercase_text = false;
-                                    }
-                                    else if (r == "semicolon")
-                                    {
-                                        sim.Keyboard.TextEntry("; ");
-                                        uppercase_text = false;
-                                    }
-                                    else if (r == "colon")
-                                    {
-                                        sim.Keyboard.TextEntry(": ");
-                                        uppercase_text = false;
-                                    }
-                                    else if (r == "double quote")
-                                    {
-                                        sim.Keyboard.TextEntry("\"");
-                                        uppercase_text = false;
-                                    }
-                                    else if (r == "quote")
-                                    {
-                                        sim.Keyboard.TextEntry("'");
-                                        uppercase_text = false;
-                                    }
-                                    else if (r == "exclamation")
-                                    {
-                                        sim.Keyboard.TextEntry("! ");
-                                        uppercase_text = true;
-                                    }
-                                    else if (r == "question")
-                                    {
-                                        sim.Keyboard.TextEntry("? ");
-                                        uppercase_text = true;
-                                    }
-                                    else if (r == "open parenthesis")
-                                    {
-                                        sim.Keyboard.TextEntry("(");
-                                        uppercase_text = false;
-                                    }
-                                    else if (r == "close parenthesis")
-                                    {
-                                        sim.Keyboard.TextEntry(")");
-                                    }
-                                }
-                                //dictation text
-                                else
-                                //&& (r.Length < 6 || r.Substring(0, 6).ToLower() != "press "))
-                                {
-                                    if (read_recognized_speech) ss.SpeakAsync(r);
-
-                                    if (uppercase_text)
-                                    {
-                                        r = r.FirstCharToUpper();
-                                        uppercase_text = false;
-                                    }
-
-                                    sim.Keyboard.TextEntry(r);
-                                    c = 100;
-
-                                    SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                                    {
-                                        if (SW.IsVisible)
+                                        try
                                         {
-                                            SW.TBrecognized_speech.Text = r;
-                                            SW.TBconfidence.Text = c.ToString();
-                                            SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                                = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                            if (read_recognized_speech) ss.SpeakAsync(r);
+
+                                            load_turned_off(true);
+
+                                            SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                            {
+                                                SW.TBrecognized_speech.Text = r.FirstCharToUpper();
+                                                SW.TBconfidence.Text = c.ToString() + "/" + confidence_other_commands;
+                                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                                    = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                            }));
                                         }
-                                    }));
+                                        catch (Exception ex)
+                                        {
+                                            MessageBox.Show(ex.Message, "Error MW009t1", MessageBoxButton.OK, MessageBoxImage.Error);
+                                        }
+                                    }
+                                    //switch to command mode
+                                    else if (r == switch_to_command_mode && c >= confidence_other_commands)
+                                    {
+                                        try
+                                        {
+                                            if (read_recognized_speech) ss.SpeakAsync(r);
+
+                                            SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                            {
+                                                SW.TBrecognized_speech.Text = r.FirstCharToUpper();
+                                                SW.TBconfidence.Text = ((int)get_similarity(r, switch_to_command_mode)).ToString() + "/" + confidence_other_commands;
+                                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                                    = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                            }));
+
+                                            current_mode = mode.command;
+
+                                            load_turned_on(true);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            MessageBox.Show(ex.Message, "Error MW009t2", MessageBoxButton.OK, MessageBoxImage.Error);
+                                        }
+                                    }
+                                    else if (dictation_command)
+                                    {
+                                        try
+                                        {
+                                            if (read_recognized_speech) ss.SpeakAsync(r);
+
+                                            SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                            {
+                                                SW.TBrecognized_speech.Text = r.FirstCharToUpper();
+                                                SW.TBconfidence.Text = c + "/" + confidence_other_commands;
+                                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                            }));
+
+                                            if (r == "uppercase")
+                                            {
+                                                uppercase_text = true;
+                                            }
+                                            else if (r == "lowercase")
+                                            {
+                                                uppercase_text = false;
+                                            }
+                                            else if (r == "undo")
+                                            {
+                                                sim.Keyboard.KeyDown(VirtualKeyCode.LCONTROL);
+                                                sim.Keyboard.KeyDown(VirtualKeyCode.VK_Z);
+                                                Thread.Sleep(50);
+                                                sim.Keyboard.KeyUp(VirtualKeyCode.VK_Z);
+                                                sim.Keyboard.KeyUp(VirtualKeyCode.LCONTROL);
+                                            }
+                                            else if (r == "redo")
+                                            {
+                                                sim.Keyboard.KeyDown(VirtualKeyCode.LCONTROL);
+                                                sim.Keyboard.KeyDown(VirtualKeyCode.VK_Y);
+                                                Thread.Sleep(50);
+                                                sim.Keyboard.KeyUp(VirtualKeyCode.VK_Y);
+                                                sim.Keyboard.KeyUp(VirtualKeyCode.LCONTROL);
+                                            }
+                                            else if (r == "control backspace")
+                                            {
+                                                sim.Keyboard.KeyDown(VirtualKeyCode.LCONTROL);
+                                                sim.Keyboard.KeyDown(VirtualKeyCode.BACK);
+                                                Thread.Sleep(50);
+                                                sim.Keyboard.KeyUp(VirtualKeyCode.BACK);
+                                                sim.Keyboard.KeyUp(VirtualKeyCode.LCONTROL);
+                                            }
+                                            else if (r == "delete line")
+                                            {
+                                                sim.Keyboard.KeyPress(VirtualKeyCode.END);
+
+                                                Thread.Sleep(50);
+
+                                                sim.Keyboard.KeyDown(VirtualKeyCode.LSHIFT);
+                                                sim.Keyboard.KeyDown(VirtualKeyCode.HOME);
+                                                Thread.Sleep(50);
+                                                sim.Keyboard.KeyUp(VirtualKeyCode.HOME);
+                                                sim.Keyboard.KeyUp(VirtualKeyCode.LSHIFT);
+
+                                                Thread.Sleep(50);
+
+                                                sim.Keyboard.KeyPress(VirtualKeyCode.BACK);
+
+                                                uppercase_text = true;
+                                            }
+                                            else if (r == "space")
+                                            {
+                                                sim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
+                                            }
+                                            else if (r == "left")
+                                            {
+                                                sim.Keyboard.KeyPress(VirtualKeyCode.LEFT);
+                                            }
+                                            else if (r == "right")
+                                            {
+                                                sim.Keyboard.KeyPress(VirtualKeyCode.RIGHT);
+                                            }
+                                            else if (r == "enter")
+                                            {
+                                                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                                                uppercase_text = true;
+                                            }
+                                            else if (r == "tab")
+                                            {
+                                                sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                                            }
+                                            else if (r == "backspace")
+                                            {
+                                                sim.Keyboard.KeyPress(VirtualKeyCode.BACK);
+                                            }
+                                            else if (r == "comma")
+                                            {
+                                                sim.Keyboard.TextEntry(", ");
+                                                uppercase_text = false;
+                                            }
+                                            else if (r == "dot")
+                                            {
+                                                sim.Keyboard.TextEntry(". ");
+                                                uppercase_text = true;
+                                            }
+                                            else if (r == "period")
+                                            {
+                                                sim.Keyboard.TextEntry(". ");
+                                                uppercase_text = true;
+                                            }
+                                            else if (r == "hyphen")
+                                            {
+                                                sim.Keyboard.TextEntry("-");
+                                                uppercase_text = false;
+                                            }
+                                            else if (r == "semicolon")
+                                            {
+                                                sim.Keyboard.TextEntry("; ");
+                                                uppercase_text = false;
+                                            }
+                                            else if (r == "colon")
+                                            {
+                                                sim.Keyboard.TextEntry(": ");
+                                                uppercase_text = false;
+                                            }
+                                            else if (r == "double quote")
+                                            {
+                                                sim.Keyboard.TextEntry("\"");
+                                                uppercase_text = false;
+                                            }
+                                            else if (r == "quote")
+                                            {
+                                                sim.Keyboard.TextEntry("'");
+                                                uppercase_text = false;
+                                            }
+                                            else if (r == "exclamation")
+                                            {
+                                                sim.Keyboard.TextEntry("! ");
+                                                uppercase_text = true;
+                                            }
+                                            else if (r == "question")
+                                            {
+                                                sim.Keyboard.TextEntry("? ");
+                                                uppercase_text = true;
+                                            }
+                                            else if (r == "open parenthesis")
+                                            {
+                                                sim.Keyboard.TextEntry("(");
+                                                uppercase_text = false;
+                                            }
+                                            else if (r == "close parenthesis")
+                                            {
+                                                sim.Keyboard.TextEntry(")");
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            MessageBox.Show(ex.Message, "Error MW009t3", MessageBoxButton.OK, MessageBoxImage.Error);
+                                        }
+                                    }
+                                    //dictation text
+                                    else
+                                    //&& (r.Length < 6 || r.Substring(0, 6).ToLower() != "press "))
+                                    {
+                                        try
+                                        {
+                                            if (read_recognized_speech) ss.SpeakAsync(r);
+
+                                            if (uppercase_text)
+                                            {
+                                                r = r.FirstCharToUpper();
+                                                uppercase_text = false;
+                                            }
+
+                                            sim.Keyboard.TextEntry(r);
+                                            c = 100;
+
+                                            SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                            {
+                                                if (SW.IsVisible)
+                                                {
+                                                    SW.TBrecognized_speech.Text = r;
+                                                    SW.TBconfidence.Text = c.ToString();
+                                                    SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                                        = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                                }
+                                            }));
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            MessageBox.Show(ex.Message, "Error MW009t4", MessageBoxButton.OK, MessageBoxImage.Error);
+                                        }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show(ex.Message, "Error MW009u", MessageBoxButton.OK, MessageBoxImage.Error);
                                 }
                             }
                         }
@@ -3062,7 +3572,9 @@ namespace Speech
                     }
                 }
 
-                for (int j = 1; j <= executions; j++)
+                bool one_execution = false;
+
+                for (int j = 1; j <= executions && one_execution == false; j++)
                 {
                     if (control)
                         key_down(VirtualKeyCode.CONTROL);
@@ -3165,6 +3677,8 @@ namespace Speech
                                 //if(debug_mode) stop_time();
                                 grid_visible = true;
                                 click_times = executions;
+
+                                one_execution = true; //solves mousegrid blinking when you say for example "move 50 times" when smart mousegrid is enabled
                             }
                             else if (list_bic_general_and_mouse[i].type == bic_type.click)
                             {

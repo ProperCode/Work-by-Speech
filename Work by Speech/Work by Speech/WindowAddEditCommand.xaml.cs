@@ -1048,7 +1048,7 @@ namespace Speech
                         w.cv_LVcommands.Refresh();
 
                         w.LVprofiles_SelectionChanged(null, null);
-                        
+
                         //sorting may changed index
                         //command_ind = Middle_Man.get_command_ind_by_name(ind, name); (not working properyly because of groups)
                         command_ind = 0;
@@ -1068,13 +1068,44 @@ namespace Speech
 
                         w.LVcommands_SelectionChanged(null, null);
 
-                        //w.LVcommands.ScrollIntoView(w.LVcommands.SelectedItem);
+                        if (edit)
+                            w.LVcommands.Focus();
+                        else
+                            w.Badd_command.Focus();
+                    }
+                }
 
-                        //w.LVactions.ItemsSource = Middle_Man.profiles[ind].custom_commands[command_ind].actions;
+                /* Not working properly (changing group name for a command causes improper command select)
+                foreach (System.Windows.Window window in Application.Current.Windows)
+                {
+                    if (window.GetType() == typeof(MainWindow))
+                    {
+                        MainWindow w = (MainWindow)window;
 
-                        //CollectionView cv = (CollectionView)CollectionViewSource.GetDefaultView(
-                        //            w.LVactions.ItemsSource);
-                        //cv.Refresh();
+                        w.cv_LVcommands.Refresh();
+                        
+                        //sorting may changed index
+                        //command_ind = Middle_Man.get_command_ind_by_name(ind, name); (not working properyly because of groups)
+                        command_ind = 0;
+
+                        //This method is needed, because commands are sorted alphabetically by groups first
+                        foreach (CustomCommand CC in w.LVcommands.Items)
+                        {
+                            if (CC.name == name)
+                                break;
+                            else
+                                command_ind++;
+                        }
+
+                        w.LVcommands.SelectedIndex = command_ind;
+
+                        w.LVcommands.ScrollIntoView(w.LVcommands.SelectedItem);
+
+                        w.LVactions.ItemsSource = Middle_Man.profiles[ind].custom_commands[command_ind].actions;
+
+                        CollectionView cv = (CollectionView)CollectionViewSource.GetDefaultView(
+                                    w.LVactions.ItemsSource);
+                        cv.Refresh();
 
                         if (edit)
                             w.LVcommands.Focus();
@@ -1082,6 +1113,7 @@ namespace Speech
                             w.Badd_command.Focus();
                     }
                 }
+                */
 
                 Middle_Man.last_used_max_executions = max_executions;
 

@@ -157,6 +157,7 @@ namespace Speech
             grid_alphabet.Add(new Grid_Symbol("xray", "x"));
             grid_alphabet.Add(new Grid_Symbol("yankee", "y"));
             grid_alphabet.Add(new Grid_Symbol("zulu", "z"));
+            //grid_alphabet.Add(new Grid_Symbol("0", "0")); //Vosk recognizes 0€ as €€ and has conflict with zulu which is often recognized as zero
             grid_alphabet.Add(new Grid_Symbol("1", "1"));
             grid_alphabet.Add(new Grid_Symbol("2", "2"));
             grid_alphabet.Add(new Grid_Symbol("3", "3"));
@@ -172,8 +173,8 @@ namespace Speech
             grid_alphabet.Add(new Grid_Symbol("pound", "£"));
             grid_alphabet.Add(new Grid_Symbol("dollar", "$"));     
 			grid_alphabet.Add(new Grid_Symbol("euro", "€"));
-			grid_alphabet.Add(new Grid_Symbol("yen", "¥"));
-			grid_alphabet.Add(new Grid_Symbol("asterisk", "*"));
+			//grid_alphabet.Add(new Grid_Symbol("yen", "¥")); //Vosk recognizes yen as "in"
+            grid_alphabet.Add(new Grid_Symbol("asterisk", "*"));
 			grid_alphabet.Add(new Grid_Symbol("ampersand", "&"));
 			grid_alphabet.Add(new Grid_Symbol("bracket", "]"));
 			grid_alphabet.Add(new Grid_Symbol("brace", "{"));

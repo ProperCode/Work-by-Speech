@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Xml;
@@ -576,10 +577,12 @@ namespace Speech
                     bic_type.character_ins, "hash", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("#",
                     bic_type.character_ins, "sharp", 1));
-                list_bic_char_inserting.Add(new BuiltInCommand("£",
-                    bic_type.character_ins, "pound", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("$",
                     bic_type.character_ins, "dollar", 1));
+                list_bic_char_inserting.Add(new BuiltInCommand("£",
+                    bic_type.character_ins, "pound", 1));
+                list_bic_char_inserting.Add(new BuiltInCommand("€",
+                    bic_type.character_ins, "euro", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("%",
                     bic_type.character_ins, "percent", 1));
                 list_bic_char_inserting.Add(new BuiltInCommand("^",
@@ -644,7 +647,7 @@ namespace Speech
                 list_bic_dictation.Add(new BuiltInCommand("Press Ctrl + Y",
                     bic_type.key_pressing, "redo", 1));
                 list_bic_dictation.Add(new BuiltInCommand("Delete previous word",
-                    bic_type.key_pressing, "delete word", 1));
+                    bic_type.key_pressing, "control backspace", 1));
                 list_bic_dictation.Add(new BuiltInCommand("Delete current line",
                     bic_type.key_pressing, "delete line", 1));
                 list_bic_dictation.Add(new BuiltInCommand("Press Space",
@@ -1112,36 +1115,41 @@ namespace Speech
                             }
                         }
 
-                        commands = xml_doc.SelectNodes("//built-in_commands/dictation")[0].ChildNodes;
+                        XmlNode test_node = xml_doc.SelectSingleNode("//built-in_commands/dictation");
 
-                        foreach (XmlNode command in commands)
+                        if (test_node != null) //compatibility with version 2.4 and older
                         {
-                            XmlNodeList nodes = command.ChildNodes;
+                            commands = xml_doc.SelectNodes("//built-in_commands/dictation")[0].ChildNodes;
 
-                            string name = "";
-                            bool enabled = true;
-
-                            int i = 0;
-
-                            foreach (XmlNode node in nodes)
+                            foreach (XmlNode command in commands)
                             {
-                                if (node.Name == "name")
-                                {
-                                    name = node.InnerText;
-                                    i++;
-                                }
-                                else if (node.Name == "enabled")
-                                {
-                                    bool parsing = bool.TryParse(node.InnerText, out enabled);
+                                XmlNodeList nodes = command.ChildNodes;
 
-                                    if (parsing)
+                                string name = "";
+                                bool enabled = true;
+
+                                int i = 0;
+
+                                foreach (XmlNode node in nodes)
+                                {
+                                    if (node.Name == "name")
+                                    {
+                                        name = node.InnerText;
                                         i++;
-                                }
-                            }
+                                    }
+                                    else if (node.Name == "enabled")
+                                    {
+                                        bool parsing = bool.TryParse(node.InnerText, out enabled);
 
-                            if (i > 1)
-                            {
-                                toggle_bic_dictation(enabled, name);
+                                        if (parsing)
+                                            i++;
+                                    }
+                                }
+
+                                if (i > 1)
+                                {
+                                    toggle_bic_dictation(enabled, name);
+                                }
                             }
                         }
 

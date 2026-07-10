@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
+using System.Windows;
 using System.Xml;
 using WindowsInput.Native;
 
@@ -53,8 +53,8 @@ namespace Speech
         public static string last_used_scrolling_value = "4";
         public static string last_used_wait_time = "1000";
         public static bool last_used_record_mouse_movements = false;
-        public static Point last_get_position_point = new Point(-1, -1); //acquired by saying "Get Position"
-                                                                         //while in command mode
+        public static System.Drawing.Point last_get_position_point = new System.Drawing.Point(-1, -1); //acquired by saying "Get Position"
+                                                                                                       //while in command mode
 
         public static bool force_updating_both_cc_lists = false; //cc = custom commands
         
@@ -185,16 +185,104 @@ namespace Speech
 
         public static void save_profiles(List<Profile> chosen_profiles = null, string path = null)
         {
-            if (chosen_profiles == null)
-                chosen_profiles = profiles;
+            try
+            {
+                if (chosen_profiles == null)
+                    chosen_profiles = profiles;
 
-            string saving_path;
+                string saving_path;
 
-            foreach (Profile p in chosen_profiles)
+                foreach (Profile p in chosen_profiles)
+                {
+                    XmlDocument xml_doc = new XmlDocument();
+
+                    XmlNode root_node = xml_doc.CreateElement("profile");
+
+                    XmlAttribute attribute = xml_doc.CreateAttribute("version");
+                    attribute.Value = "1";
+                    root_node.Attributes.Append(attribute);
+
+                    xml_doc.AppendChild(root_node);
+
+                    XmlNode name_node = xml_doc.CreateElement("name");
+                    name_node.InnerText = p.name;
+                    root_node.AppendChild(name_node);
+
+                    XmlNode program_node = xml_doc.CreateElement("program");
+                    program_node.InnerText = p.program;
+                    root_node.AppendChild(program_node);
+
+                    XmlNode enabled_node = xml_doc.CreateElement("enabled");
+                    enabled_node.InnerText = p.enabled.ToString();
+                    root_node.AppendChild(enabled_node);
+
+                    XmlNode ccs_node = xml_doc.CreateElement("custom_commands");
+                    root_node.AppendChild(ccs_node);
+
+                    foreach (CustomCommand cc in p.custom_commands)
+                    {
+                        XmlNode cc_node = xml_doc.CreateElement("custom_command");
+                        ccs_node.AppendChild(cc_node);
+
+                        XmlNode c_node = xml_doc.CreateElement("name");
+                        c_node.InnerText = cc.name;
+                        cc_node.AppendChild(c_node);
+
+                        XmlNode description_node = xml_doc.CreateElement("description");
+                        description_node.InnerText = cc.description;
+                        cc_node.AppendChild(description_node);
+
+                        XmlNode group_node = xml_doc.CreateElement("group");
+                        group_node.InnerText = cc.group.ToString();
+                        cc_node.AppendChild(group_node);
+
+                        XmlNode max_executions_node = xml_doc.CreateElement("max_executions");
+                        max_executions_node.InnerText = cc.max_executions.ToString();
+                        cc_node.AppendChild(max_executions_node);
+
+                        enabled_node = xml_doc.CreateElement("enabled");
+                        enabled_node.InnerText = cc.enabled.ToString();
+                        cc_node.AppendChild(enabled_node);
+
+                        XmlNode actions_node = xml_doc.CreateElement("actions");
+                        cc_node.AppendChild(actions_node);
+
+                        foreach (CC_Action action in cc.actions)
+                        {
+                            XmlNode action_node = xml_doc.CreateElement("action");
+
+                            action_node.InnerText = action.action;
+
+                            actions_node.AppendChild(action_node);
+                        }
+                    }
+
+                    if (Directory.Exists(profiles_path) == false)
+                    {
+                        Directory.CreateDirectory(profiles_path);
+                    }
+
+                    if (path == null)
+                        saving_path = Path.Combine(profiles_path, p.name + ".xml");
+                    else
+                        saving_path = Path.Combine(path, p.name + ".xml");
+
+                    xml_doc.Save(saving_path);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error MM001", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        public static void save_groups()
+        {
+            try
             {
                 XmlDocument xml_doc = new XmlDocument();
 
-                XmlNode root_node = xml_doc.CreateElement("profile");
+                XmlNode root_node = xml_doc.CreateElement("groups");
 
                 XmlAttribute attribute = xml_doc.CreateAttribute("version");
                 attribute.Value = "1";
@@ -202,154 +290,87 @@ namespace Speech
 
                 xml_doc.AppendChild(root_node);
 
-                XmlNode name_node = xml_doc.CreateElement("name");
-                name_node.InnerText = p.name;
-                root_node.AppendChild(name_node);
-
-                XmlNode program_node = xml_doc.CreateElement("program");
-                program_node.InnerText = p.program;
-                root_node.AppendChild(program_node);
-
-                XmlNode enabled_node = xml_doc.CreateElement("enabled");
-                enabled_node.InnerText = p.enabled.ToString();
-                root_node.AppendChild(enabled_node);
-
-                XmlNode ccs_node = xml_doc.CreateElement("custom_commands");
-                root_node.AppendChild(ccs_node);
-                
-                foreach (CustomCommand cc in p.custom_commands)
+                foreach (Group g in groups)
                 {
-                    XmlNode cc_node = xml_doc.CreateElement("custom_command");
-                    ccs_node.AppendChild(cc_node);
+                    XmlNode g_node = xml_doc.CreateElement("group");
 
-                    XmlNode c_node = xml_doc.CreateElement("name");
-                    c_node.InnerText = cc.name;
-                    cc_node.AppendChild(c_node);
+                    g_node.InnerText = g.name;
 
-                    XmlNode description_node = xml_doc.CreateElement("description");
-                    description_node.InnerText = cc.description;
-                    cc_node.AppendChild(description_node);
-
-                    XmlNode group_node = xml_doc.CreateElement("group");
-                    group_node.InnerText = cc.group.ToString();
-                    cc_node.AppendChild(group_node);
-
-                    XmlNode max_executions_node = xml_doc.CreateElement("max_executions");
-                    max_executions_node.InnerText = cc.max_executions.ToString();
-                    cc_node.AppendChild(max_executions_node);
-
-                    enabled_node = xml_doc.CreateElement("enabled");
-                    enabled_node.InnerText = cc.enabled.ToString();
-                    cc_node.AppendChild(enabled_node);
-
-                    XmlNode actions_node = xml_doc.CreateElement("actions");
-                    cc_node.AppendChild(actions_node);
-
-                    foreach (CC_Action action in cc.actions)
-                    {
-                        XmlNode action_node = xml_doc.CreateElement("action");
-                        
-                        action_node.InnerText = action.action;
-
-                        actions_node.AppendChild(action_node);
-                    }
+                    root_node.AppendChild(g_node);
                 }
 
-                if (Directory.Exists(profiles_path) == false)
+                if (Directory.Exists(saving_folder_path) == false)
                 {
-                    Directory.CreateDirectory(profiles_path);
+                    Directory.CreateDirectory(saving_folder_path);
                 }
 
-                if (path == null)
-                    saving_path = Path.Combine(profiles_path, p.name + ".xml");
-                else
-                    saving_path = Path.Combine(path, p.name + ".xml");
-
-                xml_doc.Save(saving_path);
+                xml_doc.Save(Path.Combine(saving_folder_path, groups_filename));
             }
-        }
-
-        public static void save_groups()
-        {
-            XmlDocument xml_doc = new XmlDocument();
-
-            XmlNode root_node = xml_doc.CreateElement("groups");
-
-            XmlAttribute attribute = xml_doc.CreateAttribute("version");
-            attribute.Value = "1";
-            root_node.Attributes.Append(attribute);
-
-            xml_doc.AppendChild(root_node);
-
-            foreach (Group g in groups)
+            catch (Exception ex)
             {
-                XmlNode g_node = xml_doc.CreateElement("group");
-
-                g_node.InnerText = g.name;
-
-                root_node.AppendChild(g_node);
+                MessageBox.Show(ex.Message, "Error MM002", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-
-            if (Directory.Exists(saving_folder_path) == false)
-            {
-                Directory.CreateDirectory(saving_folder_path);
-            }
-
-            xml_doc.Save(Path.Combine(saving_folder_path, groups_filename));
         }
 
         public static void load_groups()
         {
-            if (File.Exists(Path.Combine(saving_folder_path, groups_filename)))
+            try
             {
-                //groups = new ObservableCollection<object>();
-                groups = new List<Group>();
-
-                XmlDocument xml_doc = new XmlDocument();
-                xml_doc.Load(Path.Combine(saving_folder_path, groups_filename));
-
-                XmlNodeList groups_tag = xml_doc.SelectNodes("//groups");
-
-                int version = -1;
-                bool parsing_v = false;
-
-                if (groups_tag[0].Attributes["version"] != null)
-                    parsing_v = int.TryParse(groups_tag[0].Attributes["version"].Value, out version);
-
-                //Work by Speech v. 1.5 and earlier had no version attribute (so we treat groups file made by
-                //these versions as as version 1 of xml saving method for groups)
-
-                if (version == -1 || (parsing_v && version == 1))
+                if (File.Exists(Path.Combine(saving_folder_path, groups_filename)))
                 {
-                    XmlNodeList nodes = xml_doc.SelectNodes("//groups/group");
+                    //groups = new ObservableCollection<object>();
+                    groups = new List<Group>();
 
-                    foreach (XmlNode node in nodes)
+                    XmlDocument xml_doc = new XmlDocument();
+                    xml_doc.Load(Path.Combine(saving_folder_path, groups_filename));
+
+                    XmlNodeList groups_tag = xml_doc.SelectNodes("//groups");
+
+                    int version = -1;
+                    bool parsing_v = false;
+
+                    if (groups_tag[0].Attributes["version"] != null)
+                        parsing_v = int.TryParse(groups_tag[0].Attributes["version"].Value, out version);
+
+                    //Work by Speech v. 1.5 and earlier had no version attribute (so we treat groups file made by
+                    //these versions as as version 1 of xml saving method for groups)
+
+                    if (version == -1 || (parsing_v && version == 1))
                     {
-                        Group g = new Group();
+                        XmlNodeList nodes = xml_doc.SelectNodes("//groups/group");
 
-                        g.name = node.InnerText;
-
-                        groups.Add(g);
-                    }
-
-                    bool found = false;
-
-                    foreach (Group g in groups)
-                    {
-                        if (g.name == general_group_name)
+                        foreach (XmlNode node in nodes)
                         {
-                            found = true;
-                            break;
+                            Group g = new Group();
+
+                            g.name = node.InnerText;
+
+                            groups.Add(g);
                         }
-                    }
 
-                    if (found == false)
-                    {
-                        groups.Add(new Group() { name = general_group_name });
-                    }
+                        bool found = false;
 
-                    Middle_Man.sort_groups_by_name_asc();
+                        foreach (Group g in groups)
+                        {
+                            if (g.name == general_group_name)
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (found == false)
+                        {
+                            groups.Add(new Group() { name = general_group_name });
+                        }
+
+                        Middle_Man.sort_groups_by_name_asc();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error MM003", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
