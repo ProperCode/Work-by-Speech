@@ -32,7 +32,7 @@ namespace Speech
 {
     public partial class MainWindow : Window
     {
-        const string prog_version = "2.7";
+        const string prog_version = "2.8";
               string latest_version = "";
         const string copyright_text = "Copyright © 2023 - 2026 Mikołaj Magowski. All rights reserved.";
         const string filename_model = "vosk-model-en-us-daanzu-20200905"; //Vosk speech recogniton model (7.08 (librispeech test-clean) 8.25 (tedlium))
@@ -182,12 +182,12 @@ namespace Speech
         int offset_y = 0;
         //------------Mousegrid moving by speech settings END--------------
 
-        Color color_font;// = Color.FromRgb(0, 0, 0); //font color
+        System.Windows.Media.Color color_font;// = Color.FromRgb(0, 0, 0); //font color
         //Color color_bg = Color.FromRgb(255, 255, 255);
-        Color color_bg;// = Color.FromRgb(225, 225, 225); //bg color
+        System.Windows.Media.Color color_bg;// = Color.FromRgb(225, 225, 225); //bg color
 
         //bool auto_grid_font_size = true; //bad idea
-        FontFamily font_family = new FontFamily("Verdana");
+        System.Windows.Media.FontFamily font_family = new System.Windows.Media.FontFamily("Verdana");
         //FontFamily font_family = new FontFamily("Tahoma");
         //FontFamily font_family = new FontFamily("Microsoft Sans Serif");
         //FontFamily font_family = new FontFamily("Calibri");//12,10
@@ -636,33 +636,14 @@ namespace Speech
 
             Mouse.OverrideCursor = null;
         }
-        
-        //List<string> list_custom_commands_foreground; //foreground program
-        //List<string> list_apps_switching;
-        //List<string> list_apps_opening;
 
         void create_lists()
         {
             try
             {
-                list_off_mode = new List<string>();
-                list_builtin_commands = new List<string>();
-                list_dictation = new List<string>();
-
-                if (are_all_bic_off_disabled() == false)
-                {
-                    list_off_mode = create_off_mode_list();
-                }
-
-                if (are_all_bic_general_and_mouse_disabled() == false)
-                {
-                    list_builtin_commands = create_builtin_commands_list();
-                }
-
-                if (are_all_bic_dictation_disabled() == false)
-                {
-                    list_dictation = create_dictation_commands_list();
-                }
+                list_off_mode = create_off_mode_list();
+                list_builtin_commands = create_builtin_commands_list();
+                list_dictation = create_dictation_commands_list();
 
                 list_mousegrid = create_grid_list(true);
 
@@ -862,7 +843,7 @@ namespace Speech
                 {
                     SW.mode = 0;
                     SW.Bmode.Content = mode_off;
-                    SW.Bmode.Foreground = new SolidColorBrush(Color.FromRgb(232, 4, 4));
+                    SW.Bmode.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(232, 4, 4));
 
                     // Create a BitmapSource  
                     BitmapImage bitmap = new BitmapImage();
@@ -940,7 +921,7 @@ namespace Speech
                     {
                         SW.mode = 1;
                         SW.Bmode.Content = mode_command;
-                        SW.Bmode.Foreground = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                        SW.Bmode.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 128, 0));
 
                         // Create a BitmapSource  
                         BitmapImage bitmap = new BitmapImage();
@@ -979,7 +960,7 @@ namespace Speech
                     {
                         SW.mode = 2;
                         SW.Bmode.Content = mode_dictation;
-                        SW.Bmode.Foreground = new SolidColorBrush(Color.FromRgb(0, 88, 255));
+                        SW.Bmode.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 88, 255));
 
                         // Create a BitmapSource  
                         BitmapImage bitmap = new BitmapImage();
@@ -1213,10 +1194,7 @@ namespace Speech
         {
             List<string> grid_list = new List<string>();
 
-            //create_full_grid_alphabet();
             create_optimized_grid_alphabet();
-            //create_normal_grid_alphabet();
-            //create_wide_grid_alphabet();
 
             //Mathematically incorrect, but returns desired value (thanks to Floor):
             int count = (int)Math.Floor(Math.Sqrt((double)desired_figures_nr));
@@ -1403,7 +1381,7 @@ namespace Speech
                     if (int.TryParse(grid_alphabet[i].symbol, out r1)
                         && int.TryParse(grid_alphabet[j].symbol, out r2))
                     {
-                        grid_list.Add(grid_alphabet[i].symbol + grid_alphabet[j].symbol);
+                        grid_list.Add(number_to_words(int.Parse(grid_alphabet[i].symbol + grid_alphabet[j].symbol)));
                     }
 
                     grid_list_count++;
@@ -1417,227 +1395,224 @@ namespace Speech
         {
             List<string> commands_list = new List<string>();
 
-            if (are_all_bic_general_and_mouse_disabled() == false)
+            List<string> multi = new List<string>();
+            multi.Add("twice");
+
+            for (int i = 0; i < list_bic_general_and_mouse.Count(); i++)
             {
-                List<string> multi = new List<string>();
-                multi.Add("twice");
-
-                for (int i = 0; i < list_bic_general_and_mouse.Count(); i++)
+                if (list_bic_general_and_mouse[i].enabled
+                    && list_bic_general_and_mouse[i].type != bic_type.move_up
+                    && list_bic_general_and_mouse[i].type != bic_type.move_down
+                    && list_bic_general_and_mouse[i].type != bic_type.move_left
+                    && list_bic_general_and_mouse[i].type != bic_type.move_right
+                    && list_bic_general_and_mouse[i].type != bic_type.open_app
+                    && list_bic_general_and_mouse[i].type != bic_type.switch_to_app)
                 {
-                    if (list_bic_general_and_mouse[i].enabled
-                        && list_bic_general_and_mouse[i].type != bic_type.move_up
-                        && list_bic_general_and_mouse[i].type != bic_type.move_down
-                        && list_bic_general_and_mouse[i].type != bic_type.move_left
-                        && list_bic_general_and_mouse[i].type != bic_type.move_right
-                        && list_bic_general_and_mouse[i].type != bic_type.open_app
-                        && list_bic_general_and_mouse[i].type != bic_type.switch_to_app)
+                    commands_list.Add(list_bic_general_and_mouse[i].name);
+
+                    if (list_bic_general_and_mouse[i].key_combination == "Yes")
                     {
-                        commands_list.Add(list_bic_general_and_mouse[i].name);
-
-                        if (list_bic_general_and_mouse[i].key_combination == "Yes")
+                        for (int j = 0; j < s_combo.Length; j++)
                         {
-                            for (int j = 0; j < s_combo.Length; j++)
-                            {
-                                commands_list.Add(s_combo[j] + " " + list_bic_general_and_mouse[i].name);
-                            }
-
-                            for (int j = 0; j < s_combo.Length; j++)
-                            {
-                                for (int k = 0; k < s_combo2.Length; k++)
-                                {
-                                    commands_list.Add(s_combo[j] + " " + s_combo2[k] + " " + list_bic_general_and_mouse[i].name);
-                                }
-                            }
+                            commands_list.Add(s_combo[j] + " " + list_bic_general_and_mouse[i].name);
                         }
 
-                        if (list_bic_general_and_mouse[i].max_executions > 1)
+                        for (int j = 0; j < s_combo.Length; j++)
                         {
-                            multi = new List<string>();
-                            multi.Add("twice");
-
-                            for (int j = 2; j <= list_bic_general_and_mouse[i].max_executions; j++)
+                            for (int k = 0; k < s_combo2.Length; k++)
                             {
-                                multi.Add(j + " times");
+                                commands_list.Add(s_combo[j] + " " + s_combo2[k] + " " + list_bic_general_and_mouse[i].name);
                             }
+                        }
+                    }
 
+                    if (list_bic_general_and_mouse[i].max_executions > 1)
+                    {
+                        multi = new List<string>();
+                        multi.Add("twice");
+
+                        for (int j = 2; j <= list_bic_general_and_mouse[i].max_executions; j++)
+                        {
+                            multi.Add(number_to_words(j) + " times");
+                        }
+
+                        for (int k = 0; k < multi.Count; k++)
+                        {
+                            commands_list.Add(list_bic_general_and_mouse[i].name + " " + multi[k]);
+                        }
+                    }
+
+                    if (list_bic_general_and_mouse[i].key_combination == "Yes"
+                        && list_bic_general_and_mouse[i].max_executions > 1)
+                    {
+                        for (int j = 0; j < s_combo.Length; j++)
+                        {
                             for (int k = 0; k < multi.Count; k++)
                             {
-                                commands_list.Add(list_bic_general_and_mouse[i].name + " " + multi[k]);
+                                commands_list.Add(s_combo[j] + " " + list_bic_general_and_mouse[i].name + " " + multi[k]);
                             }
                         }
 
-                        if (list_bic_general_and_mouse[i].key_combination == "Yes"
-                            && list_bic_general_and_mouse[i].max_executions > 1)
+                        for (int j = 0; j < s_combo.Length; j++)
                         {
-                            for (int j = 0; j < s_combo.Length; j++)
+                            for (int k = 0; k < s_combo2.Length; k++)
                             {
-                                for (int k = 0; k < multi.Count; k++)
+                                for (int m = 0; m < multi.Count; m++)
                                 {
-                                    commands_list.Add(s_combo[j] + " " + list_bic_general_and_mouse[i].name + " " + multi[k]);
-                                }
-                            }
-
-                            for (int j = 0; j < s_combo.Length; j++)
-                            {
-                                for (int k = 0; k < s_combo2.Length; k++)
-                                {
-                                    for (int m = 0; m < multi.Count; m++)
-                                    {
-                                        commands_list.Add(s_combo[j] + " " + s_combo2[k] + " " + list_bic_general_and_mouse[i].name + " " + multi[m]);
-                                    }
+                                    commands_list.Add(s_combo[j] + " " + s_combo2[k] + " " + list_bic_general_and_mouse[i].name + " " + multi[m]);
                                 }
                             }
                         }
                     }
                 }
+            }
 
-                for (int i = 0; i < list_bic_keys_pressing.Count(); i++)
+            for (int i = 0; i < list_bic_keys_pressing.Count(); i++)
+            {
+                if (list_bic_keys_pressing[i].enabled)
                 {
-                    if (list_bic_keys_pressing[i].enabled)
+                    commands_list.Add(list_bic_keys_pressing[i].name);
+
+                    if (list_bic_keys_pressing[i].key_combination == "Yes")
                     {
-                        commands_list.Add(list_bic_keys_pressing[i].name);
-
-                        if (list_bic_keys_pressing[i].key_combination == "Yes")
+                        for (int j = 0; j < s_combo.Length; j++)
                         {
-                            for (int j = 0; j < s_combo.Length; j++)
-                            {
-                                commands_list.Add(s_combo[j] + " " + list_bic_keys_pressing[i].name);
-                            }
-
-                            for (int j = 0; j < s_combo.Length; j++)
-                            {
-                                for (int k = 0; k < s_combo2.Length; k++)
-                                {
-                                    commands_list.Add(s_combo[j] + " " + s_combo2[k] + " " + list_bic_keys_pressing[i].name);
-                                }
-                            }
+                            commands_list.Add(s_combo[j] + " " + list_bic_keys_pressing[i].name);
                         }
 
-                        if (list_bic_keys_pressing[i].max_executions > 1)
+                        for (int j = 0; j < s_combo.Length; j++)
                         {
-                            multi = new List<string>();
-                            multi.Add("twice");
-
-                            for (int j = 2; j <= list_bic_keys_pressing[i].max_executions; j++)
+                            for (int k = 0; k < s_combo2.Length; k++)
                             {
-                                multi.Add(j + " times");
-                            }
-
-                            for (int k = 0; k < multi.Count; k++)
-                            {
-                                commands_list.Add(list_bic_keys_pressing[i].name + " " + multi[k]);
-                            }
-                        }
-
-                        if (list_bic_keys_pressing[i].key_combination == "Yes"
-                            && list_bic_keys_pressing[i].max_executions > 1)
-                        {
-                            for (int j = 0; j < s_combo.Length; j++)
-                            {
-                                for (int k = 0; k < multi.Count; k++)
-                                {
-                                    commands_list.Add(s_combo[j] + " " + list_bic_keys_pressing[i].name + " " + multi[k]);
-                                }
-                            }
-
-                            for (int j = 0; j < s_combo.Length; j++)
-                            {
-                                for (int k = 0; k < s_combo2.Length; k++)
-                                {
-                                    for (int m = 0; m < multi.Count; m++)
-                                    {
-                                        commands_list.Add(s_combo[j] + " " + s_combo2[k] + " " + list_bic_keys_pressing[i].name + " " + multi[m]);
-                                    }
-                                }
-                            }
-                        }
-
-                        /* This is the right solution, but it overloads the dictionary
-                         * (left 100 isn't recognized)
-                         * Compile time increased by 7 seconds when this is used
-                        if (list_bic_keys_pressing[i].key_combination == "Yes" && list_bic_keys_pressing[i].max_executions > 1)
-                        {
-                            for (int m = 0; m < list_bic_keys_pressing.Count(); m++)
-                            {
-                                if (list_bic_keys_pressing[m].key_combination == "Yes" && list_bic_keys_pressing[m].max_executions > 1)
-                                {
-                                    multi = new Choices(new string[] { "twice" });
-
-                                    for (int j = 2; j <= list_bic_keys_pressing[i].max_executions
-                                                 && j <= list_bic_keys_pressing[m].max_executions; j++)
-                                    {
-                                        multi.Add(new string[] { j + " times" });
-                                    }
-
-                                    gb = new GrammarBuilder();
-                                    gb.Append(list_bic_keys_pressing[m].name);
-                                    gb.Append(list_bic_keys_pressing[i].name);
-                                    gb.Append(multi);
-                                    ch.Add(gb);
-
-                                    gb = new GrammarBuilder();
-                                    gb.Append(combo);
-                                    gb.Append(list_bic_keys_pressing[m].name);
-                                    gb.Append(list_bic_keys_pressing[i].name);
-                                    gb.Append(multi);
-                                    ch.Add(gb);
-                                }
-                            }
-                        }
-                        */
-                    }
-                }
-
-                for (int i = 0; i < list_bic_char_inserting.Count(); i++)
-                {
-                    if (list_bic_char_inserting[i].enabled)
-                    {
-                        commands_list.Add(list_bic_char_inserting[i].name);
-
-                        if (list_bic_char_inserting[i].max_executions > 1)
-                        {
-                            multi = new List<string>();
-                            multi.Add("twice");
-
-                            for (int j = 2; j <= list_bic_char_inserting[i].max_executions; j++)
-                            {
-                                multi.Add(j + " times");
-                            }
-
-                            for (int k = 0; k < multi.Count; k++)
-                            {
-                                commands_list.Add(list_bic_char_inserting[i].name + " " + multi[k]);
+                                commands_list.Add(s_combo[j] + " " + s_combo2[k] + " " + list_bic_keys_pressing[i].name);
                             }
                         }
                     }
-                }
 
-                List<int> pixels = new List<int>();
-
-                for (int i = 1; i <= 100; i++)
-                {
-                    pixels.Add(i);
-                }
-
-                List<string> enabled_mouse_moves = new List<string>();
-
-                if (is_bic_in_general_and_mouse_enabled(bic_type.move_up))
-                    enabled_mouse_moves.Add(s_mouse_moves[0]);
-                if (is_bic_in_general_and_mouse_enabled(bic_type.move_down))
-                    enabled_mouse_moves.Add(s_mouse_moves[1]);
-                if (is_bic_in_general_and_mouse_enabled(bic_type.move_left))
-                    enabled_mouse_moves.Add(s_mouse_moves[2]);
-                if (is_bic_in_general_and_mouse_enabled(bic_type.move_right))
-                    enabled_mouse_moves.Add(s_mouse_moves[3]);
-
-                if (enabled_mouse_moves.Count > 0)
-                {
-                    for (int i = 0; i < enabled_mouse_moves.Count; i++)
+                    if (list_bic_keys_pressing[i].max_executions > 1)
                     {
-                        for (int j = 0; j < pixels.Count; j++)
+                        multi = new List<string>();
+                        multi.Add("twice");
+
+                        for (int j = 2; j <= list_bic_keys_pressing[i].max_executions; j++)
                         {
-                            commands_list.Add(enabled_mouse_moves[i] + " " + pixels[j]);
+                            multi.Add(number_to_words(j) + " times");
                         }
+
+                        for (int k = 0; k < multi.Count; k++)
+                        {
+                            commands_list.Add(list_bic_keys_pressing[i].name + " " + multi[k]);
+                        }
+                    }
+
+                    if (list_bic_keys_pressing[i].key_combination == "Yes"
+                        && list_bic_keys_pressing[i].max_executions > 1)
+                    {
+                        for (int j = 0; j < s_combo.Length; j++)
+                        {
+                            for (int k = 0; k < multi.Count; k++)
+                            {
+                                commands_list.Add(s_combo[j] + " " + list_bic_keys_pressing[i].name + " " + multi[k]);
+                            }
+                        }
+
+                        for (int j = 0; j < s_combo.Length; j++)
+                        {
+                            for (int k = 0; k < s_combo2.Length; k++)
+                            {
+                                for (int m = 0; m < multi.Count; m++)
+                                {
+                                    commands_list.Add(s_combo[j] + " " + s_combo2[k] + " " + list_bic_keys_pressing[i].name + " " + multi[m]);
+                                }
+                            }
+                        }
+                    }
+
+                    /* This is the right solution, but it overloads the dictionary
+                     * (left 100 isn't recognized)
+                     * Compile time increased by 7 seconds when this is used
+                    if (list_bic_keys_pressing[i].key_combination == "Yes" && list_bic_keys_pressing[i].max_executions > 1)
+                    {
+                        for (int m = 0; m < list_bic_keys_pressing.Count(); m++)
+                        {
+                            if (list_bic_keys_pressing[m].key_combination == "Yes" && list_bic_keys_pressing[m].max_executions > 1)
+                            {
+                                multi = new Choices(new string[] { "twice" });
+
+                                for (int j = 2; j <= list_bic_keys_pressing[i].max_executions
+                                             && j <= list_bic_keys_pressing[m].max_executions; j++)
+                                {
+                                    multi.Add(new string[] { j + " times" });
+                                }
+
+                                gb = new GrammarBuilder();
+                                gb.Append(list_bic_keys_pressing[m].name);
+                                gb.Append(list_bic_keys_pressing[i].name);
+                                gb.Append(multi);
+                                ch.Add(gb);
+
+                                gb = new GrammarBuilder();
+                                gb.Append(combo);
+                                gb.Append(list_bic_keys_pressing[m].name);
+                                gb.Append(list_bic_keys_pressing[i].name);
+                                gb.Append(multi);
+                                ch.Add(gb);
+                            }
+                        }
+                    }
+                    */
+                }
+            }
+
+            for (int i = 0; i < list_bic_char_inserting.Count(); i++)
+            {
+                if (list_bic_char_inserting[i].enabled)
+                {
+                    commands_list.Add(list_bic_char_inserting[i].name);
+
+                    if (list_bic_char_inserting[i].max_executions > 1)
+                    {
+                        multi = new List<string>();
+                        multi.Add("twice");
+
+                        for (int j = 2; j <= list_bic_char_inserting[i].max_executions; j++)
+                        {
+                            multi.Add(number_to_words(j) + " times");
+                        }
+
+                        for (int k = 0; k < multi.Count; k++)
+                        {
+                            commands_list.Add(list_bic_char_inserting[i].name + " " + multi[k]);
+                        }
+                    }
+                }
+            }
+
+            List<int> pixels = new List<int>();
+
+            for (int i = 1; i <= 100; i++)
+            {
+                pixels.Add(i);
+            }
+
+            List<string> enabled_mouse_moves = new List<string>();
+
+            if (is_bic_in_general_and_mouse_enabled(bic_type.move_up))
+                enabled_mouse_moves.Add(s_mouse_moves[0]);
+            if (is_bic_in_general_and_mouse_enabled(bic_type.move_down))
+                enabled_mouse_moves.Add(s_mouse_moves[1]);
+            if (is_bic_in_general_and_mouse_enabled(bic_type.move_left))
+                enabled_mouse_moves.Add(s_mouse_moves[2]);
+            if (is_bic_in_general_and_mouse_enabled(bic_type.move_right))
+                enabled_mouse_moves.Add(s_mouse_moves[3]);
+
+            if (enabled_mouse_moves.Count > 0)
+            {
+                for (int i = 0; i < enabled_mouse_moves.Count; i++)
+                {
+                    for (int j = 0; j < pixels.Count; j++)
+                    {
+                        commands_list.Add(enabled_mouse_moves[i] + " " + number_to_words(pixels[j]));
                     }
                 }
             }
@@ -1893,10 +1868,19 @@ namespace Speech
                     r = r + r;
                 }
 
+                int digits;
+                bool parsed = false;
+                if (int.TryParse(words_to_number(r).ToString(), out digits))
+                {
+                    parsed = true;
+                }
+                string str_digits = digits.ToString();
+
                 for (int i = 0; i < grids[grid_ind].elements.Count && f == false; i++)
                 {
                     if (r == grids[grid_ind].elements[i].word
-                        || r == grids[grid_ind].elements[i].symbol)
+                    || r == grids[grid_ind].elements[i].symbol
+                    || (parsed == true && str_digits == grids[grid_ind].elements[i].symbol))
                     {
                         f = true;
 
@@ -2175,6 +2159,8 @@ namespace Speech
                         {
                             speech_recognized = true;
 
+                            //recognizer.Reset() doesn't solve low speech recognition accuraccy when multiple users speak in turns
+
                             if (ss.Volume != ss_volume)
                                 ss.Volume = ss_volume;
 
@@ -2229,7 +2215,7 @@ namespace Speech
                                                 SW.TBconfidence.Text = c.ToString() + "/" + confidence_turning_on;
 
                                                 SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                                    = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                                    = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 128, 0));
                                             }));
                                         }
                                         catch (Exception ex)
@@ -2248,7 +2234,7 @@ namespace Speech
                                                 SW.TBconfidence.Text = c.ToString() + "/" + confidence_turning_on;
 
                                                 SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                                    = new SolidColorBrush(Color.FromRgb(232, 4, 4));
+                                                    = new SolidColorBrush(System.Windows.Media.Color.FromRgb(232, 4, 4));
                                             }));
                                         }
                                         catch (Exception ex)
@@ -2266,15 +2252,11 @@ namespace Speech
                             {
                                 try
                                 {
-                                    r = r.Replace("far", "four");
-                                    r = r.Replace("farm", "four");
-
-                                    r = replace_number_words(r);
-
                                     //1st page
                                     r = r.Replace("recongition of", "recongition off");
                                     r = r.Replace("the recongition of", "recongition off");
                                     r = r.Replace("recreation of", "recongition off");
+                                    r = r.Replace("i do speech recongition", "hide speech recongition");
                                     r = r.Replace("i'd speech recongition", "hide speech recongition");
                                     r = r.Replace("hate speech recongition", "hide speech recongition");
                                     r = r.Replace("oh then", "open");
@@ -2283,11 +2265,13 @@ namespace Speech
                                     r = r.Replace("me mice", "minimize");
                                     r = r.Replace("many mice", "minimize");
                                     r = r.Replace("max mice", "maximize");
+                                    r = r.Replace("mice", "maximize");
                                     r = r.Replace("restorer", "restore");
                                     r = r.Replace("rooster", "restore");
                                     r = r.Replace("her sister", "restore");
                                     r = r.Replace("gloves that", "close that");
                                     r = r.Replace("close dot", "close that");
+                                    r = r.Replace("regarding", "recording");
                                     //2nd page
                                     r = r.Replace("worst", "west");
                                     r = r.Replace("taboo", "double");
@@ -2295,9 +2279,15 @@ namespace Speech
                                     r = r.Replace("tremble", "triple");
                                     r = r.Replace("treble", "triple");
                                     r = r.Replace("tribble", "triple");
+                                    r = r.Replace("tribune", "triple");
+                                    r = r.Replace("terrible", "triple");
+                                    r = r.Replace("table", "triple");
+                                    r = r.Replace("dribble", "triple");
                                     r = r.Replace("drug", "drag");
                                     r = r.Replace("drunk", "drag");
                                     r = r.Replace("clegg", "click");
+                                    r = r.Replace("eastwick", "east click");
+                                    r = r.Replace("public", "click");
                                     r = r.Replace("cold", "hold");
                                     r = r.Replace("holland", "hold");
                                     r = r.Replace("halt", "hold");
@@ -2305,18 +2295,27 @@ namespace Speech
                                     r = r.Replace("out east", "hold east");
                                     r = r.Replace("but a match", "bottom edge");
                                     r = r.Replace("mata much", "bottom edge");
+                                    r = r.Replace("but much", "bottom edge");
+                                    r = r.Replace("but match", "bottom edge");
+                                    r = r.Replace("but the much", "bottom edge");
+                                    r = r.Replace("bottom much", "bottom edge");
+                                    r = r.Replace("bottom it", "bottom edge");
                                     r = r.Replace("left it", "left edge");
                                     r = r.Replace("loved it", "left edge");
+                                    r = r.Replace("right it", "right edge");
+                                    r = r.Replace("scum", "scroll");
+                                    r = r.Replace("scarlet", "scroll");
                                     r = r.Replace("skull", "scroll");
-                                    //3rd page
-                                    r = r.Replace("cancer", "cancel");
-                                    r = r.Replace("council", "cancel");
                                     //4th page
                                     r = r.Replace("stat", "start");
                                     r = r.Replace("sewage", "switch");
                                     r = r.Replace("obligation", "application");
+                                    r = r.Replace("shell", "show");
+                                    r = r.Replace("shown", "show");
                                     r = r.Replace("open bar menu", "open power menu");
+                                    r = r.Replace("replays", "replace");
                                     r = r.Replace("captured death", "capture that");
+                                    r = r.Replace("select on", "select all");
                                     r = r.Replace("guppy", "copy");
                                     r = r.Replace("cup", "cut");
                                     r = r.Replace("pays", "paste");
@@ -2324,6 +2323,7 @@ namespace Speech
                                     r = r.Replace("ando", "undo");
                                     r = r.Replace("andrew", "undo");
                                     r = r.Replace("i do", "undo");
+                                    r = r.Replace("under", "undo");
                                     r = r.Replace("rhythm", "redo");
                                     r = r.Replace("riddle", "redo");
                                     r = r.Replace("read though", "redo");
@@ -2333,28 +2333,111 @@ namespace Speech
                                     r = r.Replace("friend", "print");
                                     r = r.Replace("web others", "web address");
                                     r = r.Replace("you tube", "new tab");
+                                    r = r.Replace("closed number", "close tab");
+                                    r = r.Replace("close number", "close tab");
+                                    r = r.Replace("clothes tumble", "close tab");
+                                    r = r.Replace("close down there", "close tab");
+                                    r = r.Replace("close down", "close tab");
+                                    r = r.Replace("restart number", "restore tab");
+                                    r = r.Replace("restart them", "restore tab");
+                                    r = r.Replace("restart done", "restore tab");
+                                    r = r.Replace("restart double", "restore tab");
+                                    r = r.Replace("restart", "restore");
+                                    r = r.Replace("previous dumb", "previous tab");
+                                    r = r.Replace("previous them", "previous tab");
+                                    r = r.Replace("previous standard", "previous tab");
+                                    r = r.Replace("previous number", "previous tab");
+                                    r = r.Replace("previous done", "previous tab");
+                                    r = r.Replace("previous job", "previous tab");
+                                    r = r.Replace("previews", "previous");
+                                    r = r.Replace("blues", "previous");
+                                    r = r.Replace("various", "previous");
+                                    r = r.Replace("next number", "next tab");
+                                    r = r.Replace("next done", "next tab");
+                                    r = r.Replace("first number", "first tab");
+                                    r = r.Replace("first done", "first tab");
+                                    r = r.Replace("first down", "first tab");
+                                    r = r.Replace("first double", "first tab");
+                                    r = r.Replace("second stun", "second tab");
+                                    r = r.Replace("second double", "second tab");
+                                    r = r.Replace("second done", "second tab");
+                                    r = r.Replace("second stamp", "second tab");
+                                    r = r.Replace("second stop", "second tab");
+                                    r = r.Replace("second stab", "second tab");
+                                    r = r.Replace("second dump", "second tab");
+                                    r = r.Replace("further damper", "third tab");
+                                    r = r.Replace("fred tub", "third tab");
+                                    r = r.Replace("first up", "third tab");
+                                    r = r.Replace("further done", "third tab");
+                                    r = r.Replace("farts dump", "third tab");
+                                    r = r.Replace("fred dump", "third tab");
+                                    r = r.Replace("fred stop", "third tab");
+                                    r = r.Replace("fight dub", "third tab");
+                                    r = r.Replace("further dub", "third tab");
+                                    r = r.Replace("foot tub", "third tab");
+                                    r = r.Replace("fort done", "fourth tab");
+                                    r = r.Replace("fourth number", "fourth tab");
+                                    r = r.Replace("ford done", "fourth tab");
+                                    r = r.Replace("fort dub", "fourth tab");
+                                    r = r.Replace("fifth number", "fifth tab");
+                                    r = r.Replace("fifth done", "fifth tab");
+                                    r = r.Replace("fifth december", "fifth tab");
+                                    r = r.Replace("fifth double", "fifth tab");
+                                    r = r.Replace("fifth done", "fifth tab");
+                                    r = r.Replace("sixth done", "sixth tab");
+                                    r = r.Replace("sixth double", "sixth tab");
+                                    r = r.Replace("six number", "sixth tab");
+                                    r = r.Replace("sixth number", "sixth tab");
+                                    r = r.Replace("seventh december", "seventh tab");
+                                    r = r.Replace("seventh number", "seventh tab");
+                                    r = r.Replace("seventh double", "seventh tab");
+                                    r = r.Replace("seventh done", "seventh tab");
+                                    r = r.Replace("eight double", "eight tab");
+                                    r = r.Replace("eight done", "eight tab");
+                                    r = r.Replace("eight dumbbell", "eight tab");
+                                    r = r.Replace("last job", "last tab");
+                                    r = r.Replace("last double", "last tab");
+                                    r = r.Replace("last december", "last tab");
+                                    r = r.Replace("last down", "last tab");
+                                    r = r.Replace("last taboo", "last tab");
+                                    r = r.Replace("lust", "last");
                                     r = r.Replace("bug", "back");
                                     r = r.Replace("buck", "back");
+                                    r = r.Replace("reverse", "refresh");
                                     //5th page
+                                    r = r.Replace("milt", "mute");
                                     r = r.Replace("play boss", "play pause");
                                     r = r.Replace("player pos", "play pause");
                                     r = r.Replace("play pos", "play pause");
                                     r = r.Replace("play pass", "play pause");
                                     r = r.Replace("play bass", "play pause");
+                                    r = r.Replace("stock", "stop");
+                                    r = r.Replace("truck", "track");
+                                    r = r.Replace("combo", "control");
+                                    r = r.Replace("the countdown", "control");
+                                    r = r.Replace("countdown", "control");
                                     r = r.Replace("out", "alt");
                                     r = r.Replace("added", "alt");
+                                    r = r.Replace("right old", "right alt");                                    
                                     r = r.Replace("tumblr", "tab");
                                     r = r.Replace("tampa", "tab");
                                     r = r.Replace("thumper", "tab");
                                     r = r.Replace("dub", "tab");
+                                    r = r.Replace("tub", "tab");
                                     r = r.Replace("dump", "tab");
                                     r = r.Replace("dumber", "tab");
+                                    r = r.Replace("dumper", "tab");
                                     r = r.Replace("dumb", "tab");
                                     r = r.Replace("tumble", "tab");
                                     r = r.Replace("chap", "tab");
+                                    r = r.Replace("dauber", "tab");
+                                    r = r.Replace("dublin", "tab");
+                                    r = r.Replace("thunder", "tab");
+                                    r = r.Replace("thumb", "tab");
                                     r = r.Replace("back space", "backspace");
                                     r = r.Replace("tax space", "backspace");
                                     r = r.Replace("max space", "backspace");
+                                    r = r.Replace("bug space", "backspace");
                                     r = r.Replace("max base", "backspace");
                                     r = r.Replace("tax base", "backspace");
                                     r = r.Replace("box base", "backspace");
@@ -2365,16 +2448,33 @@ namespace Speech
                                     r = r.Replace("he said", "insert");
                                     r = r.Replace("there it", "delete");
                                     r = r.Replace("the it", "delete");
+                                    r = r.Replace("the lid", "delete");
+                                    r = r.Replace("then it", "delete");
+                                    r = r.Replace("though it", "delete");
+                                    r = r.Replace("the delete", "delete");
+                                    r = r.Replace("that it", "delete");
+                                    r = r.Replace("did it", "delete");
                                     r = r.Replace("hum", "home");
                                     r = r.Replace("palm", "home");
                                     r = r.Replace("pay job", "page up");
+                                    r = r.Replace("wake up", "page up");
+                                    r = r.Replace("alone", "page down");
+                                    r = r.Replace("breakdown", "page down");
+                                    r = r.Replace("bears down", "page down");
+                                    r = r.Replace("push them", "page down");
+                                    //numbers start
+                                    r = r.Replace("too", "two");
+                                    r = r.Replace("far", "four");
+                                    r = r.Replace("farm", "four");
                                     r = r.Replace("alpha", "alfa");
                                     r = r.Replace("offer", "alfa");
                                     r = r.Replace("alva", "alfa");
                                     r = r.Replace("bever", "bravo");
                                     r = r.Replace("bevel", "bravo");
+                                    r = r.Replace("blubber", "bravo");
                                     r = r.Replace("brad shaw", "bravo");
                                     r = r.Replace("jolly", "charlie");
+                                    r = r.Replace("data", "delta");
                                     r = r.Replace("algo", "echo");
                                     r = r.Replace("tackle", "echo");
                                     r = r.Replace("fox trot", "foxtrot");
@@ -2382,6 +2482,8 @@ namespace Speech
                                     r = r.Replace("hutton", "hotel");
                                     r = r.Replace("huddle", "hotel");
                                     r = r.Replace("houghton", "hotel");
+                                    r = r.Replace("model", "hotel");
+                                    r = r.Replace("mother", "hotel");
                                     //6th page
                                     r = r.Replace("juliet", "juliett");
                                     r = r.Replace("julian", "juliett");
@@ -2390,45 +2492,78 @@ namespace Speech
                                     r = r.Replace("luma", "lima");
                                     r = r.Replace("nov twice", "november twice");
                                     r = r.Replace("good back", "quebec");
+                                    r = r.Replace("rami", "romeo");
+                                    r = r.Replace("romney", "romeo");
+                                    r = r.Replace("syria", "sierra");
                                     r = r.Replace("dongle", "tango");
+                                    r = r.Replace("duncan", "tango");
                                     r = r.Replace("x ray", "xray");
                                     r = r.Replace("act three", "xray");
                                     r = r.Replace("axe three", "xray");
                                     r = r.Replace("actually", "xray");
                                     r = r.Replace("exactly", "xray");
                                     r = r.Replace("taxi", "xray");
+                                    r = r.Replace("lake city", "xray");
+                                    r = r.Replace("say", "xray");
                                     r = r.Replace("young", "yankee");
                                     r = r.Replace("zola", "zulu");
+                                    r = r.Replace("function d", "function three");
+                                    r = r.Replace("function thing", "function three");
+                                    r = r.Replace("function for", "function four");
+                                    r = r.Replace("function fife", "function five");
+                                    r = r.Replace("thanks to five", "function five");
+                                    r = r.Replace("function it", "function eight");
+                                    r = r.Replace("function name", "function nine");
+                                    r = r.Replace("function main", "function nine");
+                                    r = r.Replace("french and nine", "function nine");
+                                    r = r.Replace("function then", "function ten");
                                     r = r.Replace("calmer", "comma");
                                     r = r.Replace("coma", "comma");
                                     r = r.Replace("come on", "comma");
                                     r = r.Replace("tacoma", "comma");
+                                    r = r.Replace("but", "dot");
+                                    r = r.Replace("slush", "slash");
                                     r = r.Replace("hi fen", "hyphen");
                                     r = r.Replace("hi finn", "hyphen");
                                     r = r.Replace("heighten", "hyphen");
                                     r = r.Replace("tyson", "hyphen");
                                     r = r.Replace("ivan", "hyphen");
-                                    r = r.Replace("more deeply", "multiply");                                    
+                                    r = r.Replace("manos", "minus");
+                                    r = r.Replace("mines", "minus");
+                                    r = r.Replace("asked the risk", "asterisk");
+                                    r = r.Replace("more deeply", "multiply");
                                     //7th page
+                                    r = r.Replace("semi", "semicolon");
                                     r = r.Replace("column", "colon");
                                     r = r.Replace("colin", "colon");
                                     r = r.Replace("cullen", "colon");
                                     r = r.Replace("gollum", "colon");
                                     r = r.Replace("golem", "colon");
+                                    r = r.Replace("the quote", "double quote");
                                     r = r.Replace("level called", "double quote");
                                     r = r.Replace("novel called", "double quote");
+                                    r = r.Replace("writer then", "greater than");
+                                    r = r.Replace("ted", "at");
+                                    r = r.Replace("the exclamation", "exclamation");
                                     r = r.Replace("hush", "hash");
                                     r = r.Replace("nolo", "dollar");
                                     r = r.Replace("door", "dollar");
                                     r = r.Replace("dahlin", "dollar");
+                                    r = r.Replace("dolly", "dollar");
+                                    r = r.Replace("bond", "pound");
+                                    r = r.Replace("punt", "pound");
                                     r = r.Replace("lb", "pound");
                                     r = r.Replace("you're", "euro");
                                     r = r.Replace("yeah", "euro");
                                     r = r.Replace("urine", "euro");
                                     r = r.Replace("you know", "euro");
                                     r = r.Replace("ula", "euro");
+                                    r = r.Replace("president", "percent");
                                     r = r.Replace("carrot", "caret");
                                     r = r.Replace("carried", "caret");
+                                    r = r.Replace("kurt", "caret");
+                                    r = r.Replace("open parentheses", "open parenthesis");
+                                    r = r.Replace("close parentheses", "close parenthesis");
                                     r = r.Replace("on those car", "underscore");
                                     r = r.Replace("open place", "open brace");
                                     r = r.Replace("open race", "open brace");
@@ -2443,9 +2578,11 @@ namespace Speech
                                     r = r.Replace("mark quote", "back quote");
                                     r = r.Replace("bug quote", "back quote");
                                     r = r.Replace("buck quote", "back quote");
+                                    r = r.Replace("but quote", "back quote");
                                     r = r.Replace("the vision", "division");
                                     r = r.Replace("sent", "cent");
                                     r = r.Replace("the degree", "degree");
+                                    r = r.Replace("the green", "degree");
                                     r = r.Replace("biography", "paragraph");
                                     r = r.Replace("micah", "micro");
                                     //-------------------------------
@@ -2667,6 +2804,46 @@ namespace Speech
 
                                 try
                                 {
+                                    try
+                                    {
+                                        string[] arr = r.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                                        int length = arr.Length;
+
+                                        if (r.Contains("times") && arr.Length >= 3)
+                                        {
+                                            if(arr[length - 3] == "twenty" || arr[length - 3] == "thirty" || arr[length - 3] == "forty" || arr[length - 3] == "fifty"
+                                                || arr[length - 3] == "sixty" || arr[length - 3] == "seventy" || arr[length - 3] == "eighty" || arr[length - 3] == "ninety")
+                                            {
+                                                arr[length - 3] = replace_number_words(arr[length - 3] + " " + arr[length - 2]);
+                                                arr[length - 2] = "";
+                                            }
+                                            else
+                                            {
+                                                arr[length - 2] = replace_number_words(arr[length - 2]);
+                                            }
+
+                                            string new_r = arr[0];
+
+                                            for (int i = 1; i < length; i++)
+                                            {
+                                                if (arr[i] != "")
+                                                    new_r += " " + arr[i];
+                                            }
+                                            r = new_r;
+                                        }
+                                        else if(length > 1)
+                                        {
+                                            if (arr[0] == "up" || arr[0] == "down" || arr[0] == "left" || arr[0] == "right")
+                                            {
+                                                r = replace_number_words(r);
+                                            }
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        MessageBox.Show(ex.Message, "Error MW009k0", MessageBoxButton.OK, MessageBoxImage.Error);
+                                    }
+
                                     string r_lowercase = r.ToLower();
 
                                     if (c > 0)
@@ -2678,12 +2855,12 @@ namespace Speech
                                             if (c >= confidence_other_commands)
                                             {
                                                 SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                                    = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                                    = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 128, 0));
                                             }
                                             else
                                             {
                                                 SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                                    = new SolidColorBrush(Color.FromRgb(232, 4, 4));
+                                                    = new SolidColorBrush(System.Windows.Media.Color.FromRgb(232, 4, 4));
                                             }
                                         }));
                                     }
@@ -2721,7 +2898,7 @@ namespace Speech
                                                 SW.TBrecognized_speech.Text = r.FirstCharToUpper();
                                                 SW.TBconfidence.Text = c.ToString() + "/" + confidence_other_commands;
                                                 SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                                    = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                                    = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 128, 0));
                                             }));
                                         }
                                         catch (Exception ex)
@@ -2771,7 +2948,7 @@ namespace Speech
                                             {
                                                 SW.mode = 1;
                                                 SW.Bmode.Content = mode_command;
-                                                SW.Bmode.Foreground = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                                SW.Bmode.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 128, 0));
 
                                                 // Create a BitmapSource  
                                                 BitmapImage bitmap = new BitmapImage();
@@ -2784,7 +2961,7 @@ namespace Speech
                                                 SW.TBrecognized_speech.Text = r.FirstCharToUpper();
                                                 SW.TBconfidence.Text = c.ToString() + "/" + confidence_other_commands;
                                                 SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                                    = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                                    = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 128, 0));
                                             }));
                                         }
                                         catch (Exception ex)
@@ -2831,18 +3008,18 @@ namespace Speech
                             {
                                 try
                                 {
+                                    r = r.Replace("too", "two");
                                     r = r.Replace("far", "four");
                                     r = r.Replace("farm", "four");
-
-                                    r = replace_number_words(r);
-
                                     r = r.Replace("alpha", "alfa");
                                     r = r.Replace("offer", "alfa");
                                     r = r.Replace("alva", "alfa");
                                     r = r.Replace("brad shaw", "bravo");
                                     r = r.Replace("bever", "bravo");
                                     r = r.Replace("bevel", "bravo");
+                                    r = r.Replace("blubber", "bravo");
                                     r = r.Replace("jolly", "charlie");
+                                    r = r.Replace("data", "delta");
                                     r = r.Replace("algo", "echo");
                                     r = r.Replace("tackle", "echo");
                                     r = r.Replace("fox trot", "foxtrot");
@@ -2850,6 +3027,8 @@ namespace Speech
                                     r = r.Replace("hutton", "hotel");
                                     r = r.Replace("huddle", "hotel");
                                     r = r.Replace("houghton", "hotel");
+                                    r = r.Replace("model", "hotel");
+                                    r = r.Replace("mother", "hotel");
                                     r = r.Replace("julian", "juliett");
                                     r = r.Replace("juliet", "juliett");
                                     r = r.Replace("killer", "kilo");
@@ -2857,31 +3036,48 @@ namespace Speech
                                     r = r.Replace("luma", "lima");
                                     r = r.Replace("nov twice", "november twice");
                                     r = r.Replace("good back", "quebec");
+                                    r = r.Replace("rami", "romeo");
+                                    r = r.Replace("romney", "romeo");
+                                    r = r.Replace("syria", "sierra");
                                     r = r.Replace("dongle", "tango");
+                                    r = r.Replace("duncan", "tango");
                                     r = r.Replace("x ray", "xray");
                                     r = r.Replace("act three", "xray");
                                     r = r.Replace("axe three", "xray");
                                     r = r.Replace("actually", "xray");
                                     r = r.Replace("exactly", "xray");
                                     r = r.Replace("taxi", "xray");
+                                    r = r.Replace("lake city", "xray");
+                                    r = r.Replace("say", "xray");
                                     r = r.Replace("young", "yankee");
                                     r = r.Replace("zola", "zulu");
-                                    r = r.Replace("zero", "zulu");//conflict with zero
+                                    r = r.Replace("zero", "zulu");//conflict with zero (zero can't be in mousegrid alphabet)
+                                    r = r.Replace("slush", "slash");
+                                    r = r.Replace("manos", "minus");
+                                    r = r.Replace("mines", "minus");
                                     r = r.Replace("lb", "pound");
+                                    r = r.Replace("bond", "pound");
+                                    r = r.Replace("punt", "pound");
                                     r = r.Replace("nolo", "dollar");
                                     r = r.Replace("door", "dollar");
                                     r = r.Replace("dahlin", "dollar");
+                                    r = r.Replace("dolly", "dollar");
                                     r = r.Replace("you're", "euro");
                                     r = r.Replace("yeah", "euro");
                                     r = r.Replace("urine", "euro");
                                     r = r.Replace("you know", "euro");
                                     r = r.Replace("ula", "euro");
+                                    r = r.Replace("asked the risk", "asterisk");
                                     r = r.Replace("amber's and", "ampersand");
                                     r = r.Replace("amber's end", "ampersand");
                                     r = r.Replace("am percent", "ampersand");     
                                     r = r.Replace("market", "bracket");
+                                    r = r.Replace("block it", "bracket");
+                                    r = r.Replace("blackett", "bracket");
                                     r = r.Replace("place", "brace");
                                     r = r.Replace("bryce", "brace");
+                                    r = r.Replace("price", "brace");
+                                    r = r.Replace("blaze", "brace");
                                     r = r.Replace("the degree", "degree");
                                     r = r.Replace("column", "colon");
                                     r = r.Replace("colin", "colon");
@@ -2890,33 +3086,14 @@ namespace Speech
                                     r = r.Replace("golem", "colon");
                                     r = r.Replace("weiss", "twice");
                                     r = r.Replace("wise", "twice");
+                                    r = r.Replace("cancer", "cancel");
                                     r = r.Replace("council", "cancel");
+                                    r = r.Replace("garson", "cancel");
                                 }
                                 catch (Exception ex)
                                 {
                                     MessageBox.Show(ex.Message, "Error MW009m", MessageBoxButton.OK, MessageBoxImage.Error);
                                 }
-
-                                //List<string> list = new List<string>();
-
-                                //for (int i = 0; i < grids[grid_ind].elements.Count; i++)
-                                //{
-                                //    if (grids[grid_ind].elements[i].word.Contains("4"))
-                                //    {
-                                //        list.Add(grids[grid_ind].elements[i].word);
-                                //    }
-                                //}
-
-                                //int z = 5;
-
-                                //for (int i = 0; i < list_mousegrid.Count; i++)
-                                //{
-                                //    if (list_mousegrid[i] == "4 alfa")
-                                //    {
-                                //        string s = list_mousegrid[i];
-                                //        int x = 5;
-                                //    }
-                                //}
 
                                 int ind = -1; //indexes of highest confidence words
                                 int c_curr;
@@ -2956,12 +3133,12 @@ namespace Speech
                                         if (c >= confidence_other_commands)
                                         {
                                             SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                                = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                                = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 128, 0));
                                         }
                                         else
                                         {
                                             SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                                = new SolidColorBrush(Color.FromRgb(232, 4, 4));
+                                                = new SolidColorBrush(System.Windows.Media.Color.FromRgb(232, 4, 4));
                                         }
                                     }));
 
@@ -3038,11 +3215,19 @@ namespace Speech
                             {
                                 try
                                 {
-                                    if (r == "andrew")
+                                    if (r == "recongition of")
+                                        r = "recongition off";
+                                    else if (r == "the recongition of")
+                                        r = "recongition off";
+                                    else if (r == "recreation of")
+                                        r = "recongition off";
+                                    else if (r == "andrew")
                                         r = "undo";
                                     else if (r == "i do")
                                         r = "undo";
                                     else if (r == "ando")
+                                        r = "undo";
+                                    else if (r == "under")
                                         r = "undo";
                                     else if (r == "rhythm")
                                         r = "redo";
@@ -3051,6 +3236,26 @@ namespace Speech
                                     else if (r == "read though")
                                         r = "redo";
                                     else if (r == "control back space")
+                                        r = "control backspace";
+                                    else if (r == "contra tax base")
+                                        r = "control backspace";
+                                    else if (r == "contra max base")
+                                        r = "control backspace";
+                                    else if (r == "council tax base")
+                                        r = "control backspace";
+                                    else if (r == "the conch on tax space")
+                                        r = "control backspace";
+                                    else if (r == "cultural max base")
+                                        r = "control backspace";
+                                    else if (r == "cultural tax base")
+                                        r = "control backspace";
+                                    else if (r == "contra base")
+                                        r = "control backspace";
+                                    else if (r == "consonant tax base")
+                                        r = "control backspace";
+                                    else if (r == "cultural bucks please")
+                                        r = "control backspace";
+                                    else if (r == "calm down bag space")
                                         r = "control backspace";
                                     else if (r == "the red line")
                                         r = "delete line";
@@ -3068,6 +3273,24 @@ namespace Speech
                                         r = "delete line";
                                     else if (r == "the lip line")
                                         r = "delete line";
+                                    else if (r == "they eat line")
+                                        r = "delete line";
+                                    else if (r == "they lit line")
+                                        r = "delete line";
+                                    else if (r == "they need line")
+                                        r = "delete line";
+                                    else if (r == "they did line")
+                                        r = "delete line";
+                                    else if (r == "they did nine")
+                                        r = "delete line";
+                                    else if (r == "the line")
+                                        r = "delete line";
+                                    else if (r == "the headline")
+                                        r = "delete line";
+                                    else if (r == "the red nine")
+                                        r = "delete line";
+                                    else if (r == "did line")
+                                        r = "delete line";
                                     else if (r == "injured")
                                         r = "enter";
                                     else if (r == "answered")
@@ -3084,19 +3307,33 @@ namespace Speech
                                         r = "tab";
                                     else if (r == "dub")
                                         r = "tab";
+                                    else if (r == "tub")
+                                        r = "tab";
                                     else if (r == "dump")
                                         r = "tab";
                                     else if (r == "dumber")
                                         r = "tab";
+                                    else if (r == "dumper")
+                                        r = "tab";
                                     else if (r == "dumb")
                                         r = "tab";
                                     else if (r == "tumble")
+                                        r = "tab";
+                                    else if (r == "dauber")
+                                        r = "tab";
+                                    else if (r == "dublin")
+                                        r = "tab";
+                                    else if (r == "thunder")
+                                        r = "tab";
+                                    else if (r == "thumb")
                                         r = "tab";
                                     else if (r == "back space")
                                         r = "backspace";
                                     else if (r == "tax space")
                                         r = "backspace";
                                     else if (r == "max space")
+                                        r = "backspace";
+                                    else if (r == "bug space")
                                         r = "backspace";
                                     else if (r == "tax base")
                                         r = "backspace";
@@ -3114,6 +3351,8 @@ namespace Speech
                                         r = "comma";
                                     else if (r == "tacoma")
                                         r = "comma";
+                                    else if (r == "but")
+                                        r = "dot";
                                     else if (r == "hi fen")
                                         r = "hyphen";
                                     else if (r == "hi finn")
@@ -3124,6 +3363,8 @@ namespace Speech
                                         r = "hyphen";
                                     else if (r == "ivan")
                                         r = "hyphen";
+                                    else if (r == "semi")
+                                        r = "semicolon";
                                     else if (r == "column")
                                         r = "colon";
                                     else if (r == "colin")
@@ -3134,10 +3375,18 @@ namespace Speech
                                         r = "colon";
                                     else if (r == "golem")
                                         r = "colon";
+                                    else if (r == "the quote")
+                                        r = "double quote";
                                     else if (r == "level called")
                                         r = "double quote";
                                     else if (r == "novel called")
                                         r = "double quote";
+                                    else if (r == "the exclamation")
+                                        r = "exclamation";
+                                    else if (r == "open parentheses")
+                                        r = "open parenthesis";
+                                    else if (r == "close parentheses")
+                                        r = "close parenthesis";
                                 }
                                 catch (Exception ex)
                                 {
@@ -3216,7 +3465,7 @@ namespace Speech
                                                 SW.TBrecognized_speech.Text = r.FirstCharToUpper();
                                                 SW.TBconfidence.Text = c.ToString() + "/" + confidence_other_commands;
                                                 SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                                    = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                                    = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 128, 0));
                                             }));
                                         }
                                         catch (Exception ex)
@@ -3236,7 +3485,7 @@ namespace Speech
                                                 SW.TBrecognized_speech.Text = r.FirstCharToUpper();
                                                 SW.TBconfidence.Text = ((int)get_similarity(r, switch_to_command_mode)).ToString() + "/" + confidence_other_commands;
                                                 SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                                    = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                                    = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 128, 0));
                                             }));
 
                                             current_mode = mode.command;
@@ -3258,7 +3507,7 @@ namespace Speech
                                             {
                                                 SW.TBrecognized_speech.Text = r.FirstCharToUpper();
                                                 SW.TBconfidence.Text = c + "/" + confidence_other_commands;
-                                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 128, 0));
                                             }));
 
                                             if (r == "uppercase")
@@ -3425,7 +3674,7 @@ namespace Speech
                                                     SW.TBrecognized_speech.Text = r;
                                                     SW.TBconfidence.Text = c.ToString();
                                                     SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                                        = new SolidColorBrush(Color.FromRgb(0, 128, 0));
+                                                        = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 128, 0));
                                                 }
                                             }));
                                         }
@@ -3909,20 +4158,16 @@ namespace Speech
 
                                 foreach (Process p in arr)
                                 {
-                                    //if (p.MainWindowTitle.Contains(name) && p.TotalProcessorTime > ts)
-                                    //title = p.MainWindowTitle.ToLower();
                                     title = p.MainWindowTitle;
 
                                     if (title.Contains(name))
                                     {
-                                        //ts = p.TotalProcessorTime;
                                         handle = p.MainWindowHandle;
                                     }
                                 }
 
                                 if (handle != IntPtr.Zero)
                                 {
-                                    //ShowWindow(handle, SW_SHOWNORMAL);
                                     SetForegroundWindow(handle);
                                 }
 
@@ -3932,14 +4177,12 @@ namespace Speech
                                     {
                                         if (p.ProcessName.Contains(name))
                                         {
-                                            //length = p.ProcessName.Length;
                                             handle = p.MainWindowHandle;
                                         }
                                     }
                                 }
                                 if (handle != IntPtr.Zero)
                                 {
-                                    //ShowWindow(handle, SW_SHOWNORMAL);
                                     SetForegroundWindow(handle);
                                 }
                             }
@@ -3959,22 +4202,6 @@ namespace Speech
                                             //was not working for some apps like Google Chrome until i changed
                                             //target platform from any to x64 in project settings
                                             Process.Start(installed_apps[k].path);
-
-                                            //// IWshRuntimeLibrary is in the COM library "Windows Script Host Object Model"
-                                            //IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
-
-                                            //try
-                                            //{
-                                            //    IWshRuntimeLibrary.IWshShortcut shortcut 
-                                            //        = (IWshRuntimeLibrary.IWshShortcut)shell.{z
-                                            //        CreateShortcut(installed_apps[k].path);
-                                            //    Process.Start(System.IO.File.ReadAllText(shortcut.TargetPath));
-                                            //}
-                                            //catch (COMException)
-                                            //{
-                                            //    // A COMException is thrown if the file is not a valid shortcut (.lnk) file 
-                                            //    MessageBox.Show("the file is not a valid shortcut (.lnk) file");
-                                            //}
                                         }
                                     }
                                 }

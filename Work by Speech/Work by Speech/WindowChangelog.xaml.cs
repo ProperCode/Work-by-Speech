@@ -17,9 +17,12 @@ namespace Speech
                 TB.IsReadOnly = true;
 
                 TB.Text = ""
-                + "[2.7] - July 10, 2026:"
+                + "[2.8] - July 12, 2026:"
+                + "\n- Fixed built-in commands enabling bug."
+                + "\n- Improved speech recognition."
+                + "\n\n[2.7] - July 10, 2026:"
                 + "\n- Added euro to character inserting commands."
-                + "\n- Changed the \"Delete word\" command to \"Control backspace\" in dictation mode."
+                + "\n- Changed \"Delete word\" command to \"Control backspace\" in dictation mode."
                 + "\n- Fixed a loading error that could occur after updating from version 2.4 or earlier to version 2.5 or 2.6."
                 + "\n- Fixed minor bugs."
                 + "\n- Improved error handling."

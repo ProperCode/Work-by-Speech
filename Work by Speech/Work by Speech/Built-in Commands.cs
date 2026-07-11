@@ -110,24 +110,9 @@ namespace Speech
                 Mouse.OverrideCursor = Cursors.Wait;
                 SW.Bmode.Visibility = Visibility.Hidden;
 
-                list_off_mode = new List<string>();
-                list_builtin_commands = new List<string>();
-                list_dictation = new List<string>();
-
-                if (are_all_bic_off_disabled() == false)
-                {
-                    list_off_mode = create_off_mode_list();
-                }
-                
-                if (are_all_bic_general_and_mouse_disabled() == false)
-                {
-                    list_builtin_commands = create_builtin_commands_list();
-                }
-
-                if (are_all_bic_dictation_disabled() == false)
-                {
-                    list_dictation = create_dictation_commands_list();
-                }
+                list_off_mode = create_off_mode_list();
+                list_builtin_commands = create_builtin_commands_list();
+                list_dictation = create_dictation_commands_list();
 
                 if (current_mode == mode.off)
                 {
@@ -296,7 +281,7 @@ namespace Speech
                 list_bic_keys_pressing.Add(new BuiltInCommand("Windows + X",
                     bic_type.key_combination, "open power menu", "windows xray", "No", 1, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("F2",
-                    bic_type.key_combination, "rename", "function 2", "No", 1, false));
+                    bic_type.key_combination, "rename", "function two", "No", 1, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + F",
                     bic_type.key_combination, "find", "control foxtrot", "No", 1, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + H (in Word, Notepad, etc.)",
@@ -305,7 +290,7 @@ namespace Speech
                     bic_type.key_combination, "properties", "alt enter", "No", 1, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Shift + F10 (simulate right-click " +
                     "on selected item(s))",
-                    bic_type.key_combination, "menu", "shift function 10", "No", 1, false));
+                    bic_type.key_combination, "menu", "shift function ten", "No", 1, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Alt + print screen (create screenshot\r\n" +
                     "for the current program)",
                     bic_type.key_combination, "capture that", "alt print screen", "No", 1, false));
@@ -343,23 +328,23 @@ namespace Speech
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + Tab (in web browser)",
                     bic_type.key_combination, "next tab", "control tab", "No", 10, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + 1 (in web browser)",
-                    bic_type.key_combination, "first tab", "control 1", "No", 1, false));
+                    bic_type.key_combination, "first tab", "control one", "No", 1, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + 2 (in web browser)",
-                    bic_type.key_combination, "second tab", "control 2", "No", 1, false));
+                    bic_type.key_combination, "second tab", "control two", "No", 1, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + 3 (in web browser)",
-                    bic_type.key_combination, "third tab", "control 3", "No", 1, false));
+                    bic_type.key_combination, "third tab", "control three", "No", 1, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + 4 (in web browser)",
-                    bic_type.key_combination, "fourth tab", "control 4", "No", 1, false));
+                    bic_type.key_combination, "fourth tab", "control four", "No", 1, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + 5 (in web browser)",
-                    bic_type.key_combination, "fifth tab", "control 5", "No", 1, false));
+                    bic_type.key_combination, "fifth tab", "control five", "No", 1, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + 6 (in web browser)",
-                    bic_type.key_combination, "sixth tab", "control 6", "No", 1, false));
+                    bic_type.key_combination, "sixth tab", "control six", "No", 1, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + 7 (in web browser)",
-                    bic_type.key_combination, "seventh tab", "control 7", "No", 1, false));
+                    bic_type.key_combination, "seventh tab", "control seven", "No", 1, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + 8 (in web browser)",
-                    bic_type.key_combination, "eighth tab", "control 8", "No", 1, false));
+                    bic_type.key_combination, "eighth tab", "control eight", "No", 1, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Ctrl + 9 (in web browser)",
-                    bic_type.key_combination, "last tab", "control 9", "No", 1, false));
+                    bic_type.key_combination, "last tab", "control nine", "No", 1, false));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Browser back key",
                     bic_type.key_pressing, "back", VirtualKeyCode.BROWSER_BACK, "No", 20));
                 list_bic_keys_pressing.Add(new BuiltInCommand("Browser forward key",
@@ -428,25 +413,25 @@ namespace Speech
                 list_bic_keys_pressing.Add(new BuiltInCommand("Right",
                     bic_type.key_pressing, "right", VirtualKeyCode.RIGHT, "Yes", 90));
                 list_bic_keys_pressing.Add(new BuiltInCommand("1",
-                    bic_type.key_pressing, "1", VirtualKeyCode.VK_1, "Yes", 20));
+                    bic_type.key_pressing, "one", VirtualKeyCode.VK_1, "Yes", 20));
                 list_bic_keys_pressing.Add(new BuiltInCommand("2",
-                    bic_type.key_pressing, "2", VirtualKeyCode.VK_2, "Yes", 20));
+                    bic_type.key_pressing, "two", VirtualKeyCode.VK_2, "Yes", 20));
                 list_bic_keys_pressing.Add(new BuiltInCommand("3",
-                    bic_type.key_pressing, "3", VirtualKeyCode.VK_3, "Yes", 20));
+                    bic_type.key_pressing, "three", VirtualKeyCode.VK_3, "Yes", 20));
                 list_bic_keys_pressing.Add(new BuiltInCommand("4",
-                    bic_type.key_pressing, "4", VirtualKeyCode.VK_4, "Yes", 20));
+                    bic_type.key_pressing, "four", VirtualKeyCode.VK_4, "Yes", 20));
                 list_bic_keys_pressing.Add(new BuiltInCommand("5",
-                    bic_type.key_pressing, "5", VirtualKeyCode.VK_5, "Yes", 20));
+                    bic_type.key_pressing, "five", VirtualKeyCode.VK_5, "Yes", 20));
                 list_bic_keys_pressing.Add(new BuiltInCommand("6",
-                    bic_type.key_pressing, "6", VirtualKeyCode.VK_6, "Yes", 20));
+                    bic_type.key_pressing, "six", VirtualKeyCode.VK_6, "Yes", 20));
                 list_bic_keys_pressing.Add(new BuiltInCommand("7",
-                    bic_type.key_pressing, "7", VirtualKeyCode.VK_7, "Yes", 20));
+                    bic_type.key_pressing, "seven", VirtualKeyCode.VK_7, "Yes", 20));
                 list_bic_keys_pressing.Add(new BuiltInCommand("8",
-                    bic_type.key_pressing, "8", VirtualKeyCode.VK_8, "Yes", 20));
+                    bic_type.key_pressing, "eight", VirtualKeyCode.VK_8, "Yes", 20));
                 list_bic_keys_pressing.Add(new BuiltInCommand("9",
-                    bic_type.key_pressing, "9", VirtualKeyCode.VK_9, "Yes", 20));
+                    bic_type.key_pressing, "nine", VirtualKeyCode.VK_9, "Yes", 20));
                 list_bic_keys_pressing.Add(new BuiltInCommand("0",
-                    bic_type.key_pressing, "0", VirtualKeyCode.VK_0, "Yes", 20));
+                    bic_type.key_pressing, "zero", VirtualKeyCode.VK_0, "Yes", 20));
                 //needed for people with French r accent:
                 list_bic_keys_pressing.Add(new BuiltInCommand("0",
                     bic_type.key_pressing, "null", VirtualKeyCode.VK_0, "Yes", 20));
@@ -503,29 +488,29 @@ namespace Speech
                 list_bic_keys_pressing.Add(new BuiltInCommand("Z",
                     bic_type.key_pressing, "zulu", VirtualKeyCode.VK_Z, "Yes", 20));
                 list_bic_keys_pressing.Add(new BuiltInCommand("F1",
-                    bic_type.key_pressing, "function 1", VirtualKeyCode.F1, "Yes", 1));
+                    bic_type.key_pressing, "function one", VirtualKeyCode.F1, "Yes", 1));
                 list_bic_keys_pressing.Add(new BuiltInCommand("F2",
-                    bic_type.key_pressing, "function 2", VirtualKeyCode.F2, "Yes", 1));
+                    bic_type.key_pressing, "function two", VirtualKeyCode.F2, "Yes", 1));
                 list_bic_keys_pressing.Add(new BuiltInCommand("F3",
-                    bic_type.key_pressing, "function 3", VirtualKeyCode.F3, "Yes", 1));
+                    bic_type.key_pressing, "function three", VirtualKeyCode.F3, "Yes", 1));
                 list_bic_keys_pressing.Add(new BuiltInCommand("F4",
-                    bic_type.key_pressing, "function 4", VirtualKeyCode.F4, "Yes", 1));
+                    bic_type.key_pressing, "function four", VirtualKeyCode.F4, "Yes", 1));
                 list_bic_keys_pressing.Add(new BuiltInCommand("F5",
-                    bic_type.key_pressing, "function 5", VirtualKeyCode.F5, "Yes", 1));
+                    bic_type.key_pressing, "function five", VirtualKeyCode.F5, "Yes", 1));
                 list_bic_keys_pressing.Add(new BuiltInCommand("F6",
-                    bic_type.key_pressing, "function 6", VirtualKeyCode.F6, "Yes", 1));
+                    bic_type.key_pressing, "function six", VirtualKeyCode.F6, "Yes", 1));
                 list_bic_keys_pressing.Add(new BuiltInCommand("F7",
-                    bic_type.key_pressing, "function 7", VirtualKeyCode.F7, "Yes", 1));
+                    bic_type.key_pressing, "function seven", VirtualKeyCode.F7, "Yes", 1));
                 list_bic_keys_pressing.Add(new BuiltInCommand("F8",
-                    bic_type.key_pressing, "function 8", VirtualKeyCode.F8, "Yes", 1));
+                    bic_type.key_pressing, "function eight", VirtualKeyCode.F8, "Yes", 1));
                 list_bic_keys_pressing.Add(new BuiltInCommand("F9",
-                    bic_type.key_pressing, "function 9", VirtualKeyCode.F9, "Yes", 1));
+                    bic_type.key_pressing, "function nine", VirtualKeyCode.F9, "Yes", 1));
                 list_bic_keys_pressing.Add(new BuiltInCommand("F10",
-                    bic_type.key_pressing, "function 10", VirtualKeyCode.F10, "Yes", 1));
+                    bic_type.key_pressing, "function ten", VirtualKeyCode.F10, "Yes", 1));
                 list_bic_keys_pressing.Add(new BuiltInCommand("F11",
-                    bic_type.key_pressing, "function 11", VirtualKeyCode.F11, "Yes", 1));
+                    bic_type.key_pressing, "function eleven", VirtualKeyCode.F11, "Yes", 1));
                 list_bic_keys_pressing.Add(new BuiltInCommand("F12",
-                    bic_type.key_pressing, "function 12", VirtualKeyCode.F12, "Yes", 1));
+                    bic_type.key_pressing, "function twelve", VirtualKeyCode.F12, "Yes", 1));
                 list_bic_keys_pressing.Add(new BuiltInCommand(",",
                     bic_type.key_pressing, "comma", VirtualKeyCode.OEM_COMMA, "Yes", 1));
                 list_bic_keys_pressing.Add(new BuiltInCommand(".",
@@ -1224,42 +1209,6 @@ namespace Speech
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error BIC056", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-
-            return true;
-        }
-
-        bool are_all_bic_general_and_mouse_disabled()
-        {
-            try
-            {
-                foreach (BuiltInCommand bic in list_bic_general_and_mouse)
-                {
-                    if (bic.enabled)
-                        return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error BIC057", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-
-            return true;
-        }
-
-        bool are_all_bic_dictation_disabled()
-        {
-            try
-            {
-                foreach (BuiltInCommand bic in list_bic_dictation)
-                {
-                    if (bic.enabled)
-                        return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error BIC058", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
             return true;
