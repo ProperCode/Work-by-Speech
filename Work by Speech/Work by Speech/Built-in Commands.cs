@@ -22,7 +22,6 @@ namespace Speech
         CollectionView cv_bic_pressing;
         CollectionView cv_bic_inserting;
         CollectionView cv_bic_dict;
-        CollectionView cv_bic_dict_better;
 
         public class BuiltInCommand
         {
@@ -114,20 +113,23 @@ namespace Speech
                 list_builtin_commands = create_builtin_commands_list();
                 list_dictation = create_dictation_commands_list();
 
-                if (current_mode == mode.off)
+                lock (lock_list_current)
                 {
-                    list_current = new List<string>();
-                    add_to_list_current(list_type.list_off_mode);
-                }
-                else if (current_mode == mode.command)
-                {
-                    list_current = new List<string>();
-                    add_to_list_current(list_type.list_builtin_commands);
-                }
-                else if (current_mode == mode.dictation)
-                {
-                    list_current = new List<string>();
-                    add_to_list_current(list_type.list_dictation);
+                    if (current_mode == mode.off)
+                    {
+                        list_current = new List<string>();
+                        add_to_list_current(list_type.list_off_mode);
+                    }
+                    else if (current_mode == mode.command)
+                    {
+                        list_current = new List<string>();
+                        add_to_list_current(list_type.list_builtin_commands);
+                    }
+                    else if (current_mode == mode.dictation)
+                    {
+                        list_current = new List<string>();
+                        add_to_list_current(list_type.list_dictation);
+                    }
                 }
 
                 if (is_bic_in_general_and_mouse_enabled(bic_type.switch_to_app))
@@ -632,7 +634,7 @@ namespace Speech
                 list_bic_dictation.Add(new BuiltInCommand("Press Ctrl + Y",
                     bic_type.key_pressing, "redo", 1));
                 list_bic_dictation.Add(new BuiltInCommand("Delete previous word",
-                    bic_type.key_pressing, "control backspace", 1));
+                    bic_type.key_pressing, "control backspace", 1)); //delete word has at least 35 homophones on Vosk (control backspace has 11)
                 list_bic_dictation.Add(new BuiltInCommand("Delete current line",
                     bic_type.key_pressing, "delete line", 1));
                 list_bic_dictation.Add(new BuiltInCommand("Press Space",

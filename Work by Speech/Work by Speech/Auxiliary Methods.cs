@@ -1571,25 +1571,11 @@ namespace Speech
                     list_current.Add(list_dictation[i]);
                 }
             }
-            else if (LT == list_type.list_mousegrid)
-            {
-                for (int i = 0; i < list_mousegrid.Count; i++)
-                {
-                    list_current.Add(list_mousegrid[i]);
-                }
-            }
             else if (LT == list_type.list_builtin_commands)
             {
                 for (int i = 0; i < list_builtin_commands.Count; i++)
                 {
                     list_current.Add(list_builtin_commands[i]);
-                }
-            }
-            else if (LT == list_type.list_cc_any)
-            {
-                for (int i = 0; i < list_cc_any.Count; i++)
-                {
-                    list_current.Add(list_cc_any[i]);
                 }
             }
         }

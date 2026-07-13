@@ -17,7 +17,10 @@ namespace Speech
                 TB.IsReadOnly = true;
 
                 TB.Text = ""
-                + "[2.8] - July 12, 2026:"
+                + "[2.9] - July 14, 2026:"
+                + "\n- Fixed multiple execution of custom commands."
+                + "\n- Fixed very rare bugs."
+                + "\n\n[2.8] - July 12, 2026:"
                 + "\n- Fixed built-in commands enabling bug."
                 + "\n- Improved speech recognition."
                 + "\n\n[2.7] - July 10, 2026:"

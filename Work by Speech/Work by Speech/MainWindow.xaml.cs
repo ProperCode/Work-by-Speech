@@ -32,7 +32,7 @@ namespace Speech
 {
     public partial class MainWindow : Window
     {
-        const string prog_version = "2.8";
+        const string prog_version = "2.9";
               string latest_version = "";
         const string copyright_text = "Copyright © 2023 - 2026 Mikołaj Magowski. All rights reserved.";
         const string filename_model = "vosk-model-en-us-daanzu-20200905"; //Vosk speech recogniton model (7.08 (librispeech test-clean) 8.25 (tedlium))
@@ -829,8 +829,11 @@ namespace Speech
                     i++;
                 }
 
-                list_current = new List<string>();
-                add_to_list_current(list_type.list_off_mode);
+                lock (lock_list_current)
+                {
+                    list_current = new List<string>();
+                    add_to_list_current(list_type.list_off_mode);
+                }
 
                 Stream iconStream = System.Windows.Application.GetResourceStream(
                     new Uri(icon_off)).Stream;
@@ -900,8 +903,11 @@ namespace Speech
 
                 if (current_mode == mode.command)
                 {
-                    list_current = new List<string>();
-                    add_to_list_current(list_type.list_builtin_commands);
+                    lock (lock_list_current)
+                    {
+                        list_current = new List<string>();
+                        add_to_list_current(list_type.list_builtin_commands);
+                    }
 
                     lock (lock_list_cc_foreground)
                     {
@@ -944,8 +950,11 @@ namespace Speech
                 }
                 else if (current_mode == mode.dictation)
                 {
-                    list_current = new List<string>();
-                    add_to_list_current(list_type.list_dictation);
+                    lock (lock_list_current)
+                    {
+                        list_current = new List<string>();
+                        add_to_list_current(list_type.list_dictation);
+                    }
 
                     Stream iconStream = System.Windows.Application.GetResourceStream(
                     new Uri(icon_dictation)).Stream;
@@ -1727,7 +1736,7 @@ namespace Speech
 
                                 for (int j = 2; j <= cc.max_executions; j++)
                                 {
-                                    multi.Add(j + " times");
+                                    multi.Add(number_to_words(j) + " times");
                                 }
 
                                 for (int j = 0; j < multi.Count; j++)
@@ -2125,6 +2134,7 @@ namespace Speech
 
         bool speech_recognized = false;
 
+        private readonly object lock_list_current = new object();
         private readonly object lock_list_cc_any = new object();
         private readonly object lock_list_cc_foreground = new object();
         private readonly object lock_list_switch_to_apps = new object();
@@ -2134,11 +2144,11 @@ namespace Speech
         {
             try
             {
-                if (recognition_suspended == false && recognizer != null)
+                if (recognizer != null && recognition_suspended == false && inside_speech_recognized_event == false)
                 {
                     inside_speech_recognized_event = true;
 
-                    if (recognizer.AcceptWaveform(e.Buffer, e.BytesRecorded) && recognition_suspended == false)
+                    if (recognizer.AcceptWaveform(e.Buffer, e.BytesRecorded))
                     {
                         int c = 0; //speech recognition confidence
 
@@ -2177,14 +2187,17 @@ namespace Speech
 
                                     try
                                     {
-                                        for (int i = 0; i < list_current.Count; i++)
+                                        lock (lock_list_current)
                                         {
-                                            c_curr = (int)get_similarity(r, list_current[i]);
-
-                                            if (c_curr > c)
+                                            for (int i = 0; i < list_current.Count; i++)
                                             {
-                                                c = c_curr;
-                                                ind = i;
+                                                c_curr = (int)get_similarity(r, list_current[i]);
+
+                                                if (c_curr > c)
+                                                {
+                                                    c = c_curr;
+                                                    ind = i;
+                                                }
                                             }
                                         }
                                     }
@@ -2193,53 +2206,56 @@ namespace Speech
                                         MessageBox.Show(ex.Message, "Error MW009a1", MessageBoxButton.OK, MessageBoxImage.Error);
                                     }
 
-                                    if (ind != -1)
-                                        r = list_current[ind];
-                                    else
-                                        r = "";
-
-                                    if (c >= confidence_turning_on)
+                                    lock (lock_list_current)
                                     {
-                                        try
+                                        if (ind != -1 && ind < list_current.Count)
+                                            r = list_current[ind];
+                                        else
+                                            r = "";
+
+                                        if (c >= confidence_turning_on)
                                         {
-                                            if (read_recognized_speech) ss.SpeakAsync(r);
-
-                                            current_mode = last_mode;
-
-                                            load_turned_on(true);
-
-                                            SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                            try
                                             {
-                                                if (r.Length > 0)
-                                                    SW.TBrecognized_speech.Text = r.FirstCharToUpper();
-                                                SW.TBconfidence.Text = c.ToString() + "/" + confidence_turning_on;
+                                                if (read_recognized_speech) ss.SpeakAsync(r);
 
-                                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                                    = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 128, 0));
-                                            }));
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            MessageBox.Show(ex.Message, "Error MW009a2", MessageBoxButton.OK, MessageBoxImage.Error);
-                                        }
-                                    }
-                                    else if (list_current.Count > 0)
-                                    {
-                                        try
-                                        {
-                                            SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                                current_mode = last_mode;
+
+                                                load_turned_on(true);
+
+                                                SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                                {
+                                                    if (r.Length > 0)
+                                                        SW.TBrecognized_speech.Text = r.FirstCharToUpper();
+                                                    SW.TBconfidence.Text = c.ToString() + "/" + confidence_turning_on;
+
+                                                    SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                                        = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 128, 0));
+                                                }));
+                                            }
+                                            catch (Exception ex)
                                             {
-                                                if (r.Length > 0)
-                                                    SW.TBrecognized_speech.Text = r.FirstCharToUpper();
-                                                SW.TBconfidence.Text = c.ToString() + "/" + confidence_turning_on;
-
-                                                SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
-                                                    = new SolidColorBrush(System.Windows.Media.Color.FromRgb(232, 4, 4));
-                                            }));
+                                                MessageBox.Show(ex.Message, "Error MW009a2", MessageBoxButton.OK, MessageBoxImage.Error);
+                                            }
                                         }
-                                        catch (Exception ex)
+                                        else if (list_current.Count > 0)
                                         {
-                                            MessageBox.Show(ex.Message, "Error MW009a3", MessageBoxButton.OK, MessageBoxImage.Error);
+                                            try
+                                            {
+                                                SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                                                {
+                                                    if (r.Length > 0)
+                                                        SW.TBrecognized_speech.Text = r.FirstCharToUpper();
+                                                    SW.TBconfidence.Text = c.ToString() + "/" + confidence_turning_on;
+
+                                                    SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
+                                                        = new SolidColorBrush(System.Windows.Media.Color.FromRgb(232, 4, 4));
+                                                }));
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                MessageBox.Show(ex.Message, "Error MW009a3", MessageBoxButton.OK, MessageBoxImage.Error);
+                                            }
                                         }
                                     }
                                 }
@@ -2343,7 +2359,6 @@ namespace Speech
                                     r = r.Replace("restart done", "restore tab");
                                     r = r.Replace("restart double", "restore tab");
                                     r = r.Replace("restart", "restore");
-                                    r = r.Replace("previous dumb", "previous tab");
                                     r = r.Replace("previous them", "previous tab");
                                     r = r.Replace("previous standard", "previous tab");
                                     r = r.Replace("previous number", "previous tab");
@@ -2542,6 +2557,9 @@ namespace Speech
                                     r = r.Replace("the quote", "double quote");
                                     r = r.Replace("level called", "double quote");
                                     r = r.Replace("novel called", "double quote");
+                                    r = r.Replace("there will quote", "double quote");
+                                    r = r.Replace("the book would", "double quote");
+                                    r = r.Replace("davenport", "double quote");
                                     r = r.Replace("writer then", "greater than");
                                     r = r.Replace("ted", "at");
                                     r = r.Replace("the exclamation", "exclamation");
@@ -2569,8 +2587,7 @@ namespace Speech
                                     r = r.Replace("open race", "open brace");
                                     r = r.Replace("close place", "close brace");
                                     r = r.Replace("close race", "close brace");
-                                    r = r.Replace("open market", "open bracket");
-                                    r = r.Replace("close market", "close bracket");
+                                    r = r.Replace("market", "bracket");
                                     r = r.Replace("amber's and", "ampersand");
                                     r = r.Replace("amber's end", "ampersand");
                                     r = r.Replace("am percent", "ampersand");
@@ -2694,17 +2711,18 @@ namespace Speech
 
                                 try
                                 {
-                                    
-                                    
-                                    for (int i = 0; i < list_current.Count; i++)
+                                    lock (lock_list_current)
                                     {
-                                        str = list_current[i].ToLower();
-                                        c_curr = (int)get_similarity(r, str);
-
-                                        if (c_curr > c5)
+                                        for (int i = 0; i < list_current.Count; i++)
                                         {
-                                            c5 = c_curr;
-                                            ind5 = i;
+                                            str = list_current[i].ToLower();
+                                            c_curr = (int)get_similarity(r, str);
+
+                                            if (c_curr > c5)
+                                            {
+                                                c5 = c_curr;
+                                                ind5 = i;
+                                            }
                                         }
                                     }
                                 }
@@ -2717,7 +2735,7 @@ namespace Speech
                                 {
                                     lock (lock_list_cc_foreground)
                                     {
-                                        if (list_cc_foreground.Count > 0)
+                                        if (list_cc_foreground.Count > 0 && ind1 < list_cc_foreground.Count)
                                         {
                                             if (c1 > c)
                                             {
@@ -2736,7 +2754,7 @@ namespace Speech
                                 {
                                     lock (lock_list_cc_any)
                                     {
-                                        if (list_cc_any.Count > 0)
+                                        if (list_cc_any.Count > 0 && ind2 < list_cc_any.Count)
                                         {
                                             if (c2 > c)
                                             {
@@ -2753,7 +2771,7 @@ namespace Speech
 
                                 try
                                 {
-                                    if (apps_opening && list_open_apps.Count > 0)
+                                    if (apps_opening && list_open_apps.Count > 0 && ind3 < list_open_apps.Count)
                                     {
                                         if (c3 > c)
                                         {
@@ -2771,7 +2789,7 @@ namespace Speech
                                 {
                                     lock (lock_list_switch_to_apps)
                                     {
-                                        if (apps_switching && list_switch_to_apps.Count > 0)
+                                        if (apps_switching && list_switch_to_apps.Count > 0 && ind4 < list_switch_to_apps.Count)
                                         {
                                             if (c4 > c)
                                             {
@@ -2788,12 +2806,15 @@ namespace Speech
 
                                 try
                                 {
-                                    if (list_current.Count > 0)
+                                    lock (lock_list_current)
                                     {
-                                        if (c5 > c)
+                                        if (list_current.Count > 0 && ind5 < list_current.Count)
                                         {
-                                            c = c5;
-                                            r = list_current[ind5];
+                                            if (c5 > c)
+                                            {
+                                                c = c5;
+                                                r = list_current[ind5];
+                                            }
                                         }
                                     }
                                 }
@@ -2809,7 +2830,7 @@ namespace Speech
                                         string[] arr = r.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                                         int length = arr.Length;
 
-                                        if (r.Contains("times") && arr.Length >= 3)
+                                        if (r.Contains("times") && length >= 3)
                                         {
                                             if(arr[length - 3] == "twenty" || arr[length - 3] == "thirty" || arr[length - 3] == "forty" || arr[length - 3] == "fifty"
                                                 || arr[length - 3] == "sixty" || arr[length - 3] == "seventy" || arr[length - 3] == "eighty" || arr[length - 3] == "ninety")
@@ -3381,6 +3402,12 @@ namespace Speech
                                         r = "double quote";
                                     else if (r == "novel called")
                                         r = "double quote";
+                                    else if (r == "there will quote")
+                                        r = "double quote";
+                                    else if (r == "the book would")
+                                        r = "double quote";
+                                    else if (r == "davenport")
+                                        r = "double quote";
                                     else if (r == "the exclamation")
                                         r = "exclamation";
                                     else if (r == "open parentheses")
@@ -3399,14 +3426,17 @@ namespace Speech
 
                                 try
                                 {
-                                    for (int i = 0; i < list_current.Count; i++)
+                                    lock (lock_list_current)
                                     {
-                                        c_curr = (int)get_similarity(r, list_current[i]);
-
-                                        if (c_curr > c1)
+                                        for (int i = 0; i < list_current.Count; i++)
                                         {
-                                            c1 = c_curr;
-                                            ind1 = i;
+                                            c_curr = (int)get_similarity(r, list_current[i]);
+
+                                            if (c_curr > c1)
+                                            {
+                                                c1 = c_curr;
+                                                ind1 = i;
+                                            }
                                         }
                                     }
                                 }
@@ -3417,36 +3447,18 @@ namespace Speech
 
                                 try
                                 {
-                                    if (c1 >= confidence_other_commands)
+                                    lock (lock_list_current)
                                     {
-                                        r = list_current[ind1];
-                                        c = c1;
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    MessageBox.Show(ex.Message, "Error MW009s", MessageBoxButton.OK, MessageBoxImage.Error);
-                                }
-
-                                bool dictation_command = false;
-
-                                try
-                                {
-                                    if (c >= confidence_other_commands)
-                                    {
-                                        foreach (BuiltInCommand bic in list_bic_dictation)
+                                        if (c1 >= confidence_other_commands && ind1 < list_current.Count)
                                         {
-                                            if (r == bic.name && bic.enabled)
-                                            {
-                                                dictation_command = true;
-                                                break;
-                                            }
+                                            r = list_current[ind1];
+                                            c = c1;
                                         }
                                     }
                                 }
                                 catch (Exception ex)
                                 {
-                                    MessageBox.Show(ex.Message, "Error MW009t", MessageBoxButton.OK, MessageBoxImage.Error);
+                                    MessageBox.Show(ex.Message, "Error MW009s", MessageBoxButton.OK, MessageBoxImage.Error);
                                 }
 
                                 try
@@ -3483,7 +3495,7 @@ namespace Speech
                                             SW.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
                                             {
                                                 SW.TBrecognized_speech.Text = r.FirstCharToUpper();
-                                                SW.TBconfidence.Text = ((int)get_similarity(r, switch_to_command_mode)).ToString() + "/" + confidence_other_commands;
+                                                SW.TBconfidence.Text = c.ToString() + "/" + confidence_other_commands;
                                                 SW.TBrecognized_speech.Foreground = SW.TBconfidence.Foreground
                                                     = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 128, 0));
                                             }));
@@ -3497,7 +3509,7 @@ namespace Speech
                                             MessageBox.Show(ex.Message, "Error MW009t2", MessageBoxButton.OK, MessageBoxImage.Error);
                                         }
                                     }
-                                    else if (dictation_command)
+                                    else if (c >= confidence_other_commands)
                                     {
                                         try
                                         {
@@ -3534,7 +3546,7 @@ namespace Speech
                                                 sim.Keyboard.KeyUp(VirtualKeyCode.VK_Y);
                                                 sim.Keyboard.KeyUp(VirtualKeyCode.LCONTROL);
                                             }
-                                            else if (r == "control backspace")
+                                            else if (r == "control backspace") //delete word has at least 35 homophones on Vosk (control backspace has 11)
                                             {
                                                 sim.Keyboard.KeyDown(VirtualKeyCode.LCONTROL);
                                                 sim.Keyboard.KeyDown(VirtualKeyCode.BACK);
