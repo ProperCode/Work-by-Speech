@@ -157,7 +157,7 @@ namespace Speech
             grid_alphabet.Add(new Grid_Symbol("xray", "x"));
             grid_alphabet.Add(new Grid_Symbol("yankee", "y"));
             grid_alphabet.Add(new Grid_Symbol("zulu", "z"));
-            //grid_alphabet.Add(new Grid_Symbol("0", "0")); //Vosk recognizes 0€ as €€ and has conflict with zulu which is often recognized as zero
+            //grid_alphabet.Add(new Grid_Symbol("zero", "0")); //Vosk recognizes 0€ as €€ and has conflict with zulu which is often recognized as zero
             grid_alphabet.Add(new Grid_Symbol("one", "1"));
             grid_alphabet.Add(new Grid_Symbol("two", "2"));
             grid_alphabet.Add(new Grid_Symbol("three", "3"));

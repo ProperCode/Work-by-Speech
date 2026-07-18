@@ -17,7 +17,10 @@ namespace Speech
                 TB.IsReadOnly = true;
 
                 TB.Text = ""
-                + "[2.9] - July 14, 2026:"
+                + "[3.0] - July 18, 2026:"
+                + "\n- Fixed a Smart Mousegrid bug occurring after updating from version 2.7 or earlier to versions 2.8 or 2.9," +
+                " or from version 2.6 or earlier to versions 2.7, 2.8, or 2.9."
+                + "\n\n[2.9] - July 14, 2026:"
                 + "\n- Fixed multiple execution of custom commands."
                 + "\n- Fixed very rare bugs."
                 + "\n\n[2.8] - July 12, 2026:"

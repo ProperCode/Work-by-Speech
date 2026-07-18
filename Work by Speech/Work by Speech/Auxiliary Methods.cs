@@ -981,15 +981,15 @@ namespace Speech
                     int trash;
 
                     if (int.TryParse(TBconfidence_start.Text, out trash) == false ||
-                        int.Parse(TBconfidence_start.Text) < 0 || int.Parse(TBconfidence_start.Text) > 99)
+                        int.Parse(TBconfidence_start.Text) < 0 || int.Parse(TBconfidence_start.Text) > 100)
                         throw new Exception("Confidence required for \"Start speech recognition\"" +
-                            " command must be between 0 and 99");
+                            " command must be between 0 and 100");
 
                     if (int.TryParse(TBconfidence_commands.Text, out trash) == false 
                         || int.Parse(TBconfidence_commands.Text) < 0
-                        || int.Parse(TBconfidence_commands.Text) > 99)
+                        || int.Parse(TBconfidence_commands.Text) > 100)
                         throw new Exception("Confidence required for other commands" +
-                            " must be between 0 and 99");
+                            " must be between 0 and 100");
 
                     if (CBss_voices.SelectedIndex == -1 && (bool)CHBread_recognized_speech.IsChecked)
                         throw new Exception("Speech synthesis voice must be selected when" +

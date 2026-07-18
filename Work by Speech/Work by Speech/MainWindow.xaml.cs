@@ -32,13 +32,16 @@ namespace Speech
 {
     public partial class MainWindow : Window
     {
-        const string prog_version = "2.9";
+        const string prog_version = "3.0";
               string latest_version = "";
         const string copyright_text = "Copyright © 2023 - 2026 Mikołaj Magowski. All rights reserved.";
         const string filename_model = "vosk-model-en-us-daanzu-20200905"; //Vosk speech recogniton model (7.08 (librispeech test-clean) 8.25 (tedlium))
+        //vosk-model-en-us-daanzu-20200905 is better for mousegrid recognition than vosk-model-en-us-0.22 (daanzu recognizes "echo euro" 6/10 times, en-us-0.22 recognizes 3/10 times)
         const string filename_settings = "settings.xml";
         const string filename_coords = "coords.txt"; //speech recognition window last location
-        const string grids_foldername = "grids";
+        const string grids_foldername = "grids2"; //needed to change to grids2 after changing mousegrid alphabet (removed yen, because it was recognized as in and changed
+        //digits to words to increase speech recognition accuracy (changing mousegrid alphabet affects smart mousegrid data - each time this is done grids_foldername must be changed -
+        //otherwise smart mousegrid would not work properly for users that used previous program versions)
         const int grid_symbols_limit = 49;//50-58 recommended
         const int max_font_size = 400;
         const bool resized_grid = true; //when true, resizes mousegrid so screen is fully covered
