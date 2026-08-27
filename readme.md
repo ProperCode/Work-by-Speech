@@ -40,7 +40,16 @@ Who is Work by Speech for?
 
 ## Screenshots
 
-<a href="https://imgbox.com/MfWk4b3i" target="_blank"><img src="https://thumbs2.imgbox.com/67/80/MfWk4b3i_t.jpg" alt="image host"/></a> <a href="https://imgbox.com/ejn1Ndcl" target="_blank"><img src="https://thumbs2.imgbox.com/e2/37/ejn1Ndcl_t.jpg" alt="image host"/></a> <a href="https://imgbox.com/xA7PFaCJ" target="_blank"><img src="https://thumbs2.imgbox.com/1c/d6/xA7PFaCJ_t.jpg" alt="image host"/></a> <a href="https://imgbox.com/DaRZFMrg" target="_blank"><img src="https://thumbs2.imgbox.com/c9/c3/DaRZFMrg_t.jpg" alt="image host"/></a> <a href="https://imgbox.com/BhmkQ3Og" target="_blank"><img src="https://thumbs2.imgbox.com/46/75/BhmkQ3Og_t.jpg" alt="image host"/></a> <a href="https://imgbox.com/ZeFlS21e" target="_blank"><img src="https://thumbs2.imgbox.com/60/28/ZeFlS21e_t.png" alt="image host"/></a> <a href="https://imgbox.com/4MY39FYy" target="_blank"><img src="https://thumbs2.imgbox.com/c8/29/4MY39FYy_t.png" alt="image host"/></a> <a href="https://imgbox.com/9CLukvP5" target="_blank"><img src="https://thumbs2.imgbox.com/2f/76/9CLukvP5_t.png" alt="image host"/></a> <a href="https://imgbox.com/KEWu4mOo" target="_blank"><img src="https://thumbs2.imgbox.com/b7/da/KEWu4mOo_t.png" alt="image host"/></a> <a href="https://imgbox.com/lQ6HctRD" target="_blank"><img src="https://thumbs2.imgbox.com/86/17/lQ6HctRD_t.png" alt="image host"/></a>
+![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/refs/heads/main/other/images/01_main_window.jpg)
+![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/refs/heads/main/other/images/02_command_editing.jpg)
+![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/refs/heads/main/other/images/03_macro_recorder.jpg)
+![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/refs/heads/main/other/images/04_built-in_commands.jpg)
+![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/refs/heads/main/other/images/05_settings.jpg)
+![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/refs/heads/main/other/images/06_mousegrid_hexagonal.png)
+![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/refs/heads/main/other/images/07_mousegrid_square.png)
+![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/refs/heads/main/other/images/08_mousegrid_horizontal.png)
+![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/refs/heads/main/other/images/09_mousegrid_vertical.png)
+![alt text](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/refs/heads/main/other/images/10_mousegrid_combined.png)
 
 ## Awards
 [![Softpedia Clean Award](https://raw.githubusercontent.com/ProperCode/Work-by-Speech/master/other/awards/softpedia_100_clean.png)](https://www.softpedia.com/get/Office-tools/Other-Office-Tools/Work-by-Speech.shtml#status)
